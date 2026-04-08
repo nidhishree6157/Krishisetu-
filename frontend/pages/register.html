@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Account – KrishiSetu</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+:root{
+  --surface:  rgba(255,255,255,0.88);
+  --border:   rgba(0,0,0,0.07);
+  --bf:       rgba(34,197,94,0.45);
+  --be:       rgba(220,38,38,0.45);
+  --text:     #0f172a;
+  --sub:      #475569;
+  --muted:    #94a3b8;
+  --accent:   #2e7d32;
+  --alt:      #43a047;
+  --glow:     rgba(34,197,94,0.14);
+  --red:      #dc2626;
+  --R:        13px;
+  --T:        220ms cubic-bezier(.4,0,.2,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{
+  min-height:100vh;font-family:'Inter',sans-serif;color:var(--text);
+  padding:32px 16px;overflow-x:hidden;
+  background:
+    radial-gradient(ellipse 70% 60% at 15% 20%,rgba(34,197,94,.09) 0%,transparent 60%),
+    radial-gradient(ellipse 60% 50% at 85% 80%,rgba(34,197,94,.06) 0%,transparent 60%),
+    linear-gradient(150deg,#f0fdf4 0%,#f8fafc 45%,#eff6ff 100%);
+}
+
+/* scene */
+.scene{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.scene-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(34,197,94,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(34,197,94,.04) 1px,transparent 1px);background-size:52px 52px}
+.blob{position:absolute;border-radius:50%;animation:blobDrift ease-in-out infinite}
+.b1{width:600px;height:600px;background:radial-gradient(circle,rgba(34,197,94,.1) 0%,transparent 65%);filter:blur(100px);top:-20%;left:-16%;animation-duration:24s}
+.b2{width:440px;height:440px;background:radial-gradient(circle,rgba(16,185,129,.07) 0%,transparent 65%);filter:blur(90px);bottom:-16%;right:-10%;animation-duration:32s;animation-delay:-12s}
+.b3{width:280px;height:280px;background:radial-gradient(circle,rgba(99,102,241,.05) 0%,transparent 70%);filter:blur(80px);top:40%;left:60%;animation-duration:40s;animation-delay:-20s}
+@keyframes blobDrift{0%,100%{transform:scale(1)translate(0,0)}33%{transform:scale(1.06)translate(24px,-30px)}66%{transform:scale(.94)translate(-18px,22px)}}
+.scene-particles{position:absolute;inset:0;overflow:hidden}
+.pt{position:absolute;border-radius:50%;background:rgba(34,197,94,.5);animation:ptRise linear infinite;will-change:transform,opacity}
+@keyframes ptRise{0%{opacity:0;transform:translateY(0)translateX(0)}8%{opacity:1}90%{opacity:.6}100%{opacity:0;transform:translateY(-115vh)translateX(var(--dx))}}
+.scene-glow{position:absolute;width:500px;height:500px;background:radial-gradient(circle,rgba(34,197,94,.09) 0%,transparent 65%);border-radius:50%;filter:blur(60px);top:50%;left:50%;transform:translate(-50%,-50%);animation:glowPulse 6s ease-in-out infinite}
+@keyframes glowPulse{0%,100%{opacity:.35;transform:translate(-50%,-50%)scale(1)}50%{opacity:.65;transform:translate(-50%,-50%)scale(1.16)}}
+
+/* layout */
+.page{position:relative;z-index:1;width:100%;max-width:540px;margin:0 auto}
+.brand{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:24px}
+.brand img,.brand .brand-logo-wide{width:auto;height:42px;object-fit:contain;filter:drop-shadow(0 2px 10px rgba(46,125,50,.12))}
+
+/* card */
+.card-wrap{animation:cardFloat 7s ease-in-out infinite}
+@keyframes cardFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.card{
+  background:var(--surface);
+  backdrop-filter:blur(20px)saturate(180%);
+  -webkit-backdrop-filter:blur(20px)saturate(180%);
+  border:1px solid var(--border);border-radius:20px;padding:40px 36px;
+  box-shadow:0 1px 0 rgba(255,255,255,.9) inset,0 8px 32px rgba(15,23,42,.08),0 32px 64px rgba(15,23,42,.05),0 0 0 1px rgba(0,0,0,.04);
+  position:relative;overflow:hidden;
+}
+.card::before{content:"";position:absolute;top:0;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.95),transparent)}
+.card::after{content:"";position:absolute;top:20%;left:0;width:2px;height:60%;background:linear-gradient(180deg,transparent,rgba(22,163,74,.4),transparent);border-radius:2px}
+
+/* header */
+.ch{margin-bottom:24px}
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--accent);background:rgba(22,163,74,.08);border:1px solid rgba(22,163,74,.18);padding:4px 11px;border-radius:20px;margin-bottom:12px}
+.ch h2{font-size:24px;font-weight:800;letter-spacing:-.4px;margin-bottom:4px;color:var(--text)}
+.ch p{font-size:13px;color:var(--sub)}
+
+/* role toggle */
+.role-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:22px}
+.role-btn{
+  padding:13px 10px;
+  background:#fff;border:1.5px solid #e2e8f0;border-radius:var(--R);
+  cursor:pointer;font-family:inherit;font-size:13.5px;font-weight:600;color:var(--sub);
+  display:flex;flex-direction:column;align-items:center;gap:7px;
+  transition:border-color var(--T),background var(--T),color var(--T),box-shadow var(--T),transform .15s;
+}
+.role-btn i{font-size:20px}
+.role-btn:hover{border-color:rgba(22,163,74,.4);color:var(--accent);background:rgba(22,163,74,.04);transform:translateY(-1px)}
+.role-btn.sel{border-color:var(--accent);color:var(--accent);background:rgba(22,163,74,.07);box-shadow:0 0 0 3px var(--glow)}
+#role{display:none}
+
+/* divider */
+.divider{display:flex;align-items:center;gap:12px;margin:20px 0 16px}
+.divider span{font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--accent);white-space:nowrap}
+.divider::before,.divider::after{content:"";flex:1;height:1px;background:#e2e8f0}
+
+/* grid */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:500px){.g2{grid-template-columns:1fr}}
+
+/* field */
+.field{margin-bottom:14px}
+.field>label{display:block;font-size:11px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+.fi-w{position:relative}
+.fi-w .fi{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px;pointer-events:none;transition:color var(--T);z-index:1}
+.fi-w input:focus~.fi,.fi-w textarea:focus~.fi,.fi-w select:focus~.fi{color:var(--accent)}
+.fi-w input,.fi-w select,.fi-w textarea{
+  width:100%;padding:11.5px 13px 11.5px 38px;
+  background:#fff;border:1.5px solid #e2e8f0;border-radius:var(--R);
+  font-size:13.5px;font-family:inherit;font-weight:500;color:var(--text);outline:none;
+  transition:border-color var(--T),box-shadow var(--T);caret-color:var(--accent);
+}
+.fi-w input::placeholder,.fi-w textarea::placeholder{color:var(--muted)}
+.fi-w select{appearance:none;padding-left:38px}
+.fi-w textarea{min-height:76px;resize:vertical;padding-top:11px}
+.fi-w input:focus,.fi-w select:focus,.fi-w textarea:focus{border-color:var(--bf);box-shadow:0 0 0 3px var(--glow),0 1px 4px rgba(0,0,0,.05)}
+.fi-w input.err,.fi-w select.err,.fi-w textarea.err{border-color:var(--be);box-shadow:0 0 0 3px rgba(220,38,38,.08)}
+.ferr{font-size:11.5px;color:var(--red);margin-top:4px;display:flex;align-items:center;gap:4px;animation:errIn .2s ease}
+@keyframes errIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.hint{font-size:11px;color:var(--muted);margin-top:3px}
+.pw-tog{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);font-size:13px;transition:color var(--T)}
+.pw-tog:hover{color:var(--accent)}
+
+/* strength */
+.pw-meter{margin-top:7px}
+.pw-track{height:3px;border-radius:4px;background:#e2e8f0;overflow:hidden}
+.pw-fill{height:100%;border-radius:4px;transition:width .3s ease,background .3s ease;width:0}
+.pw-lbl{font-size:11.5px;font-weight:600;margin-top:4px}
+
+/* upload */
+.upload-zone{border:1.5px dashed #cbd5e1;border-radius:var(--R);padding:22px 16px;text-align:center;background:#fafafa;cursor:pointer;position:relative;transition:border-color var(--T),background var(--T)}
+.upload-zone:hover,.upload-zone.drag-over{border-color:rgba(22,163,74,.5);background:rgba(22,163,74,.03)}
+.upload-zone input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upload-zone i{font-size:24px;color:var(--accent);margin-bottom:6px}
+.upload-zone p{font-size:13px;color:var(--sub);margin:0}
+.upload-zone .sub{font-size:11px;color:var(--muted);margin-top:3px}
+.upload-name{margin-top:7px;font-size:12px;color:var(--accent);display:flex;align-items:center;justify-content:center;gap:6px}
+
+/* role sections */
+.role-sec{display:none}.role-sec.active{display:block}
+
+/* alert */
+.alert{padding:11px 14px;border-radius:10px;font-size:13px;font-weight:500;margin-bottom:14px;display:flex;align-items:center;gap:8px;border:1px solid transparent;animation:errIn .22s ease}
+.alert.success{background:rgba(22,163,74,.08);color:#15803d;border-color:rgba(22,163,74,.2)}
+.alert.error{background:rgba(220,38,38,.06);color:var(--red);border-color:rgba(220,38,38,.15)}
+
+/* button */
+.btn{width:100%;padding:13.5px;background:linear-gradient(135deg,#43a047 0%,#2e7d32 100%);color:#fff;border:none;border-radius:var(--R);font-size:14.5px;font-weight:700;font-family:inherit;letter-spacing:.2px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 16px rgba(46,125,50,.32),0 1px 3px rgba(0,0,0,.1);transition:transform var(--T),box-shadow var(--T),filter var(--T);margin-top:10px;position:relative;overflow:hidden}
+.btn::after{content:"";position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.2),transparent);transition:left .55s ease;pointer-events:none}
+.btn:hover:not(:disabled)::after{left:130%}
+.btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 28px rgba(22,163,74,.4),0 2px 6px rgba(0,0,0,.1);filter:brightness(1.04)}
+.btn:active:not(:disabled){transform:scale(.98)translateY(0);filter:none}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.btn.loading{color:transparent}
+.btn.loading::before{content:"";position:absolute;width:18px;height:18px;top:50%;left:50%;margin:-9px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .65s linear infinite;z-index:2}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* links */
+.links{margin-top:18px;text-align:center;font-size:13px;color:var(--sub)}
+.links a{color:var(--accent);font-weight:600;text-decoration:none;transition:color var(--T)}
+.links a:hover{color:var(--alt)}
+
+@media(max-width:520px){.card{padding:26px 18px}}
+  </style>
+</head>
+<body>
+
+<div class="scene" aria-hidden="true">
+  <div class="scene-grid"></div>
+  <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+  <div class="scene-particles" id="bgParticles"></div>
+  <div class="scene-glow"></div>
+</div>
+
+<div class="page">
+  <div class="brand">
+    <img src="../images/krishisetu-logo.svg" alt="KrishiSetu" class="brand-logo-wide">
+  </div>
+
+  <div class="card-wrap">
+    <div class="card">
+      <div class="ch">
+        <div class="badge"><i class="fas fa-seedling"></i>&nbsp;Get started</div>
+        <h2>Create your account</h2>
+        <p>All fields are required.</p>
+      </div>
+
+      <div class="role-grid">
+        <button type="button" class="role-btn" id="roleFarmerBtn" onclick="selectRole('Farmer')"><i class="fas fa-tractor"></i> Farmer</button>
+        <button type="button" class="role-btn" id="roleExpertBtn" onclick="selectRole('Expert')"><i class="fas fa-user-graduate"></i> Expert</button>
+      </div>
+      <select id="role"><option value="">Select role</option><option>Farmer</option><option>Expert</option></select>
+
+      <div id="globalAlert"></div>
+
+      <form id="registerForm" novalidate>
+        <div class="divider"><span>Account</span></div>
+        <div class="g2">
+          <div class="field">
+            <label for="username">Username</label>
+            <div class="fi-w"><input type="text" id="username" placeholder="e.g. john_farm" autocomplete="username" required><i class="fi fas fa-at"></i></div>
+            <div class="ferr" id="err-username" style="display:none"></div>
+          </div>
+          <div class="field">
+            <label for="email">Email</label>
+            <div class="fi-w"><input type="email" id="email" placeholder="you@example.com" autocomplete="email" required><i class="fi fas fa-envelope"></i></div>
+            <div class="ferr" id="err-email" style="display:none"></div>
+          </div>
+        </div>
+        <div class="g2">
+          <div class="field">
+            <label for="mobile_number">Mobile</label>
+            <div class="fi-w"><input type="text" id="mobile_number" placeholder="10-digit" maxlength="10" inputmode="numeric" autocomplete="tel" required><i class="fi fas fa-mobile-alt"></i></div>
+            <div class="ferr" id="err-mobile" style="display:none"></div>
+            <p class="hint">Exactly 10 digits</p>
+          </div>
+          <div class="field">
+            <label for="aadhaar_number">Aadhaar</label>
+            <div class="fi-w"><input type="text" id="aadhaar_number" placeholder="12-digit" maxlength="12" inputmode="numeric" required><i class="fi fas fa-id-card"></i></div>
+            <div class="ferr" id="err-aadhaar" style="display:none"></div>
+            <p class="hint">12 digits, no spaces</p>
+          </div>
+        </div>
+
+        <div class="divider"><span>Password</span></div>
+        <div class="field">
+          <label for="password">Password</label>
+          <div class="fi-w">
+            <input type="password" id="password" placeholder="Create a strong password" autocomplete="new-password" required>
+            <i class="fi fas fa-lock"></i>
+            <button type="button" class="pw-tog" onclick="togglePw('password',this)"><i class="fas fa-eye"></i></button>
+          </div>
+          <div class="pw-meter" id="pwMeter" style="display:none">
+            <div class="pw-track"><div class="pw-fill" id="pwFill"></div></div>
+            <p class="pw-lbl" id="pwLbl"></p>
+          </div>
+          <div class="ferr" id="err-password" style="display:none"></div>
+        </div>
+        <div class="field">
+          <label for="confirm_password">Confirm Password</label>
+          <div class="fi-w">
+            <input type="password" id="confirm_password" placeholder="Re-enter password" autocomplete="new-password" required>
+            <i class="fi fas fa-lock"></i>
+            <button type="button" class="pw-tog" onclick="togglePw('confirm_password',this)"><i class="fas fa-eye"></i></button>
+          </div>
+          <div class="ferr" id="err-confirm" style="display:none"></div>
+        </div>
+
+        <div id="farmerFields" class="role-sec">
+          <div class="divider"><span>Farm Details</span></div>
+          <div class="g2">
+            <div class="field">
+              <label for="crop_type">Crop Type</label>
+              <div class="fi-w"><input type="text" id="crop_type" placeholder="e.g. Rice, Wheat"><i class="fi fas fa-seedling"></i></div>
+              <div class="ferr" id="err-crop" style="display:none"></div>
+            </div>
+            <div class="field">
+              <label for="location">Location</label>
+              <div class="fi-w"><input type="text" id="location" placeholder="District / State"><i class="fi fas fa-map-marker-alt"></i></div>
+              <div class="ferr" id="err-location" style="display:none"></div>
+            </div>
+          </div>
+          <div class="field">
+            <label for="land_size">Land Size &nbsp;<span style="text-transform:none;font-weight:400;color:var(--muted)">(acres / hectares)</span></label>
+            <div class="fi-w"><input type="number" id="land_size" placeholder="e.g. 2.5" step="any" min="0"><i class="fi fas fa-ruler-combined"></i></div>
+            <div class="ferr" id="err-land" style="display:none"></div>
+          </div>
+        </div>
+
+        <div id="expertFields" class="role-sec">
+          <div class="divider"><span>Expert Profile</span></div>
+          <div class="g2">
+            <div class="field">
+              <label for="expertise_field">Expertise</label>
+              <div class="fi-w"><input type="text" id="expertise_field" placeholder="e.g. Soil Science"><i class="fi fas fa-microscope"></i></div>
+              <div class="ferr" id="err-expertise" style="display:none"></div>
+            </div>
+            <div class="field">
+              <label for="experience_years">Years of Experience</label>
+              <div class="fi-w"><input type="number" id="experience_years" placeholder="0 – 80" min="0" max="80" step="1"><i class="fi fas fa-calendar-alt"></i></div>
+              <div class="ferr" id="err-experience" style="display:none"></div>
+            </div>
+          </div>
+          <div class="field">
+            <label for="qualification_file">Qualification Certificate</label>
+            <div class="upload-zone" id="uploadZone">
+              <input type="file" id="qualification_file" accept=".pdf,.jpg,.jpeg,.png">
+              <i class="fas fa-cloud-arrow-up"></i>
+              <p>Click to upload or drag &amp; drop</p>
+              <p class="sub">PDF, JPG or PNG — max 5 MB</p>
+            </div>
+            <div class="upload-name" id="fileDisplay" style="display:none"><i class="fas fa-paperclip"></i><span id="fileName"></span></div>
+            <div class="ferr" id="err-file" style="display:none"></div>
+          </div>
+        </div>
+
+        <button type="submit" id="registerBtn" class="btn"><i class="fas fa-user-plus"></i> Create Account</button>
+        <div class="links">Already have an account? <a href="login.html">Sign in</a></div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){var c=document.getElementById("bgParticles");if(!c)return;for(var i=0;i<28;i++){var p=document.createElement("span");var sz=.5+Math.random()*2.4,dur=16+Math.random()*22,delay=-Math.random()*dur,dx=(Math.random()-.5)*120;p.className="pt";p.style.cssText=["left:"+Math.random()*100+"%","bottom:"+(-sz*2)+"px","width:"+sz+"px","height:"+sz+"px","opacity:"+(0.08+Math.random()*0.18),"animation-duration:"+dur+"s","animation-delay:"+delay+"s","--dx:"+dx+"px"].join(";");c.appendChild(p);}})();
+
+function selectRole(role){document.getElementById("role").value=role;document.getElementById("roleFarmerBtn").classList.toggle("sel",role==="Farmer");document.getElementById("roleExpertBtn").classList.toggle("sel",role==="Expert");document.getElementById("farmerFields").classList.toggle("active",role==="Farmer");document.getElementById("expertFields").classList.toggle("active",role==="Expert");}
+function togglePw(id,btn){var i=document.getElementById(id),t=i.type==="text";i.type=t?"password":"text";btn.querySelector("i").className=t?"fas fa-eye":"fas fa-eye-slash";}
+function setFE(id,msg){var el=document.getElementById(id);if(!el)return;if(msg){el.innerHTML='<i class="fas fa-triangle-exclamation"></i> '+msg;el.style.display="flex";}else{el.style.display="none";el.innerHTML="";}}
+function markErr(id,on){var el=document.getElementById(id);if(el)el.classList.toggle("err",on);}
+function clearAll(){document.querySelectorAll(".ferr").forEach(function(e){e.style.display="none";e.innerHTML="";});document.querySelectorAll(".err").forEach(function(e){e.classList.remove("err");});document.getElementById("globalAlert").innerHTML="";}
+function showGlobal(msg,type){document.getElementById("globalAlert").innerHTML='<div class="alert '+type+'"><i class="fas '+(type==="success"?"fa-circle-check":"fa-circle-exclamation")+'"></i>'+msg+'</div>';}
+function setLoading(btn,on){btn.disabled=on;btn.classList.toggle("loading",on);}
+
+document.getElementById("password").addEventListener("input",function(){var v=this.value,m=document.getElementById("pwMeter"),f=document.getElementById("pwFill"),l=document.getElementById("pwLbl");if(!v){m.style.display="none";return;}m.style.display="block";var s=0;if(v.length>=8)s++;if(/[A-Z]/.test(v))s++;if(/[0-9]/.test(v))s++;if(/[^A-Za-z0-9]/.test(v))s++;var st=[{w:"25%",bg:"#ef4444",t:"Weak",c:"#dc2626"},{w:"50%",bg:"#f97316",t:"Fair",c:"#ea580c"},{w:"75%",bg:"#eab308",t:"Good",c:"#ca8a04"},{w:"100%",bg:"#43a047",t:"Strong",c:"#2e7d32"}];var x=st[Math.max(0,s-1)];f.style.width=x.w;f.style.background=x.bg;l.textContent=x.t;l.style.color=x.c;});
+
+(function(){var zone=document.getElementById("uploadZone"),inp=document.getElementById("qualification_file"),disp=document.getElementById("fileDisplay"),nm=document.getElementById("fileName");function show(f){if(!f)return;nm.textContent=f.name;disp.style.display="flex";}inp.addEventListener("change",function(){show(inp.files[0]);});zone.addEventListener("dragover",function(e){e.preventDefault();zone.classList.add("drag-over");});zone.addEventListener("dragleave",function(){zone.classList.remove("drag-over");});zone.addEventListener("drop",function(e){e.preventDefault();zone.classList.remove("drag-over");if(e.dataTransfer&&e.dataTransfer.files.length){inp.files=e.dataTransfer.files;show(e.dataTransfer.files[0]);}});})();
+
+function validateAll(){clearAll();var ok=true;var role=document.getElementById("role").value;if(!role){showGlobal("Please select Farmer or Expert.","error");return null;}var g=function(id){return(document.getElementById(id)||{}).value||"";};var un=g("username").trim(),em=g("email").trim(),mob=g("mobile_number").trim(),aad=g("aadhaar_number").trim(),pw=document.getElementById("password").value,cpw=document.getElementById("confirm_password").value;if(!un){setFE("err-username","Required.");markErr("username",true);ok=false;}if(!em||!/^[^@]+@[^@]+\.[^@]+$/.test(em)){setFE("err-email","Enter a valid email.");markErr("email",true);ok=false;}if(!/^\d{10}$/.test(mob)){setFE("err-mobile","Must be exactly 10 digits.");markErr("mobile_number",true);ok=false;}if(!/^\d{12}$/.test(aad)){setFE("err-aadhaar","Must be exactly 12 digits.");markErr("aadhaar_number",true);ok=false;}if(!pw||pw.length<4){setFE("err-password","Minimum 4 characters.");markErr("password",true);ok=false;}if(pw!==cpw){setFE("err-confirm","Passwords do not match.");markErr("confirm_password",true);ok=false;}if(!ok)return null;var payload={username:un,email:em,mobile_number:mob,aadhaar_number:aad,password:pw,confirm_password:cpw,role:role};if(role==="Farmer"){var cr=g("crop_type").trim(),loc=g("location").trim(),lr=document.getElementById("land_size").value.trim();if(!cr){setFE("err-crop","Required.");markErr("crop_type",true);ok=false;}if(!loc){setFE("err-location","Required.");markErr("location",true);ok=false;}if(lr===""){setFE("err-land","Required.");markErr("land_size",true);ok=false;}var ln=Number(lr);if(!isNaN(ln)&&ln<=0){setFE("err-land","Must be greater than zero.");markErr("land_size",true);ok=false;}if(!ok)return null;payload.crop_type=cr;payload.location=loc;payload.land_size=ln;}else{var ex=g("expertise_field").trim(),qual=document.getElementById("qualification_file").files[0],yr=document.getElementById("experience_years").value.trim();if(!ex){setFE("err-expertise","Required.");markErr("expertise_field",true);ok=false;}if(!yr){setFE("err-experience","Required.");markErr("experience_years",true);ok=false;}if(!qual){setFE("err-file","Please upload your qualification certificate.");ok=false;}var y=parseInt(yr,10);if(!isNaN(y)&&(y<0||y>80)){setFE("err-experience","Must be 0–80.");markErr("experience_years",true);ok=false;}if(!ok)return null;payload.expertise_field=ex;payload.experience_years=y;payload.qualification=ex;}return payload;}
+
+document.getElementById("registerForm").addEventListener("submit",async function(e){e.preventDefault();var payload=validateAll();if(!payload)return;var btn=document.getElementById("registerBtn");setLoading(btn,true);try{var fd=new FormData();for(var k in payload)fd.append(k,payload[k]);if(payload.role==="Expert"){var fi=document.getElementById("qualification_file");if(fi.files[0])fd.append("qualification_file",fi.files[0]);}var res=await fetch("http://127.0.0.1:5000/auth/register",{method:"POST",credentials:"include",body:fd});var data=await res.json();if(res.ok){showGlobal("Account created! Redirecting to login…","success");setTimeout(function(){window.location.href="login.html";},1200);}else{showGlobal(data.message||"Registration failed.","error");}}catch(err){console.error(err);showGlobal("Connection error. Is the server running?","error");}finally{setLoading(btn,false);}});
+</script>
+</body>
+</html>

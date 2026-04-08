@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pest Detection - KrishiSetu</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div class="app-container">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a class="ks-brand" href="../home.html" title="KrishiSetu"><img src="../images/krishisetu-logo.svg" alt="KrishiSetu" class="ks-brand-img" /></a>
+      </div>
+
+      <div class="sidebar-body">
+        <ul class="nav-menu">
+          <li class="nav-item">
+            <button class="nav-link" data-page="dashboard">
+              <i class="fas fa-home"></i>
+              <span class="nav-label">Dashboard</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="crop">
+              <i class="fas fa-leaf"></i>
+              <span class="nav-label">Crop Recommendation</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="disease">
+              <i class="fas fa-virus"></i>
+              <span class="nav-label">Disease Detection</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link active" data-page="pest">
+              <i class="fas fa-bug"></i>
+              <span class="nav-label">Pest Detection</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="fertilizer">
+              <i class="fas fa-droplet"></i>
+              <span class="nav-label">Fertilizer</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="market">
+              <i class="fas fa-chart-line"></i>
+              <span class="nav-label">Market</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="equipment">
+              <i class="fas fa-tools"></i>
+              <span class="nav-label">Equipment</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="schemes">
+              <i class="fas fa-file-contract"></i>
+              <span class="nav-label">Schemes</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="soil">
+              <i class="fas fa-earth-americas"></i>
+              <span class="nav-label">Soil Analysis</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="weather">
+              <i class="fas fa-cloud"></i>
+              <span class="nav-label">Weather</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="expert-queries">
+              <i class="fas fa-comments"></i>
+              <span class="nav-label">Expert Queries</span>
+            </button>
+          </li>
+        </ul>
+      </div>
+
+      <div class="sidebar-footer">
+        <button class="logout-btn">
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </button>
+      </div>
+    </aside>
+
+    <div class="main-wrapper">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="hamburger">
+            <i class="fas fa-bars"></i>
+          </button>
+          <div class="topbar-title">Pest Detection</div>
+        </div>
+        <div class="topbar-right">
+          <div class="notification-icon">
+            <i class="fas fa-bell"></i>
+            <div class="notification-badge">3</div>
+          </div>
+          <div class="profile-icon">
+            <i class="fas fa-user-circle"></i>
+          </div>
+        </div>
+      </header>
+
+      <main class="content-area">
+        <div class="card">
+          <div class="card-title">
+            <i class="fas fa-bug"></i> Pest Detection & Identification
+          </div>
+          <p style="color: var(--text-light); margin-bottom: 25px;">Select crop and describe symptoms to identify pests and get control recommendations</p>
+
+          <form id="pestForm">
+            <div class="grid grid-2">
+              <div class="form-group">
+                <label class="form-label" for="crop">Affected Crop</label>
+                <select id="crop" name="crop" class="form-select" required>
+                  <option value="">Select Crop</option>
+                  <option value="rice">Rice</option>
+                  <option value="wheat">Wheat</option>
+                  <option value="maize">Maize</option>
+                  <option value="cotton">Cotton</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="symptom">Pest Symptom</label>
+                <select id="symptom" name="symptom" class="form-select" required>
+                  <option value="">Select Symptom</option>
+                  <!-- Rice symptoms -->
+                  <option value="yellow leaves">Yellow Leaves (Rice)</option>
+                  <option value="brown spots">Brown Spots (Rice)</option>
+                  <option value="yellowing">Yellowing (Rice)</option>
+                  <option value="white powder">White Powder (Powdery Mildew)</option>
+                  <!-- Wheat symptoms -->
+                  <option value="rust">Rust (Wheat)</option>
+                  <!-- Maize symptoms -->
+                  <option value="wilting">Wilting (Maize)</option>
+                  <option value="yellow streaks">Yellow Streaks (Maize)</option>
+                  <!-- Cotton symptoms -->
+                  <option value="leaf curl">Leaf Curl (Cotton)</option>
+                  <option value="chewing insects">Chewing Insects Damage (Cotton)</option>
+                </select>
+              </div>
+            </div>
+
+            <div id="alertContainer"></div>
+
+            <div style="display: flex; gap: 15px; margin-top: 25px;">
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-magnifying-glass"></i> Identify Pest
+              </button>
+              <button type="reset" class="btn btn-outline">
+                <i class="fas fa-redo"></i> Clear
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div id="resultContainer"></div>
+
+        <!-- ── AI Image Upload (Pest Detection) ─────────────────────────── -->
+        <div class="card" style="margin-top: 24px;">
+          <div class="card-title">
+            <i class="fas fa-camera"></i> AI Pest Detection — Upload Leaf Image
+          </div>
+          <p style="color: var(--text-light); margin-bottom: 20px;">
+            Take a photo or upload a leaf image — AI identifies the pest and gives treatment advice
+          </p>
+
+          <form id="pestImageForm">
+            <div class="form-group">
+              <label class="form-label">Plant / Leaf Image</label>
+              <div class="upload-area" id="pestUploadArea">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <p class="upload-text">Click to upload or drag &amp; drop</p>
+                <p class="upload-subtext">PNG, JPG, JPEG up to 5 MB</p>
+                <input type="file" id="pestImageInput" class="upload-input"
+                       accept="image/*" capture="environment" required>
+              </div>
+              <img id="pestImagePreview" class="image-preview" style="display:none;">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="pestCropType">Crop Type (optional)</label>
+              <select id="pestCropType" name="pestCropType" class="form-select">
+                <option value="">Select Crop</option>
+                <option value="rice">Rice</option>
+                <option value="wheat">Wheat</option>
+                <option value="maize">Maize</option>
+                <option value="cotton">Cotton</option>
+                <option value="tomato">Tomato</option>
+                <option value="coconut">Coconut</option>
+                <option value="arecanut">Arecanut</option>
+                <option value="coffee">Coffee</option>
+                <option value="pepper">Pepper</option>
+              </select>
+            </div>
+
+            <div id="pestImageAlertContainer"></div>
+
+            <div style="display:flex; gap:15px; margin-top:20px;">
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-wand-magic-sparkles"></i> Analyze Image
+              </button>
+              <button type="reset" class="btn btn-outline" id="pestImageResetBtn">
+                <i class="fas fa-redo"></i> Clear
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div id="pestImageResultContainer"></div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      setActiveNav('pest');
+      attachNavigation();
+      attachHamburger();
+      attachLogout();
+      app.attachNotification();
+      app.attachProfileIcon();
+      setupPestImageUpload();
+    });
+
+    // ── Image upload preview ─────────────────────────────────────────────────
+    function setupPestImageUpload() {
+      const uploadArea   = document.getElementById('pestUploadArea');
+      const imageInput   = document.getElementById('pestImageInput');
+      const imagePreview = document.getElementById('pestImagePreview');
+      const resetBtn     = document.getElementById('pestImageResetBtn');
+
+      if (!uploadArea || !imageInput) return;
+
+      uploadArea.addEventListener('click', () => imageInput.click());
+
+      uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.style.background = 'rgba(27, 94, 32, 0.1)';
+      });
+      uploadArea.addEventListener('dragleave', () => {
+        uploadArea.style.background = 'rgba(27, 94, 32, 0.02)';
+      });
+      uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.style.background = 'rgba(27, 94, 32, 0.02)';
+        if (e.dataTransfer.files.length) {
+          imageInput.files = e.dataTransfer.files;
+          handlePestImageChange();
+        }
+      });
+
+      imageInput.addEventListener('change', handlePestImageChange);
+
+      resetBtn && resetBtn.addEventListener('click', () => {
+        imagePreview.style.display = 'none';
+        uploadArea.style.display   = '';
+        document.getElementById('pestImageResultContainer').innerHTML = '';
+      });
+
+      function handlePestImageChange() {
+        const file = imageInput.files[0];
+        if (!file) return;
+        if (file.size > 5 * 1024 * 1024) {
+          app.showAlert(document.getElementById('pestImageAlertContainer'),
+            'File size must be less than 5 MB', 'danger');
+          imageInput.value = '';
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          imagePreview.src           = ev.target.result;
+          imagePreview.style.display = 'block';
+          uploadArea.style.display   = 'none';
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    // ── Image-based pest detection form submission ───────────────────────────
+    document.getElementById('pestImageForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const alertContainer  = document.getElementById('pestImageAlertContainer');
+      const resultContainer = document.getElementById('pestImageResultContainer');
+      const submitBtn       = e.target.querySelector('button[type="submit"]');
+      const imageInput      = document.getElementById('pestImageInput');
+      const cropType        = document.getElementById('pestCropType').value;
+
+      if (!imageInput.files[0]) {
+        app.showAlert(alertContainer, 'Please upload an image', 'danger');
+        return;
+      }
+
+      setButtonLoading(submitBtn, true);
+      app.showLoading(resultContainer);
+
+      const formData = new FormData();
+      formData.append('image', imageInput.files[0]);
+      formData.append('crop_type', cropType);
+
+      try {
+        // Direct fetch so we can inspect the status code before throwing.
+        // app.apiCall throws on any non-200 which hides the actual server message.
+        const rawRes = await fetch('http://127.0.0.1:5000/pest/predict', {
+          method: 'POST',
+          body: formData,
+          credentials: 'include'     // ← sends the session cookie for @login_required
+        });
+
+        const rawText = await rawRes.text();
+        console.log('[Pest] HTTP', rawRes.status, 'RAW RESPONSE:', rawText);
+
+        // Handle auth failure explicitly
+        if (rawRes.status === 401) {
+          app.showAlert(alertContainer,
+            'Session expired — please log in again.',
+            'danger');
+          resultContainer.innerHTML = `
+            <div class="result-section" style="text-align:center;padding:24px;">
+              <i class="fas fa-lock" style="font-size:40px;color:#E74C3C;margin-bottom:12px;display:block;"></i>
+              <p style="color:#c62828;font-weight:600;margin-bottom:16px;">Authentication required</p>
+              <a href="../pages/login.html" class="btn btn-primary" style="display:inline-flex;">
+                <i class="fas fa-sign-in-alt"></i>&nbsp; Log In
+              </a>
+            </div>`;
+          return;
+        }
+
+        let response;
+        try {
+          response = JSON.parse(rawText);
+        } catch (_) {
+          app.showAlert(alertContainer,
+            'Server returned an unexpected response. Check backend console.', 'danger');
+          return;
+        }
+
+        // Non-success response from server (400, 500, etc.)
+        if (!rawRes.ok && !response.success) {
+          app.showAlert(alertContainer,
+            response.message || `Server error (HTTP ${rawRes.status})`, 'danger');
+          resultContainer.innerHTML = '';
+          return;
+        }
+
+        if (response && response.success) {
+          const healthy    = response.is_healthy;
+          const iconColor  = healthy ? '#4CAF50' : (response.severity === 'High' ? '#E74C3C' : '#FF9800');
+          const confPct    = response.confidence_pct || `${(response.confidence * 100).toFixed(1)}%`;
+
+          const severityBadge = healthy
+            ? `<span style="background:#e8f5e9;color:#2e7d32;padding:2px 10px;border-radius:20px;font-size:12px;font-weight:600;">Healthy</span>`
+            : `<span style="background:${response.severity==='High'?'#ffebee':'#fff3e0'};color:${response.severity==='High'?'#c62828':'#e65100'};padding:2px 10px;border-radius:20px;font-size:12px;font-weight:600;">${response.severity} Severity</span>`;
+
+          // Fertilizer / pesticide box — always shown
+          const fertBox = `
+            <div id="fertilizerBox"
+              style="background:#e8f5e9;border-left:4px solid #2e7d32;padding:12px 16px;
+                     border-radius:8px;margin-top:12px;font-size:13px;">
+              <div style="font-weight:600;color:#1b5e20;margin-bottom:4px;">
+                <i class="fas fa-flask"></i> Fertilizer &amp; Pesticide Advice
+              </div>
+              <div style="color:#166534;line-height:1.6;">
+                ${response.fertilizer || 'No specific treatment found. Use general pest control methods.'}
+              </div>
+            </div>`;
+
+          const detailSection = !healthy ? `
+            <div class="result-item">
+              <div class="result-label"><i class="fas fa-lightbulb"></i> What Is It?</div>
+              <div class="result-value" style="font-size:13px;line-height:1.6;">${response.explanation}</div>
+            </div>
+            <div class="result-item">
+              <div class="result-label"><i class="fas fa-syringe"></i> Treatment</div>
+              <div class="result-value" style="font-size:13px;line-height:1.6;">${response.treatment}</div>
+            </div>
+            <div class="result-item">
+              <div class="result-label"><i class="fas fa-shield"></i> Prevention</div>
+              <div class="result-value" style="font-size:13px;line-height:1.6;">${response.prevention}</div>
+            </div>
+            <div class="result-item">
+              <div class="result-label"><i class="fas fa-seedling"></i> Organic Option</div>
+              <div class="result-value" style="font-size:13px;line-height:1.6;">${response.organic_option}</div>
+            </div>
+            ${fertBox}
+            <div style="background:#fff8e1;border-left:4px solid #FFC107;padding:10px 14px;border-radius:6px;margin-top:8px;font-size:13px;color:#5d4037;">
+              <i class="fas fa-clock"></i> <strong>Urgency:</strong> ${response.urgency}
+            </div>
+          ` : `
+            <div class="result-item">
+              <div class="result-label"><i class="fas fa-lightbulb"></i> Status</div>
+              <div class="result-value" style="font-size:13px;line-height:1.6;">${response.explanation}</div>
+            </div>
+            <div class="result-item">
+              <div class="result-label"><i class="fas fa-shield"></i> Maintenance</div>
+              <div class="result-value" style="font-size:13px;line-height:1.6;">${response.prevention}</div>
+            </div>
+            ${fertBox}
+          `;
+
+          resultContainer.innerHTML = `
+            <div class="result-section">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
+                <div style="display:flex;align-items:center;gap:14px;">
+                  <i class="fas fa-bug" style="font-size:36px;color:${iconColor};"></i>
+                  <div>
+                    <div class="result-label">Pest Detected</div>
+                    <div class="result-value" style="font-size:20px;">${response.label}</div>
+                  </div>
+                </div>
+                ${severityBadge}
+              </div>
+
+              <div class="result-item">
+                <div class="result-label"><i class="fas fa-chart-bar"></i> Confidence</div>
+                <div class="result-value">${confPct}</div>
+              </div>
+
+              ${detailSection}
+
+              <button class="btn btn-secondary"
+                style="margin-top:20px;width:100%;justify-content:center;"
+                onclick="window.location.href='expert-queries.html'">
+                <i class="fas fa-comments"></i> Ask Expert
+              </button>
+            </div>
+          `;
+          app.showAlert(alertContainer,
+            healthy ? 'Plant looks pest-free!' : 'Pest detected — see treatment below',
+            healthy ? 'success' : 'warning');
+        } else {
+          app.showAlert(alertContainer, response?.message || 'Analysis failed. Try again.', 'danger');
+        }
+      } catch (err) {
+        resultContainer.innerHTML = '';
+        app.showAlert(alertContainer, 'Failed to analyze image. Please try again.', 'danger');
+      } finally {
+        setButtonLoading(submitBtn, false);
+      }
+    });
+
+    // ── Existing text-based identify form ────────────────────────────────────
+    document.getElementById('pestForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const alertContainer = document.getElementById('alertContainer');
+      const submitBtn = e.target.querySelector('button[type="submit"]');
+      const resultContainer = document.getElementById('resultContainer');
+      
+      const crop = document.getElementById('crop').value;
+      const symptom = document.getElementById('symptom').value;
+
+      if (!crop || !symptom) {
+        app.showAlert(alertContainer, 'Please select crop and symptom', 'danger');
+        return;
+      }
+
+      setButtonLoading(submitBtn, true);
+      app.showLoading(resultContainer);
+
+      const formData = { crop, symptom };
+
+      try {
+        const response = await app.apiCall('/pest/recommend', 'POST', formData);
+
+        if (response?.pest) {
+          const resultHTML = `
+            <div class="result-section">
+              <div style="display: flex; align-items: center; margin-bottom: 20px;">
+                <i class="fas fa-bug" style="font-size: 32px; color: #E74C3C; margin-right: 15px;"></i>
+                <div style="flex: 1;">
+                  <div class="result-label">Pest Identified</div>
+                  <div class="result-value">${response.pest}</div>
+                </div>
+              </div>
+
+              <div class="result-item">
+                <div class="result-label">Recommended Solution</div>
+                <div class="result-value">${response.solution || 'Consult an expert for specific treatment'}</div>
+              </div>
+
+              <div class="result-item" style="background: #FFF3E0; padding: 15px; border-radius: 8px;">
+                <div style="font-size: 14px; color: var(--text-dark);">
+                  <i class="fas fa-info-circle" style="margin-right: 8px; color: #FF9800;"></i>
+                  For detailed guidance on pest management, consider consulting with an agricultural expert.
+                </div>
+              </div>
+            </div>
+          `;
+          resultContainer.innerHTML = resultHTML;
+          app.showAlert(alertContainer, 'Pest identified successfully!', 'success');
+        } else {
+          const resultHTML = `
+            <div class="result-section">
+              <div style="padding: 20px; background: #F3E5F5; border-radius: 8px; text-align: center;">
+                <i class="fas fa-search" style="font-size: 32px; color: #7C4DFF; margin-bottom: 10px; display: block;"></i>
+                <div style="color: #5E35B1; font-weight: 600;">No Known Pest Match</div>
+                <div style="color: #7C4DFF; font-size: 14px; margin-top: 8px;">
+                  This combination of crop and symptom doesn't match known pest patterns. Please contact an expert or try different symptom selection.
+                </div>
+              </div>
+            </div>
+          `;
+          resultContainer.innerHTML = resultHTML;
+        }
+      } catch (error) {
+        resultContainer.innerHTML = '';
+        app.showAlert(alertContainer, 'Error analyzing pest. Please try again.', 'danger');
+      } finally {
+        setButtonLoading(submitBtn, false);
+      }
+    });
+  </script>
+  <script src="../js/app.js"></script>
+</body>
+</html>

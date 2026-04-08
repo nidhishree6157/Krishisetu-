@@ -1,0 +1,18 @@
+{
+  "labels": [
+    "Aphids",
+    "Armyworm",
+    "Whitefly",
+    "Leafhopper",
+    "Healthy"
+  ],
+  "input_shape": [
+    224,
+    224,
+    3
+  ],
+  "n_classes": 5,
+  "backbone": "MobileNetV2",
+  "weights": "imagenet",
+  "note": "MobileNetV2 backbone has real ImageNet pretrained weights. Classification head (Dense 128 + Dense 5) is randomly initialised. Fine-tune on labelled pest images for production accuracy."
+}

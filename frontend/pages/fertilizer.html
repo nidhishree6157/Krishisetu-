@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fertilizer Recommendation — KrishiSetu</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --fg:   #2e7d32;
+      --fg2:  #1b5e20;
+      --flt:  #e8f5e9;
+      --fbd:  #c8e6c9;
+      --fcard:#ffffff;
+      --fbg:  #faf8f5;
+      --ftext:#0f172a;
+      --fmute:#64748b;
+      --fbdr: #e2e8f0;
+      --fsh:  0 1px 3px rgba(0,0,0,.07), 0 4px 16px rgba(0,0,0,.05);
+      --fr:   12px;
+    }
+    body { background: var(--fbg); font-family: 'Poppins', sans-serif; }
+    .content-area { padding: 24px 28px; max-width: 860px; }
+    @media (max-width: 768px) { .content-area { padding: 16px; } }
+
+    /* ── Page header ── */
+    .fert-header {
+      margin-bottom: 22px;
+    }
+    .fert-header h2 {
+      font-size: 20px; font-weight: 700; color: var(--ftext); margin-bottom: 4px;
+    }
+    .fert-header p { font-size: 13px; color: var(--fmute); }
+
+    /* ── Form card ── */
+    .fert-form-card {
+      background: var(--fcard); border: 1px solid var(--fbdr);
+      border-radius: var(--fr); box-shadow: var(--fsh); padding: 24px 26px;
+      margin-bottom: 24px;
+    }
+    .fert-section-title {
+      font-size: 11px; font-weight: 800; text-transform: uppercase;
+      letter-spacing: .6px; color: var(--fmute); margin-bottom: 14px;
+      display: flex; align-items: center; gap: 7px;
+    }
+    .fert-section-title i { color: var(--fg); }
+    .fert-divider { height: 1px; background: var(--fbdr); margin: 20px 0; }
+
+    .fert-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    @media (max-width: 560px) { .fert-grid { grid-template-columns: 1fr; } }
+
+    .fert-field label {
+      display: block; font-size: 11.5px; font-weight: 600; color: var(--fmute);
+      text-transform: uppercase; letter-spacing: .3px; margin-bottom: 5px;
+    }
+    .fert-field input,
+    .fert-field select {
+      width: 100%; padding: 9px 12px;
+      border: 1.5px solid var(--fbdr); border-radius: 9px;
+      font-size: 13px; font-family: 'Poppins', sans-serif;
+      background: #fff; color: var(--ftext); outline: none;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .fert-field input:focus,
+    .fert-field select:focus {
+      border-color: var(--fg);
+      box-shadow: 0 0 0 3px rgba(46,125,50,.1);
+    }
+
+    /* Soil level hint strip */
+    .soil-hint {
+      grid-column: 1 / -1;
+      font-size: 11.5px; color: var(--fmute);
+      background: #f8fafc; border: 1px solid var(--fbdr);
+      border-radius: 8px; padding: 8px 12px;
+      display: flex; align-items: center; gap: 7px;
+    }
+    .soil-hint i { color: var(--fg); }
+
+    .fert-actions { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+    .fert-btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 10px 22px; border-radius: 10px; font-size: 13.5px;
+      font-weight: 700; cursor: pointer; border: none; transition: opacity .15s, transform .12s;
+    }
+    .fert-btn:hover { opacity: .88; transform: translateY(-1px); }
+    .fert-btn.primary { background: var(--fg); color: #fff; }
+    .fert-btn.outline { background: #fff; border: 1.5px solid var(--fbdr); color: var(--fmute); }
+
+    #alertContainer { margin-top: 12px; }
+
+    /* ── Result panel ── */
+    #resultPanel { display: none; }
+    #resultPanel.visible { display: block; }
+
+    /* NPK tiles */
+    .npk-strip {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+      margin-bottom: 18px;
+    }
+    @media (max-width: 480px) { .npk-strip { grid-template-columns: 1fr; } }
+
+    .npk-tile {
+      background: var(--fcard); border: 1px solid var(--fbdr);
+      border-radius: var(--fr); padding: 16px 18px;
+      box-shadow: var(--fsh); position: relative; overflow: hidden;
+    }
+    .npk-tile::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      border-radius: 3px 3px 0 0;
+      background: var(--tile-color, var(--fg));
+    }
+    .npk-tile .nt-label {
+      font-size: 10.5px; font-weight: 800; text-transform: uppercase;
+      letter-spacing: .5px; color: var(--fmute); margin-bottom: 4px;
+    }
+    .npk-tile .nt-value {
+      font-size: 22px; font-weight: 800; color: var(--ftext); line-height: 1;
+    }
+    .npk-tile .nt-unit { font-size: 11px; color: var(--fmute); margin-top: 3px; }
+    .npk-tile .nt-status {
+      position: absolute; top: 12px; right: 12px;
+      font-size: 10.5px; font-weight: 700; padding: 2px 8px; border-radius: 8px;
+    }
+    .nt-status.Low    { background: #fee2e2; color: #991b1b; }
+    .nt-status.Medium { background: #dcfce7; color: #166534; }
+    .nt-status.High   { background: #fffbeb; color: #92400e; }
+
+    /* Result sections */
+    .result-card {
+      background: var(--fcard); border: 1px solid var(--fbdr);
+      border-radius: var(--fr); box-shadow: var(--fsh);
+      overflow: hidden; margin-bottom: 14px;
+    }
+    .rc-header {
+      display: flex; align-items: center; gap: 9px;
+      padding: 13px 18px 12px; border-bottom: 1px solid #f1f5f9;
+      font-size: 13px; font-weight: 700; color: var(--ftext);
+    }
+    .rc-header i { color: var(--fg); font-size: 14px; }
+    .rc-body { padding: 14px 18px; }
+
+    /* Additional inputs */
+    .add-list { list-style: none; padding: 0; margin: 0; }
+    .add-list li {
+      display: flex; align-items: flex-start; gap: 9px;
+      padding: 8px 0; border-bottom: 1px solid #f8fafc;
+      font-size: 13px; color: var(--ftext); line-height: 1.5;
+    }
+    .add-list li:last-child { border-bottom: none; }
+    .add-list li i { color: var(--fg); margin-top: 2px; font-size: 12px; flex-shrink: 0; }
+
+    /* Schedule */
+    .schedule-text {
+      font-size: 13px; color: var(--ftext); line-height: 1.7;
+    }
+
+    /* Adjustment notes */
+    .adj-note {
+      display: flex; align-items: flex-start; gap: 8px;
+      padding: 9px 12px; border-radius: 9px; font-size: 12.5px;
+      margin-bottom: 7px;
+    }
+    .adj-note.increase { background: #fef9c3; border: 1px solid #fde68a; color: #854d0e; }
+    .adj-note.decrease { background: #dbeafe; border: 1px solid #bfdbfe; color: #1e40af; }
+    .adj-note.none     { background: #dcfce7; border: 1px solid #bbf7d0; color: #166534; }
+    .adj-note i { flex-shrink: 0; margin-top: 2px; }
+
+    /* Explanation panel */
+    .exp-card {
+      background: linear-gradient(135deg, #fffbeb 0%, #fff9f0 100%);
+      border: 1px solid #fde68a; border-left: 4px solid #f59e0b;
+      border-radius: var(--fr); padding: 16px 18px; margin-bottom: 14px;
+    }
+    .exp-card-label {
+      font-size: 11px; font-weight: 800; text-transform: uppercase;
+      letter-spacing: .5px; color: #92400e; margin-bottom: 8px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .exp-card-label i { color: #d97706; }
+    .exp-card-text { font-size: 13px; color: #451a03; line-height: 1.75; }
+
+    /* Notes / warning */
+    .notes-card {
+      background: #f0f9ff; border: 1px solid #bae6fd;
+      border-radius: var(--fr); padding: 13px 16px; margin-bottom: 14px;
+      font-size: 12.5px; color: #0c4a6e; line-height: 1.6;
+      display: flex; align-items: flex-start; gap: 9px;
+    }
+    .notes-card i { color: #0284c7; flex-shrink: 0; margin-top: 2px; }
+
+    /* Hero banner */
+    .result-hero {
+      background: linear-gradient(135deg, var(--fg2) 0%, var(--fg) 60%, #43a047 100%);
+      border-radius: var(--fr); padding: 20px 24px;
+      color: #fff; margin-bottom: 18px;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 10px;
+    }
+    .rh-left .rh-label {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .6px; opacity: .75; margin-bottom: 5px;
+    }
+    .rh-left .rh-crop { font-size: 26px; font-weight: 800; }
+    .rh-left .rh-unit { font-size: 12px; opacity: .75; margin-top: 3px; }
+    .rh-badge {
+      background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.3);
+      border-radius: 10px; padding: 7px 14px; font-size: 12px; font-weight: 600;
+      display: flex; align-items: center; gap: 6px;
+    }
+
+    /* Source indicator */
+    .source-banner {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 16px; border-radius: 10px;
+      font-size: 12.5px; font-weight: 600; margin-bottom: 14px;
+    }
+    .source-banner.soil-report {
+      background: #dcfce7; border: 1px solid #bbf7d0; color: #166534;
+    }
+    .source-banner.manual {
+      background: #f1f5f9; border: 1px solid var(--fbdr); color: var(--fmute);
+    }
+    .source-banner i { flex-shrink: 0; font-size: 14px; }
+  </style>
+</head>
+<body>
+<div class="app-container">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <a class="ks-brand" href="../home.html" title="KrishiSetu">
+        <img src="../images/krishisetu-logo.svg" alt="KrishiSetu" class="ks-brand-img" />
+      </a>
+    </div>
+    <div class="sidebar-body">
+      <ul class="nav-menu">
+        <li class="nav-item">
+          <button class="nav-link" data-page="dashboard"><i class="fas fa-home"></i><span class="nav-label">Dashboard</span></button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-page="crop"><i class="fas fa-leaf"></i><span class="nav-label">Crop Recommendation</span></button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-page="disease"><i class="fas fa-virus"></i><span class="nav-label">Disease Detection</span></button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-page="pest"><i class="fas fa-bug"></i><span class="nav-label">Pest Detection</span></button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link active" data-page="fertilizer"><i class="fas fa-droplet"></i><span class="nav-label">Fertilizer</span></button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-page="market"><i class="fas fa-chart-line"></i><span class="nav-label">Market</span></button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-page="yield"><i class="fas fa-wheat-awn"></i><span class="nav-label">Yield Prediction</span></button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-page="weather"><i class="fas fa-cloud-sun"></i><span class="nav-label">Weather</span></button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-page="expert-queries"><i class="fas fa-comments"></i><span class="nav-label">Expert Queries</span></button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-page="notifications"><i class="fas fa-bell"></i><span class="nav-label">Notifications</span></button>
+        </li>
+      </ul>
+    </div>
+    <div class="sidebar-footer">
+      <button class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+    </div>
+  </aside>
+
+  <div class="main-wrapper">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="hamburger"><i class="fas fa-bars"></i></button>
+        <div class="topbar-title">Fertilizer Recommendation</div>
+      </div>
+      <div class="topbar-right">
+        <div class="notification-icon" title="Notifications"><i class="fas fa-bell"></i></div>
+        <div class="profile-icon"><i class="fas fa-user-circle"></i></div>
+      </div>
+    </header>
+
+    <main class="content-area">
+
+      <div class="fert-header">
+        <h2><i class="fas fa-flask" style="color:var(--fg);margin-right:8px;"></i>Fertilizer Plan</h2>
+        <p>Enter your crop and soil test values for a smart, soil-adjusted fertilizer programme.</p>
+      </div>
+
+      <!-- ── Input form ── -->
+      <div class="fert-form-card">
+
+        <!-- Crop + Location -->
+        <div class="fert-section-title">
+          <i class="fas fa-leaf"></i> Crop &amp; Location
+        </div>
+        <div class="fert-grid">
+          <div class="fert-field">
+            <label>Crop Type <span style="color:#ef4444">*</span></label>
+            <select id="cropSelect" required>
+              <option value="">— Select crop —</option>
+              <optgroup label="Plantation Crops">
+                <option value="arecanut">Arecanut (Betel Nut)</option>
+                <option value="coffee">Coffee</option>
+                <option value="pepper">Black Pepper</option>
+                <option value="coconut">Coconut</option>
+              </optgroup>
+              <optgroup label="Field Crops">
+                <option value="rice">Rice (Paddy)</option>
+                <option value="wheat">Wheat</option>
+                <option value="maize">Maize (Corn)</option>
+                <option value="cotton">Cotton</option>
+                <option value="sugarcane">Sugarcane</option>
+                <option value="groundnut">Groundnut</option>
+                <option value="soybean">Soybean</option>
+                <option value="tomato">Tomato</option>
+              </optgroup>
+            </select>
+          </div>
+          <div class="fert-field">
+            <label>Location</label>
+            <input type="text" id="locationInput" placeholder="e.g. Coorg, Karnataka" />
+          </div>
+        </div>
+
+        <div class="fert-divider"></div>
+
+        <!-- Soil values -->
+        <div class="fert-section-title">
+          <i class="fas fa-earth-americas"></i> Soil Test Results
+        </div>
+        <div class="fert-grid">
+          <div class="fert-field">
+            <label>Nitrogen (N) — mg/kg</label>
+            <input type="number" id="nitrogenInput" placeholder="e.g. 280" min="0" step="1" />
+          </div>
+          <div class="fert-field">
+            <label>Phosphorus (P) — mg/kg</label>
+            <input type="number" id="phosphorusInput" placeholder="e.g. 18" min="0" step="0.1" />
+          </div>
+          <div class="fert-field">
+            <label>Potassium (K) — mg/kg</label>
+            <input type="number" id="potassiumInput" placeholder="e.g. 180" min="0" step="1" />
+          </div>
+          <div class="fert-field">
+            <label>Farm Area (hectares)</label>
+            <input type="number" id="areaInput" placeholder="e.g. 1.5" min="0.1" step="0.1" value="1.0" />
+          </div>
+          <div class="soil-hint">
+            <i class="fas fa-info-circle"></i>
+            <span>Reference ranges: N &lt; 280 = Low | P &lt; 11 = Low | K &lt; 110 = Low.
+            Leave blank if no soil test is available — standard doses will apply.</span>
+          </div>
+        </div>
+
+        <div id="alertContainer"></div>
+        <div class="fert-actions">
+          <button class="fert-btn primary" id="submitBtn" onclick="getFertilizerPlan()">
+            <i class="fas fa-flask"></i> Generate Plan
+          </button>
+          <button class="fert-btn outline" onclick="resetForm()">
+            <i class="fas fa-redo"></i> Reset
+          </button>
+        </div>
+      </div>
+
+      <!-- ── Result panel ── -->
+      <div id="resultPanel">
+
+        <!-- Hero -->
+        <div class="result-hero" id="resultHero">
+          <div class="rh-left">
+            <div class="rh-label"><i class="fas fa-leaf"></i> Fertilizer Plan</div>
+            <div class="rh-crop" id="rhCrop">—</div>
+            <div class="rh-unit" id="rhUnit">—</div>
+          </div>
+          <div class="rh-badge" id="rhLocation" style="display:none;">
+            <i class="fas fa-map-marker-alt"></i>
+            <span id="rhLocationText">—</span>
+          </div>
+        </div>
+
+        <!-- Source indicator -->
+        <div id="sourceBanner" class="source-banner" style="display:none;"></div>
+
+        <!-- NPK tiles -->
+        <div class="npk-strip" id="npkStrip"></div>
+
+        <!-- Explanation -->
+        <div class="exp-card" id="expCard" style="display:none;">
+          <div class="exp-card-label"><i class="fas fa-lightbulb"></i> Why these doses?</div>
+          <div class="exp-card-text" id="expText"></div>
+        </div>
+
+        <!-- Soil adjustments -->
+        <div class="result-card" id="adjCard" style="display:none;">
+          <div class="rc-header"><i class="fas fa-sliders"></i> Soil-Based Adjustments</div>
+          <div class="rc-body" id="adjBody"></div>
+        </div>
+
+        <!-- Additional inputs -->
+        <div class="result-card">
+          <div class="rc-header"><i class="fas fa-seedling"></i> Additional Inputs</div>
+          <div class="rc-body">
+            <ul class="add-list" id="additionalList"></ul>
+          </div>
+        </div>
+
+        <!-- Schedule -->
+        <div class="result-card">
+          <div class="rc-header"><i class="fas fa-calendar-alt"></i> Application Schedule</div>
+          <div class="rc-body">
+            <p class="schedule-text" id="scheduleText"></p>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="notes-card" id="notesCard">
+          <i class="fas fa-circle-info"></i>
+          <span id="notesText"></span>
+        </div>
+
+      </div><!-- /resultPanel -->
+
+    </main>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   Fertilizer Recommendation Page
+   API: POST /fertilizer/plan
+═══════════════════════════════════════════════════════════════ */
+
+const API = 'http://127.0.0.1:5000';
+
+function esc(s) {
+  return String(s || '')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function resetForm() {
+  document.getElementById('cropSelect').value    = '';
+  document.getElementById('locationInput').value = '';
+  document.getElementById('nitrogenInput').value   = '';
+  document.getElementById('phosphorusInput').value = '';
+  document.getElementById('potassiumInput').value  = '';
+  document.getElementById('areaInput').value = '1.0';
+  document.getElementById('alertContainer').innerHTML = '';
+  hideResult();
+}
+
+function hideResult() {
+  const p = document.getElementById('resultPanel');
+  p.classList.remove('visible');
+}
+
+function showResult() {
+  const p = document.getElementById('resultPanel');
+  p.classList.add('visible');
+  p.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function showAlert(msg, type = 'danger') {
+  const c = document.getElementById('alertContainer');
+  c.innerHTML = `<div class="alert alert-${type}" style="margin-top:10px;">
+    <span class="alert-icon">${type === 'success' ? '✓' : '✕'}</span>${esc(msg)}
+  </div>`;
+  setTimeout(() => { c.innerHTML = ''; }, 5000);
+}
+
+async function getFertilizerPlan() {
+  const crop = document.getElementById('cropSelect').value;
+  if (!crop) { showAlert('Please select a crop.'); return; }
+
+  const btn = document.getElementById('submitBtn');
+  setButtonLoading(btn, true);
+  hideResult();
+
+  const fv = (id, def = 0) => {
+    const v = parseFloat(document.getElementById(id).value);
+    return isNaN(v) ? def : v;
+  };
+
+  const payload = {
+    crop,
+    nitrogen:   fv('nitrogenInput'),
+    phosphorus: fv('phosphorusInput'),
+    potassium:  fv('potassiumInput'),
+    area:       fv('areaInput', 1.0),
+    location:   document.getElementById('locationInput').value.trim() || undefined,
+  };
+
+  try {
+    const res  = await fetch(`${API}/fertilizer/plan`, {
+      method:      'POST',
+      headers:     { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body:        JSON.stringify(payload),
+    });
+    const data = await res.json();
+
+    if (!res.ok || !data.success) {
+      showAlert(data.message || 'Could not generate plan. Please try again.');
+      return;
+    }
+
+    renderResult(data, payload);
+
+  } catch (err) {
+    showAlert('Connection error — is the server running?');
+    console.error(err);
+  } finally {
+    setButtonLoading(btn, false);
+  }
+}
+
+function renderResult(data, payload) {
+  // Hero
+  document.getElementById('rhCrop').textContent = esc(data.crop);
+  document.getElementById('rhUnit').textContent = data.unit || '';
+  const locEl = document.getElementById('rhLocation');
+  const loc   = payload.location;
+  if (loc) {
+    document.getElementById('rhLocationText').textContent = loc;
+    locEl.style.display = 'flex';
+  } else {
+    locEl.style.display = 'none';
+  }
+
+  // Source banner
+  const sourceBanner = document.getElementById('sourceBanner');
+  const source = data.source || 'manual_input';
+  if (source === 'soil_report') {
+    sourceBanner.className   = 'source-banner soil-report';
+    sourceBanner.style.display = 'flex';
+    const note = data.soil_source_note || 'Soil values loaded from your stored soil report.';
+    sourceBanner.innerHTML = `
+      <i class="fas fa-database"></i>
+      <span>${esc(note)}</span>`;
+  } else {
+    sourceBanner.className   = 'source-banner manual';
+    sourceBanner.style.display = 'flex';
+    sourceBanner.innerHTML = `
+      <i class="fas fa-pen-to-square"></i>
+      <span>Using manually entered soil values.
+        <a href="soil.html" style="color:var(--fg); font-weight:700; margin-left:4px;">
+          Save a soil report
+        </a> for automatic pre-fill next time.</span>`;
+  }
+
+  // NPK tiles
+  const npkColors = { N: '#2563eb', P: '#d97706', K: '#7c3aed' };
+  const npkLabels = {
+    N: 'Nitrogen (N)',
+    P: 'Phosphorus (P)',
+    K: 'Potassium (K)',
+  };
+  const soilVals = {
+    N: payload.nitrogen,
+    P: payload.phosphorus,
+    K: payload.potassium,
+  };
+  const soilStatus = data.soil_status || {};
+  const statusMap  = { N: soilStatus.nitrogen, P: soilStatus.phosphorus, K: soilStatus.potassium };
+
+  const strip = document.getElementById('npkStrip');
+  strip.innerHTML = ['N', 'P', 'K'].map(key => {
+    const val    = (data.fertilizer || {})[key] || '—';
+    const color  = npkColors[key];
+    const status = statusMap[key] || 'Medium';
+    const soilV  = soilVals[key];
+    const soilTxt = soilV > 0 ? `Soil: ${soilV} mg/kg` : 'Soil: not provided';
+    // Split "144 kg" → value + unit
+    const parts  = String(val).match(/^([\d.]+)\s*(.*)$/);
+    const numVal = parts ? parts[1] : val;
+    const unit   = parts ? parts[2] : '';
+    return `
+      <div class="npk-tile" style="--tile-color:${color}">
+        <div class="nt-label">${npkLabels[key]}</div>
+        <div class="nt-value">${esc(numVal)}</div>
+        <div class="nt-unit">${esc(unit)}</div>
+        <span class="nt-status ${esc(status)}">${esc(status)}</span>
+        <div style="font-size:10.5px; color:var(--fmute); margin-top:8px;">${esc(soilTxt)}</div>
+      </div>`;
+  }).join('');
+
+  // Explanation
+  const expCard = document.getElementById('expCard');
+  const expText = document.getElementById('expText');
+  if (data.explanation) {
+    expText.innerHTML = esc(data.explanation).replace(/  /g, '<br>');
+    expCard.style.display = '';
+  } else {
+    expCard.style.display = 'none';
+  }
+
+  // Soil adjustments
+  const adjCard = document.getElementById('adjCard');
+  const adjBody = document.getElementById('adjBody');
+  const notes   = data.adjustment_notes || [];
+  if (notes.length > 0) {
+    adjBody.innerHTML = notes.map(n => {
+      const isIncrease = n.toLowerCase().includes('increased');
+      const isDecrease = n.toLowerCase().includes('reduced');
+      const cls = isIncrease ? 'increase' : isDecrease ? 'decrease' : 'none';
+      const icon = isIncrease ? 'arrow-trend-up' : isDecrease ? 'arrow-trend-down' : 'check-circle';
+      return `<div class="adj-note ${cls}"><i class="fas fa-${icon}"></i><span>${esc(n)}</span></div>`;
+    }).join('');
+    adjCard.style.display = '';
+  } else {
+    adjBody.innerHTML = `
+      <div class="adj-note none">
+        <i class="fas fa-check-circle"></i>
+        <span>Soil nutrient levels are within normal ranges — standard doses applied.</span>
+      </div>`;
+    adjCard.style.display = '';
+  }
+
+  // Additional inputs
+  const addList = document.getElementById('additionalList');
+  addList.innerHTML = (data.additional || []).map(item =>
+    `<li><i class="fas fa-circle-dot"></i><span>${esc(item)}</span></li>`
+  ).join('');
+
+  // Schedule
+  document.getElementById('scheduleText').innerHTML =
+    esc(data.schedule || '').replace(/\n/g, '<br>');
+
+  // Notes
+  document.getElementById('notesText').textContent = data.notes || '';
+
+  showResult();
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  setActiveNav('fertilizer');
+  attachNavigation();
+  attachHamburger();
+  attachLogout();
+  app.attachNotification();
+  app.attachProfileIcon();
+
+  // Pre-fill crop from localStorage (set by crop recommendation page)
+  const savedCrop = localStorage.getItem('ks_last_crop');
+  if (savedCrop) {
+    const sel = document.getElementById('cropSelect');
+    for (const opt of sel.options) {
+      if (opt.value.toLowerCase() === savedCrop.toLowerCase()) {
+        sel.value = opt.value;
+        break;
+      }
+    }
+  }
+
+  // Allow Enter key on inputs to submit
+  ['nitrogenInput','phosphorusInput','potassiumInput','areaInput','locationInput'].forEach(id => {
+    document.getElementById(id)?.addEventListener('keydown', e => {
+      if (e.key === 'Enter') getFertilizerPlan();
+    });
+  });
+});
+</script>
+<script src="../js/app.js"></script>
+</body>
+</html>

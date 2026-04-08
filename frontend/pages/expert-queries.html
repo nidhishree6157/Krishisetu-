@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Expert Queries - KrishiSetu</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div class="app-container">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a class="ks-brand" href="../home.html" title="KrishiSetu"><img src="../images/krishisetu-logo.svg" alt="KrishiSetu" class="ks-brand-img" /></a>
+      </div>
+
+      <div class="sidebar-body">
+        <ul class="nav-menu">
+          <li class="nav-item">
+            <button class="nav-link" data-page="dashboard">
+              <i class="fas fa-home"></i>
+              <span class="nav-label">Dashboard</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="crop">
+              <i class="fas fa-leaf"></i>
+              <span class="nav-label">Crop Recommendation</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="disease">
+              <i class="fas fa-virus"></i>
+              <span class="nav-label">Disease Detection</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="pest">
+              <i class="fas fa-bug"></i>
+              <span class="nav-label">Pest Detection</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="fertilizer">
+              <i class="fas fa-droplet"></i>
+              <span class="nav-label">Fertilizer</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="market">
+              <i class="fas fa-chart-line"></i>
+              <span class="nav-label">Market</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="equipment">
+              <i class="fas fa-tools"></i>
+              <span class="nav-label">Equipment</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="schemes">
+              <i class="fas fa-file-contract"></i>
+              <span class="nav-label">Schemes</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="soil">
+              <i class="fas fa-earth-americas"></i>
+              <span class="nav-label">Soil Analysis</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="weather">
+              <i class="fas fa-cloud"></i>
+              <span class="nav-label">Weather</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link active" data-page="expert-queries">
+              <i class="fas fa-comments"></i>
+              <span class="nav-label">Expert Queries</span>
+            </button>
+          </li>
+        </ul>
+      </div>
+
+      <div class="sidebar-footer">
+        <button class="logout-btn">
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </button>
+      </div>
+    </aside>
+
+    <div class="main-wrapper">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="hamburger">
+            <i class="fas fa-bars"></i>
+          </button>
+          <div class="topbar-title">Connect with Experts</div>
+        </div>
+        <div class="topbar-right">
+          <div class="notification-icon">
+            <i class="fas fa-bell"></i>
+            <div class="notification-badge">3</div>
+          </div>
+          <div class="profile-icon">
+            <i class="fas fa-user-circle"></i>
+          </div>
+        </div>
+      </header>
+
+      <main class="content-area">
+        <div class="grid grid-2" style="gap: 25px; margin-bottom: 30px;">
+          <div class="card">
+            <div class="card-title">
+              <i class="fas fa-pen-fancy"></i> Ask an Expert
+            </div>
+            <p style="color: var(--text-light); margin-bottom: 20px;">Get answers to your agricultural questions</p>
+
+            <form id="queryForm">
+              <div class="form-group">
+                <label class="form-label" for="category">Category</label>
+                <select id="category" name="category" class="form-select" required>
+                  <option value="">Select Category</option>
+                  <option value="disease">Disease Management</option>
+                  <option value="pest">Pest Control</option>
+                  <option value="crop">Crop Selection</option>
+                  <option value="soil">Soil Health</option>
+                  <option value="market">Market Trends</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="title">Question Title</label>
+                <input type="text" id="title" name="title" class="form-input" placeholder="What is your question?" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="description">Detailed Description</label>
+                <textarea id="description" name="description" class="form-textarea" placeholder="Provide more details..." required></textarea>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Attach Image (Optional)</label>
+                <div class="upload-area" id="queryUploadArea" style="cursor: pointer;">
+                  <i class="fas fa-image"></i>
+                  <p class="upload-text">Click to upload image</p>
+                  <p class="upload-subtext">PNG, JPG up to 2MB</p>
+                  <input type="file" id="queryImage" class="upload-input" accept="image/*">
+                </div>
+              </div>
+
+              <div id="alertContainer"></div>
+
+              <button type="submit" class="btn btn-primary" style="width: 100%;">
+                <i class="fas fa-paper-plane"></i> Post Query
+              </button>
+            </form>
+          </div>
+
+          <div class="card">
+            <div class="card-title">
+              <i class="fas fa-star"></i> Featured Experts
+            </div>
+            <div id="expertsList">
+              <div class="result-item" style="margin-bottom: 15px;">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                  <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-green), var(--accent-gold)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700;">📚</div>
+                  <div style="flex: 1;">
+                    <div class="result-label">Dr. Rajesh Kumar</div>
+                    <div style="color: var(--text-light); font-size: 13px; margin: 5px 0;">Crop & Soil Expert</div>
+                    <button class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;">
+                      <i class="fas fa-comment"></i> Chat
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="result-item" style="margin-bottom: 15px;">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                  <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-green), var(--accent-gold)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700;">🔬</div>
+                  <div style="flex: 1;">
+                    <div class="result-label">Priya Singh</div>
+                    <div style="color: var(--text-light); font-size: 13px; margin: 5px 0;">Plant Pathologist</div>
+                    <button class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;">
+                      <i class="fas fa-comment"></i> Chat
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="result-item">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                  <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-green), var(--accent-gold)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700;">👨🌾</div>
+                  <div style="flex: 1;">
+                    <div class="result-label">Harish Rao</div>
+                    <div style="color: var(--text-light); font-size: 13px; margin: 5px 0;">Agronomy Specialist</div>
+                    <button class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;">
+                      <i class="fas fa-comment"></i> Chat
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <i class="fas fa-comments"></i> Your Questions
+          </div>
+          <div id="queriesList">
+            <div style="padding: 30px; text-align: center; color: var(--text-light);">
+              <i class="fas fa-inbox" style="font-size: 32px; display: block; margin-bottom: 15px;"></i>
+              No questions posted yet
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      setActiveNav('expert-queries');
+      attachNavigation();
+      attachHamburger();
+      attachLogout();
+      app.attachNotification();
+      app.attachProfileIcon();
+      loadQueries();
+      setupImageUpload();
+    });
+
+    function setupImageUpload() {
+      const uploadArea = document.getElementById('queryUploadArea');
+      const imageInput = document.getElementById('queryImage');
+
+      // Guard: all elements must exist
+      if (!uploadArea || !imageInput) {
+        console.warn('Query image upload elements not found');
+        return;
+      }
+
+      uploadArea.addEventListener('click', () => imageInput.click());
+      uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.style.background = 'rgba(27, 94, 32, 0.1)';
+      });
+      uploadArea.addEventListener('dragleave', () => {
+        uploadArea.style.background = 'rgba(27, 94, 32, 0.02)';
+      });
+      uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.style.background = 'rgba(27, 94, 32, 0.02)';
+        if (e.dataTransfer.files.length) imageInput.files = e.dataTransfer.files;
+      });
+    }
+
+    async function loadQueries() {
+      const queriesList = document.getElementById('queriesList');
+      
+      try {
+        const response = await app.apiCall('/expert/my-queries', 'GET');
+        const queries = response.queries || [];
+
+        if (queries.length === 0) return;
+
+        queriesList.innerHTML = queries.map(q => `
+          <div class="result-item">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+              <div>
+                <div class="result-label">${q.category || 'General'}</div>
+                <div class="result-value">${q.title}</div>
+              </div>
+              <span class="scheme-badge">${q.status || 'Answered'}</span>
+            </div>
+            <div style="color: var(--text-light); font-size: 14px; margin-bottom: 10px; line-height: 1.5;">${q.description}</div>
+            ${q.answer ? `<div style="padding: 12px; background: #E8F5E9; border-left: 3px solid var(--primary-green); margin-top: 10px; border-radius: 6px;"><div style="color: var(--primary-green); font-weight: 600; font-size: 12px; margin-bottom: 5px;">Expert Answer:</div><div>${q.answer}</div></div>` : ''}
+          </div>
+        `).join('');
+      } catch (error) {
+        // Load mock queries
+        queriesList.innerHTML = `
+          <div class="result-item">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+              <div>
+                <div class="result-label">Disease Management</div>
+                <div class="result-value">How to identify and control leaf spot disease?</div>
+              </div>
+              <span class="scheme-badge">Answered</span>
+            </div>
+            <div style="color: var(--text-light); font-size: 14px; margin-bottom: 10px; line-height: 1.5;">My cotton plants are showing brown spots on leaves...</div>
+            <div style="padding: 12px; background: #E8F5E9; border-left: 3px solid var(--primary-green); margin-top: 10px; border-radius: 6px;"><div style="color: var(--primary-green); font-weight: 600; font-size: 12px; margin-bottom: 5px;">Expert Answer:</div><div>This appears to be leaf spot disease. Apply fungicide spray twice weekly for 3 weeks.</div></div>
+          </div>
+        `;
+      }
+    }
+
+    document.getElementById('queryForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const alertContainer = document.getElementById('alertContainer');
+      const submitBtn = e.target.querySelector('button[type="submit"]');
+
+      if (!validateForm(e.target)) return;
+
+      setButtonLoading(submitBtn, true);
+
+      const formData = {
+        category: document.getElementById('category').value,
+        title: document.getElementById('title').value,
+        description: document.getElementById('description').value,
+        image: document.getElementById('queryImage').files[0] ? 'attached' : null
+      };
+
+      try {
+        const response = await app.apiCall('/expert/query', 'POST', formData);
+
+        app.showAlert(alertContainer, 'Question posted! Experts will respond soon.', 'success');
+        clearForm(e.target);
+        loadQueries();
+      } catch (error) {
+        app.showAlert(alertContainer, 'Failed to post question. Try again.', 'danger');
+      } finally {
+        setButtonLoading(submitBtn, false);
+      }
+    });
+  </script>
+  <script src="../js/app.js"></script>
+</body>
+</html>

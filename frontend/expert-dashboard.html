@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Expert Dashboard — KrishiSetu</title>
+  <link rel="icon" href="images/krishisetu-mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ═══════════════════════════════════════════════════════════
+       Design tokens
+    ═══════════════════════════════════════════════════════════ */
+    :root {
+      --green:      #2e7d32;
+      --green-dk:   #1b5e20;
+      --green-lt:   #e8f5e9;
+      --green-bd:   #c8e6c9;
+      --orange:     #ea580c;
+      --orange-lt:  #fff7ed;
+      --orange-bd:  #fed7aa;
+      --blue:       #2563eb;
+      --blue-lt:    #eff6ff;
+      --slate:      #0f172a;
+      --slate-2:    #1e293b;
+      --muted:      #64748b;
+      --border:     #e2e8f0;
+      --bg:         #faf8f5;
+      --card:       #ffffff;
+      --shadow:     0 1px 3px rgba(46,125,50,.05), 0 6px 20px rgba(46,125,50,.07);
+      --shadow-lg:  0 10px 36px rgba(46,125,50,.10);
+      --radius:     12px;
+      --trans:      .15s ease;
+      --sidebar-w:  340px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--slate);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       Top header
+    ═══════════════════════════════════════════════════════════ */
+    .header {
+      height: 60px;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      gap: 20px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.05);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-logo {
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+      line-height: 0;
+    }
+    .header-logo img {
+      height: 34px;
+      width: auto;
+      display: block;
+      filter: drop-shadow(0 1px 6px rgba(46, 125, 50, 0.12));
+    }
+    .header-sep { width: 1px; height: 28px; background: var(--border); }
+    .header-role {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 12px;
+      background: var(--blue-lt);
+      color: var(--blue);
+    }
+    .header-spacer { flex: 1; }
+    .header-meta {
+      font-size: 12.5px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .header-meta .live-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      display: inline-block;
+      margin-right: 4px;
+      animation: _pulse 1.8s infinite;
+    }
+    @keyframes _pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: .35; }
+    }
+    .logout-link {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: none;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 8px;
+      transition: background var(--trans);
+    }
+    .logout-link:hover { background: #f1f5f9; color: var(--slate); }
+
+    /* ═══════════════════════════════════════════════════════════
+       Stats bar
+    ═══════════════════════════════════════════════════════════ */
+    .stats-bar {
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      gap: 0;
+    }
+    .stat-pill {
+      padding: 13px 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-right: 1px solid var(--border);
+      cursor: pointer;
+      transition: background var(--trans);
+    }
+    .stat-pill:last-child { border-right: none; }
+    .stat-pill:hover { background: #f8fafc; }
+    .stat-pill-icon {
+      width: 30px; height: 30px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px;
+    }
+    .sp-total   .stat-pill-icon { background: #f1f5f9; color: var(--muted); }
+    .sp-pending .stat-pill-icon { background: var(--orange-lt); color: var(--orange); }
+    .sp-answered .stat-pill-icon{ background: var(--green-lt);  color: var(--green); }
+    .stat-pill-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .4px; color: var(--muted); }
+    .stat-pill-value { font-size: 20px; font-weight: 800; color: var(--slate); line-height: 1; }
+    .stats-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+    .refresh-btn {
+      font-size: 12.5px;
+      font-weight: 600;
+      padding: 7px 14px;
+      border-radius: 8px;
+      background: var(--green-lt);
+      color: var(--green);
+      border: 1px solid var(--green-bd);
+      cursor: pointer;
+      display: flex; align-items: center; gap: 5px;
+      transition: background var(--trans);
+    }
+    .refresh-btn:hover { background: #dcfce7; }
+    .last-updated { font-size: 11.5px; color: var(--muted); }
+
+    /* ═══════════════════════════════════════════════════════════
+       Main 2-panel layout
+    ═══════════════════════════════════════════════════════════ */
+    .main-layout {
+      display: flex;
+      height: calc(100vh - 60px - 57px);  /* full height minus header + stats bar */
+      overflow: hidden;
+    }
+
+    /* ── Left panel (inbox) ─────────────────────────────────── */
+    .inbox-panel {
+      width: var(--sidebar-w);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      background: var(--card);
+      flex-shrink: 0;
+    }
+
+    .inbox-search {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .search-wrap {
+      position: relative;
+    }
+    .search-wrap i {
+      position: absolute;
+      left: 11px; top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .search-input {
+      width: 100%;
+      padding: 9px 12px 9px 34px;
+      border: 1.5px solid var(--border);
+      border-radius: 9px;
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      background: #f8fafc;
+    }
+    .search-input:focus { border-color: var(--green); background: #fff; box-shadow: 0 0 0 3px rgba(22,163,74,.09); }
+
+    .inbox-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      padding: 0 8px;
+    }
+    .inbox-tab {
+      flex: 1;
+      padding: 9px 6px;
+      text-align: center;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--muted);
+      border: none;
+      background: none;
+      cursor: pointer;
+      border-bottom: 2.5px solid transparent;
+      margin-bottom: -1px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      transition: color var(--trans);
+    }
+    .inbox-tab .tab-badge {
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 10px;
+      background: #f1f5f9;
+      color: var(--muted);
+    }
+    .inbox-tab.active { color: var(--green); border-bottom-color: var(--green); }
+    .inbox-tab.active .tab-badge { background: var(--green-lt); color: var(--green); }
+    .inbox-tab.pending.active { color: var(--orange); border-bottom-color: var(--orange); }
+    .inbox-tab.pending.active .tab-badge { background: var(--orange-lt); color: var(--orange); }
+
+    .inbox-list {
+      flex: 1;
+      overflow-y: auto;
+    }
+    .inbox-list::-webkit-scrollbar { width: 5px; }
+    .inbox-list::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 3px; }
+
+    /* ── Query row ── */
+    .query-row {
+      padding: 13px 16px;
+      border-bottom: 1px solid #f8fafc;
+      cursor: pointer;
+      transition: background var(--trans);
+      position: relative;
+    }
+    .query-row:hover { background: #f8fafc; }
+    .query-row.active { background: var(--green-lt); border-right: 3px solid var(--green); }
+    .query-row.new-highlight {
+      background: #fff7ed;
+      border-right: 3px solid var(--orange);
+      animation: _newIn .4s ease;
+    }
+    @keyframes _newIn { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: none; } }
+
+    .qr-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 5px; }
+    .qr-id {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      background: #f1f5f9;
+      padding: 1px 7px;
+      border-radius: 8px;
+      white-space: nowrap;
+    }
+    .qr-time { font-size: 11px; color: var(--muted); white-space: nowrap; flex-shrink: 0; }
+    .qr-msg { font-size: 13px; color: var(--slate-2); line-height: 1.45; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 7px; }
+    .qr-msg.unread { font-weight: 600; color: var(--slate); }
+    .qr-footer { display: flex; justify-content: space-between; align-items: center; }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 9px;
+      border-radius: 10px;
+    }
+    .status-badge.pending  { background: var(--orange-lt); color: var(--orange); border: 1px solid var(--orange-bd); }
+    .status-badge.answered { background: var(--green-lt);  color: var(--green);  border: 1px solid var(--green-bd); }
+
+    .qr-farmer { font-size: 11px; color: var(--muted); display: flex; align-items: center; gap: 4px; }
+
+    .inbox-empty {
+      padding: 40px 20px;
+      text-align: center;
+      color: var(--muted);
+    }
+    .inbox-empty i { font-size: 32px; display: block; margin-bottom: 10px; opacity: .3; }
+
+    /* ── Right panel (detail) ──────────────────────────────── */
+    .detail-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--bg);
+    }
+
+    .detail-empty {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      gap: 10px;
+    }
+    .detail-empty i { font-size: 48px; opacity: .2; }
+    .detail-empty h3 { font-size: 16px; font-weight: 600; color: #94a3b8; }
+    .detail-empty p  { font-size: 13px; }
+
+    .detail-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Detail header */
+    .detail-header {
+      padding: 18px 28px;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+    }
+    .dh-left { flex: 1; min-width: 0; }
+    .dh-qid {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .dh-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--slate);
+      line-height: 1.4;
+    }
+    .dh-meta {
+      display: flex;
+      gap: 16px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+    .dh-meta-item { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 4px; }
+    .dh-meta-item i { color: var(--green); font-size: 11px; }
+
+    /* Detail body */
+    .detail-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 22px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    .detail-body::-webkit-scrollbar { width: 5px; }
+    .detail-body::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 3px; }
+
+    /* Query bubble */
+    .query-bubble {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      box-shadow: var(--shadow);
+    }
+    .qb-label { font-size: 11.5px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+    .qb-label i { color: var(--green); }
+    .qb-text { font-size: 14.5px; color: var(--slate); line-height: 1.65; white-space: pre-wrap; word-break: break-word; }
+
+    /* Previous response */
+    .prev-response {
+      background: var(--green-lt);
+      border: 1px solid var(--green-bd);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+    }
+    .pr-label { font-size: 11.5px; font-weight: 600; color: var(--green-dk); text-transform: uppercase; letter-spacing: .4px; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+    .pr-text { font-size: 13.5px; color: #166534; line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
+
+    /* Reply box */
+    .reply-section {
+      background: var(--card);
+      border-top: 1px solid var(--border);
+      padding: 18px 28px;
+      flex-shrink: 0;
+    }
+    .reply-label { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+    .reply-label i { color: var(--green); }
+
+    .reply-textarea {
+      width: 100%;
+      min-height: 100px;
+      max-height: 200px;
+      padding: 12px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-size: 13.5px;
+      font-family: 'Inter', sans-serif;
+      resize: vertical;
+      outline: none;
+      background: #f8fafc;
+      color: var(--slate);
+      transition: border-color var(--trans), box-shadow var(--trans);
+    }
+    .reply-textarea:focus {
+      border-color: var(--green);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(22,163,74,.08);
+    }
+    .reply-textarea:disabled { opacity: .6; cursor: not-allowed; }
+
+    .reply-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+    }
+    .reply-hint { font-size: 11.5px; color: var(--muted); }
+    .reply-actions { display: flex; gap: 10px; }
+
+    .btn-send {
+      padding: 9px 22px;
+      background: var(--green);
+      color: #fff;
+      border: none;
+      border-radius: 9px;
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex; align-items: center; gap: 7px;
+      transition: opacity var(--trans);
+    }
+    .btn-send:hover:not(:disabled) { opacity: .87; }
+    .btn-send:disabled { opacity: .55; cursor: not-allowed; }
+    .btn-send.sending { background: var(--muted); }
+
+    .btn-clear {
+      padding: 9px 16px;
+      background: #f1f5f9;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background var(--trans);
+    }
+    .btn-clear:hover { background: #e2e8f0; }
+
+    /* ── Toast ── */
+    #toast {
+      position: fixed;
+      bottom: 24px; right: 24px;
+      padding: 11px 18px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+      background: #111827;
+      box-shadow: var(--shadow-lg);
+      display: flex; align-items: center; gap: 8px;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity .2s, transform .2s;
+      pointer-events: none;
+      z-index: 9999;
+    }
+    #toast.show { opacity: 1; transform: none; }
+    #toast.success { background: var(--green); }
+    #toast.error   { background: #dc2626; }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .main-layout { flex-direction: column; height: auto; }
+      .inbox-panel  { width: 100%; border-right: none; border-bottom: 1px solid var(--border); max-height: 40vh; }
+      .detail-panel { min-height: 60vh; }
+      .stats-bar    { flex-wrap: wrap; gap: 0; }
+      .stat-pill    { padding: 10px 14px; }
+      .header-meta  { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════
+     HEADER
+══════════════════════════════════════════════════════════════ -->
+<div class="header">
+  <a class="header-logo" href="home.html" title="KrishiSetu">
+    <img src="images/krishisetu-logo.svg" alt="KrishiSetu" width="170" height="34" />
+  </a>
+  <div class="header-sep"></div>
+  <div class="header-role"><i class="fas fa-user-shield" style="margin-right:4px;"></i>Expert Portal</div>
+  <div class="header-spacer"></div>
+  <div class="header-meta">
+    <span><span class="live-dot"></span>Live — auto-refreshing every 10s</span>
+    <span id="headerTime"></span>
+  </div>
+  <button class="logout-link" onclick="location.href='pages/login.html'">
+    <i class="fas fa-sign-out-alt"></i> Logout
+  </button>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     STATS BAR
+══════════════════════════════════════════════════════════════ -->
+<div class="stats-bar">
+  <div class="stat-pill sp-total" onclick="applyFilter('all')">
+    <div class="stat-pill-icon"><i class="fas fa-inbox"></i></div>
+    <div>
+      <div class="stat-pill-label">Total</div>
+      <div class="stat-pill-value" id="statTotal">—</div>
+    </div>
+  </div>
+  <div class="stat-pill sp-pending" onclick="applyFilter('pending')">
+    <div class="stat-pill-icon"><i class="fas fa-clock"></i></div>
+    <div>
+      <div class="stat-pill-label">Pending</div>
+      <div class="stat-pill-value" id="statPending">—</div>
+    </div>
+  </div>
+  <div class="stat-pill sp-answered" onclick="applyFilter('answered')">
+    <div class="stat-pill-icon"><i class="fas fa-check-circle"></i></div>
+    <div>
+      <div class="stat-pill-label">Answered</div>
+      <div class="stat-pill-value" id="statAnswered">—</div>
+    </div>
+  </div>
+  <div class="stats-right">
+    <span class="last-updated" id="lastUpdated">Never updated</span>
+    <button class="refresh-btn" onclick="fetchQueries(true)">
+      <i class="fas fa-sync-alt" id="refreshIcon"></i> Refresh
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     MAIN LAYOUT
+══════════════════════════════════════════════════════════════ -->
+<div class="main-layout">
+
+  <!-- ── LEFT: Inbox ──────────────────────────────────────── -->
+  <div class="inbox-panel">
+
+    <!-- Search -->
+    <div class="inbox-search">
+      <div class="search-wrap">
+        <i class="fas fa-search"></i>
+        <input class="search-input" id="searchInput" placeholder="Search queries…"
+               oninput="onSearch()" autocomplete="off" />
+      </div>
+    </div>
+
+    <!-- Filter tabs -->
+    <div class="inbox-tabs">
+      <button class="inbox-tab active" data-filter="all" onclick="applyFilter('all')">
+        All <span class="tab-badge" id="tabAll">0</span>
+      </button>
+      <button class="inbox-tab pending" data-filter="pending" onclick="applyFilter('pending')">
+        Pending <span class="tab-badge" id="tabPending">0</span>
+      </button>
+      <button class="inbox-tab" data-filter="answered" onclick="applyFilter('answered')">
+        Answered <span class="tab-badge" id="tabAnswered">0</span>
+      </button>
+    </div>
+
+    <!-- Query list -->
+    <div class="inbox-list" id="inboxList">
+      <div class="inbox-empty">
+        <i class="fas fa-circle-notch fa-spin"></i>
+        Loading queries…
+      </div>
+    </div>
+  </div>
+
+  <!-- ── RIGHT: Detail ────────────────────────────────────── -->
+  <div class="detail-panel" id="detailPanel">
+
+    <!-- Empty state (default) -->
+    <div class="detail-empty" id="detailEmpty">
+      <i class="fas fa-comment-dots"></i>
+      <h3>Select a query</h3>
+      <p>Click any query on the left to view and respond.</p>
+    </div>
+
+    <!-- Loaded detail (hidden until query selected) -->
+    <div class="detail-content" id="detailContent" style="display:none;">
+
+      <div class="detail-header">
+        <div class="dh-left">
+          <div class="dh-qid">
+            <span id="dhId">—</span>
+            <span id="dhStatus" class="status-badge pending">Pending</span>
+          </div>
+          <div class="dh-title" id="dhTitle">—</div>
+          <div class="dh-meta">
+            <div class="dh-meta-item"><i class="fas fa-user"></i><span id="dhFarmer">—</span></div>
+            <div class="dh-meta-item"><i class="fas fa-calendar"></i><span id="dhDate">—</span></div>
+            <div class="dh-meta-item" id="dhRespMeta" style="display:none;">
+              <i class="fas fa-check-circle"></i><span id="dhRespDate">—</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-body" id="detailBody">
+
+        <!-- Query text -->
+        <div class="query-bubble">
+          <div class="qb-label"><i class="fas fa-comment-question"></i> Farmer's Question</div>
+          <div class="qb-text" id="dbQueryText">—</div>
+        </div>
+
+        <!-- Previous response (if answered) -->
+        <div class="prev-response" id="prevResponse" style="display:none;">
+          <div class="pr-label"><i class="fas fa-reply"></i> Your Previous Response</div>
+          <div class="pr-text" id="dbPrevResp">—</div>
+        </div>
+
+      </div>
+
+      <!-- Reply section -->
+      <div class="reply-section" id="replySection">
+        <div class="reply-label"><i class="fas fa-pen-to-square"></i> Write Response</div>
+        <textarea class="reply-textarea" id="replyTextarea"
+                  placeholder="Type your expert advice here…"></textarea>
+        <div class="reply-footer">
+          <div class="reply-hint">Press <kbd style="font-size:11px; background:#f1f5f9; border:1px solid #e2e8f0; border-radius:4px; padding:1px 6px;">Ctrl+Enter</kbd> to send</div>
+          <div class="reply-actions">
+            <button class="btn-clear" onclick="clearReply()">Clear</button>
+            <button class="btn-send" id="sendBtn" onclick="sendReply()">
+              <i class="fas fa-paper-plane"></i> Send Reply
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   Expert Dashboard — KrishiSetu
+   APIs:
+     GET  /api/expert/queries  → all queries
+     POST /api/expert/respond  → {query_id, reply}
+═══════════════════════════════════════════════════════════ */
+
+const API = 'http://127.0.0.1:5000';
+
+let _allQueries   = [];     // full cached list
+let _activeFilter = 'all';
+let _searchTerm   = '';
+let _selectedId   = null;   // currently open query_id
+let _prevData     = [];     // for new-query detection
+let _pollTimer    = null;
+
+// ── Escape helper ──────────────────────────────────────────────────────────
+function esc(s) {
+  return String(s || '')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Relative time ──────────────────────────────────────────────────────────
+function relTime(ts) {
+  if (!ts) return '';
+  try {
+    const dt   = new Date(ts);
+    const diff = Math.floor((Date.now() - dt) / 1000);
+    if (diff < 60)     return 'Just now';
+    if (diff < 3600)   return `${Math.floor(diff/60)}m ago`;
+    if (diff < 86400)  return `${Math.floor(diff/3600)}h ago`;
+    return dt.toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
+  } catch { return String(ts).slice(0,16); }
+}
+
+function fmtDate(ts) {
+  if (!ts) return '—';
+  try {
+    return new Date(ts).toLocaleString('en-IN', {
+      day:'numeric', month:'short', year:'numeric',
+      hour:'2-digit', minute:'2-digit'
+    });
+  } catch { return String(ts).slice(0,16); }
+}
+
+// ── Toast ──────────────────────────────────────────────────────────────────
+function toast(msg, type = 'success') {
+  const el  = document.getElementById('toast');
+  const ico = type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-triangle';
+  el.innerHTML  = `<i class="${ico}"></i> ${esc(msg)}`;
+  el.className  = `show ${type}`;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.className = ''; }, 2800);
+}
+
+// ── Live clock in header ───────────────────────────────────────────────────
+function tickClock() {
+  const el = document.getElementById('headerTime');
+  if (el) el.textContent = new Date().toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+}
+setInterval(tickClock, 1000);
+tickClock();
+
+// ── Fetch queries ──────────────────────────────────────────────────────────
+async function fetchQueries(manual = false) {
+  if (manual) {
+    const icon = document.getElementById('refreshIcon');
+    if (icon) icon.className = 'fas fa-sync-alt fa-spin';
+    setTimeout(() => { if (icon) icon.className = 'fas fa-sync-alt'; }, 900);
+  }
+
+  try {
+    const res  = await fetch(`${API}/api/expert/queries`, { credentials: 'include' });
+    if (res.status === 401) { showLoginError(); return; }
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || 'API error');
+
+    const newData = data.data || [];
+
+    // Detect newly answered queries (for highlight)
+    const prevById = new Map(_prevData.map(q => [String(q.query_id), q]));
+    const decorated = newData.map(q => {
+      const prev = prevById.get(String(q.query_id));
+      return { ...q, _isNew: !prev };
+    });
+    _prevData = newData;
+
+    _allQueries = decorated;
+    updateStats();
+    renderInbox();
+
+    // Update last-updated timestamp
+    const lu = document.getElementById('lastUpdated');
+    if (lu) lu.textContent = 'Updated ' + new Date().toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit'});
+
+    // If selected query was updated, refresh detail
+    if (_selectedId !== null) {
+      const updated = _allQueries.find(q => q.query_id == _selectedId);
+      if (updated) openQuery(_selectedId, false);
+    }
+
+  } catch (err) {
+    console.error('[ExpertDash]', err);
+    if (document.getElementById('inboxList').children.length === 1) {
+      document.getElementById('inboxList').innerHTML =
+        '<div class="inbox-empty"><i class="fas fa-wifi"></i><p style="margin-top:8px;">Connection error.<br><button onclick="fetchQueries(true)" style="margin-top:8px; background:none; border:none; color:#2e7d32; font-weight:600; cursor:pointer;">Retry</button></p></div>';
+    }
+  }
+}
+
+// ── Stats ──────────────────────────────────────────────────────────────────
+function updateStats() {
+  const total    = _allQueries.length;
+  const pending  = _allQueries.filter(q => (q.status||'').toLowerCase() === 'pending').length;
+  const answered = _allQueries.filter(q => (q.status||'').toLowerCase() === 'answered').length;
+
+  document.getElementById('statTotal').textContent   = total;
+  document.getElementById('statPending').textContent  = pending;
+  document.getElementById('statAnswered').textContent = answered;
+  document.getElementById('tabAll').textContent       = total;
+  document.getElementById('tabPending').textContent   = pending;
+  document.getElementById('tabAnswered').textContent  = answered;
+}
+
+// ── Filter & search ────────────────────────────────────────────────────────
+function applyFilter(f) {
+  _activeFilter = f;
+  document.querySelectorAll('.inbox-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.filter === f);
+  });
+  renderInbox();
+}
+
+function onSearch() {
+  _searchTerm = document.getElementById('searchInput').value.toLowerCase();
+  renderInbox();
+}
+
+function filteredQueries() {
+  return _allQueries.filter(q => {
+    const statusOk = _activeFilter === 'all' || (q.status||'').toLowerCase() === _activeFilter;
+    const textOk   = !_searchTerm ||
+      (q.query_text||'').toLowerCase().includes(_searchTerm) ||
+      String(q.query_id).includes(_searchTerm) ||
+      String(q.farmer_id||'').includes(_searchTerm);
+    return statusOk && textOk;
+  });
+}
+
+// ── Render inbox list ──────────────────────────────────────────────────────
+function renderInbox() {
+  const list  = document.getElementById('inboxList');
+  const items = filteredQueries();
+
+  if (items.length === 0) {
+    list.innerHTML = '<div class="inbox-empty"><i class="fas fa-inbox"></i><p style="margin-top:8px;">No queries match your filter.</p></div>';
+    return;
+  }
+
+  list.innerHTML = items.map(q => {
+    const isPending = (q.status||'').toLowerCase() === 'pending';
+    const isActive  = q.query_id == _selectedId;
+    const isNew     = q._isNew;
+    const snippet   = (q.query_text || '').slice(0, 80) + (q.query_text?.length > 80 ? '…' : '');
+
+    return `
+      <div class="query-row ${isActive ? 'active' : ''} ${isNew ? 'new-highlight' : ''}"
+           id="qrow-${q.query_id}"
+           onclick="openQuery(${q.query_id})">
+        <div class="qr-top">
+          <span class="qr-id">#${q.query_id}</span>
+          <span class="qr-time">${esc(relTime(q.query_date))}</span>
+        </div>
+        <div class="qr-msg ${isPending ? 'unread' : ''}">${esc(snippet)}</div>
+        <div class="qr-footer">
+          <span class="status-badge ${isPending ? 'pending' : 'answered'}">
+            <i class="fas ${isPending ? 'fa-clock' : 'fa-check-circle'}"></i>
+            ${isPending ? 'Pending' : 'Answered'}
+          </span>
+          <span class="qr-farmer"><i class="fas fa-user" style="font-size:10px;"></i> Farmer #${esc(String(q.farmer_id||'?'))}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ── Open query detail ──────────────────────────────────────────────────────
+function openQuery(id, scrollIntoView = true) {
+  _selectedId = id;
+
+  // Highlight selected row
+  document.querySelectorAll('.query-row').forEach(el => el.classList.remove('active'));
+  const row = document.getElementById(`qrow-${id}`);
+  if (row) {
+    row.classList.add('active');
+    row.classList.remove('new-highlight');
+    if (scrollIntoView) row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+
+  const q = _allQueries.find(q => q.query_id == id);
+  if (!q) return;
+
+  const isPending = (q.status||'').toLowerCase() === 'pending';
+
+  // Show detail panel
+  document.getElementById('detailEmpty').style.display   = 'none';
+  document.getElementById('detailContent').style.display = 'flex';
+  document.getElementById('detailContent').style.flexDirection = 'column';
+
+  // Header
+  document.getElementById('dhId').textContent    = `Query #${q.query_id}`;
+  document.getElementById('dhTitle').textContent = (q.query_text||'').slice(0,100);
+  document.getElementById('dhFarmer').textContent = `Farmer #${q.farmer_id||'?'}`;
+  document.getElementById('dhDate').textContent   = fmtDate(q.query_date);
+
+  const statusEl = document.getElementById('dhStatus');
+  statusEl.textContent = isPending ? 'Pending' : 'Answered';
+  statusEl.className   = `status-badge ${isPending ? 'pending' : 'answered'}`;
+  statusEl.innerHTML   = isPending
+    ? '<i class="fas fa-clock"></i> Pending'
+    : '<i class="fas fa-check-circle"></i> Answered';
+
+  // Response date meta
+  const respMeta = document.getElementById('dhRespMeta');
+  if (q.response_date) {
+    respMeta.style.display = 'flex';
+    document.getElementById('dhRespDate').textContent = 'Replied ' + relTime(q.response_date);
+  } else {
+    respMeta.style.display = 'none';
+  }
+
+  // Query body
+  document.getElementById('dbQueryText').textContent = q.query_text || '(no text)';
+
+  // Previous response
+  const prevEl   = document.getElementById('prevResponse');
+  const prevText = document.getElementById('dbPrevResp');
+  if (q.expert_response) {
+    prevEl.style.display   = '';
+    prevText.textContent   = q.expert_response;
+  } else {
+    prevEl.style.display = 'none';
+  }
+
+  // Pre-fill textarea if already answered
+  const ta = document.getElementById('replyTextarea');
+  ta.value    = '';
+  ta.disabled = false;
+
+  const sendBtn = document.getElementById('sendBtn');
+  sendBtn.disabled = false;
+  sendBtn.className = 'btn-send';
+  sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Reply';
+
+  ta.focus();
+}
+
+// ── Send reply ─────────────────────────────────────────────────────────────
+async function sendReply() {
+  if (_selectedId === null) return;
+
+  const ta      = document.getElementById('replyTextarea');
+  const sendBtn = document.getElementById('sendBtn');
+  const reply   = ta.value.trim();
+
+  if (!reply) {
+    ta.style.borderColor = '#dc2626';
+    ta.focus();
+    setTimeout(() => { ta.style.borderColor = ''; }, 2000);
+    toast('Please write a response before sending.', 'error');
+    return;
+  }
+
+  // Disable while sending
+  ta.disabled       = true;
+  sendBtn.disabled  = true;
+  sendBtn.className = 'btn-send sending';
+  sendBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Sending…';
+
+  try {
+    const res  = await fetch(`${API}/api/expert/respond`, {
+      method:      'POST',
+      headers:     { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body:        JSON.stringify({ query_id: _selectedId, reply }),
+    });
+    const data = await res.json();
+
+    if (res.ok && (data.success !== false)) {
+      toast('Response sent successfully!', 'success');
+
+      // Optimistically update cache
+      const q = _allQueries.find(q => q.query_id == _selectedId);
+      if (q) { q.status = 'Answered'; q.expert_response = reply; q.response_date = new Date().toISOString(); }
+
+      // Auto-clear textarea
+      ta.value    = '';
+      ta.disabled = false;
+
+      // Refresh list + re-open to show answered state
+      updateStats();
+      renderInbox();
+      openQuery(_selectedId, false);
+
+      // Full refresh from server
+      fetchQueries();
+
+    } else {
+      throw new Error(data.message || data.error || 'Server error');
+    }
+
+  } catch (err) {
+    console.error('[ExpertDash] sendReply:', err);
+    toast(`Failed to send: ${err.message}`, 'error');
+    ta.disabled  = false;
+    sendBtn.disabled  = false;
+    sendBtn.className = 'btn-send';
+    sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Reply';
+  }
+}
+
+function clearReply() {
+  const ta = document.getElementById('replyTextarea');
+  ta.value = '';
+  ta.focus();
+}
+
+// ── Keyboard shortcut Ctrl+Enter ──────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+    const ta = document.getElementById('replyTextarea');
+    if (document.activeElement === ta) sendReply();
+  }
+});
+
+// ── Login error state ──────────────────────────────────────────────────────
+function showLoginError() {
+  document.getElementById('inboxList').innerHTML = `
+    <div class="inbox-empty">
+      <i class="fas fa-lock"></i>
+      <p style="margin-top:8px;">Session expired.<br>
+        <a href="pages/login.html" style="color:var(--green); font-weight:600;">Log in again</a>
+      </p>
+    </div>`;
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+fetchQueries();
+_pollTimer = setInterval(fetchQueries, 10000);
+</script>
+</body>
+</html>

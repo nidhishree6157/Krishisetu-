@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verify OTP - KrishiSetu</title>
+
+  <link rel="stylesheet" href="../css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+</head>
+
+<body>
+
+<div class="auth-container">
+
+  <!-- LEFT SIDE -->
+  <div class="auth-section auth-left">
+    <div class="auth-left-content">
+
+      <!-- LOGO -->
+      <img src="../assets/logo.jpeg" alt="KrishiSetu Logo" style="width:120px; margin-bottom:20px;">
+
+      <h1 class="auth-tagline">Email Verification</h1>
+
+      <p class="auth-subtitle">
+        Almost there! Verify your email address to complete your registration.
+      </p>
+
+      <ul class="auth-features">
+        <li><i class="fas fa-check-circle"></i> Secure Verification</li>
+        <li><i class="fas fa-check-circle"></i> Quick Process</li>
+        <li><i class="fas fa-check-circle"></i> One Time Password</li>
+        <li><i class="fas fa-check-circle"></i> Account Protection</li>
+      </ul>
+
+    </div>
+  </div>
+
+  <!-- RIGHT SIDE -->
+  <div class="auth-section auth-right">
+    <div class="auth-form">
+
+      <h2 class="auth-title">Verify Your Email</h2>
+      <p class="auth-subtitle-form">Enter the OTP sent to your registered email</p>
+
+      <form id="otpForm">
+
+        <!-- USERNAME -->
+        <div class="form-group">
+          <label class="form-label">Username</label>
+          <div class="input-group">
+            <input type="text" id="username" class="form-input" placeholder="Enter your username" required>
+            <i class="fas fa-user input-icon"></i>
+          </div>
+        </div>
+
+        <!-- OTP -->
+        <div class="form-group">
+          <label class="form-label">OTP Code</label>
+          <div class="input-group">
+            <input type="text" id="otp" class="form-input" placeholder="Enter 6-digit OTP" maxlength="6" pattern="[0-9]{6}" required>
+            <i class="fas fa-key input-icon"></i>
+          </div>
+          <small class="form-text" style="color: #666; margin-top: 8px;">Check your email for the OTP code</small>
+        </div>
+
+        <!-- ALERT -->
+        <div id="alertContainer"></div>
+
+        <!-- BUTTON -->
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-check"></i> Verify OTP
+        </button>
+
+        <!-- FOOTER -->
+        <div class="auth-footer">
+          <p><a href="register.html">Back to Register</a></p>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- MAIN SCRIPT -->
+<script src="../js/app.js"></script>
+
+<!-- OTP VERIFICATION LOGIC -->
+<script>
+let isPasswordReset = false;
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Check if this is a password reset flow
+  const resetUsername = localStorage.getItem('resetUsername');
+  if (resetUsername) {
+    isPasswordReset = true;
+    document.getElementById('username').value = resetUsername;
+    document.getElementById('username').readOnly = true;
+    
+    // Add password field if it doesn't exist
+    const passwordField = document.getElementById('passwordField');
+    if (!passwordField) {
+      const otpField = document.getElementById('otp').parentElement;
+      const passwordHTML = `
+        <div class="form-group" id="passwordField" style="display: none;">
+          <label class="form-label">New Password</label>
+          <div class="input-group">
+            <input type="password" id="newPassword" class="form-input" placeholder="Enter new password" minlength="6" required>
+            <i class="fas fa-lock input-icon"></i>
+          </div>
+        </div>
+      `;
+      otpField.insertAdjacentHTML('afterend', passwordHTML);
+    }
+    
+    // Update page text for password reset
+    document.querySelector('.auth-title').textContent = 'Reset Your Password';
+    document.querySelector('.auth-subtitle-form').textContent = 'Enter the OTP sent to your email and set a new password';
+    document.querySelector('.auth-tagline').textContent = 'Reset Password';
+    document.querySelector('.auth-subtitle').textContent = 'Secure your account with a new password.';
+  }
+});
+
+document.getElementById('otpForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  const username = document.getElementById('username').value.trim();
+  const otp = document.getElementById('otp').value.trim();
+  const newPassword = isPasswordReset ? document.getElementById('newPassword')?.value.trim() : '';
+
+  const alertContainer = document.getElementById('alertContainer');
+  const submitBtn = document.querySelector('button[type="submit"]');
+
+  if (!username || !otp) {
+    app.showAlert(alertContainer, 'Please fill all fields', 'danger');
+    return;
+  }
+
+  if (otp.length !== 6 || isNaN(otp)) {
+    app.showAlert(alertContainer, 'OTP must be 6 digits', 'danger');
+    return;
+  }
+
+  if (isPasswordReset && (!newPassword || newPassword.length < 6)) {
+    app.showAlert(alertContainer, 'Password must be at least 6 characters', 'danger');
+    return;
+  }
+
+  setButtonLoading(submitBtn, true);
+
+  try {
+    // First, verify OTP
+    const response = await fetch('http://127.0.0.1:5000/auth/verify-otp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({
+        username: username,
+        otp: otp
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      app.showAlert(alertContainer, data.message || 'OTP verification failed', 'danger');
+      setButtonLoading(submitBtn, false);
+      return;
+    }
+
+    // If password reset, call password update endpoint
+    if (isPasswordReset) {
+      const passwordResponse = await fetch('http://127.0.0.1:5000/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          username: username,
+          password: newPassword
+        })
+      });
+
+      const passwordData = await passwordResponse.json();
+
+      if (passwordResponse.ok) {
+        app.showAlert(alertContainer, 'Password reset successfully!', 'success');
+        // Clear reset data
+        localStorage.removeItem('resetUsername');
+        localStorage.removeItem('resetOTP');
+        
+        setTimeout(() => {
+          window.location.href = 'login.html';
+        }, 1500);
+      } else {
+        app.showAlert(alertContainer, passwordData.message || 'Password reset failed', 'danger');
+      }
+    } else {
+      // Regular registration OTP verification
+      app.showAlert(alertContainer, 'OTP verified successfully!', 'success');
+
+      setTimeout(() => {
+        window.location.href = 'login.html';
+      }, 1500);
+    }
+
+  } catch (error) {
+    console.error(error);
+    app.showAlert(alertContainer, 'Connection error. Please try again.', 'danger');
+  }
+
+  setButtonLoading(submitBtn, false);
+});
+</script>
+
+</body>
+</html>

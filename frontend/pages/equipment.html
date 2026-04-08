@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Equipment — KrishiSetu</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .eq-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      align-items: flex-end;
+      margin-bottom: 8px;
+    }
+    .eq-toolbar .form-group { margin-bottom: 0; min-width: 160px; flex: 1 1 160px; }
+    .eq-toolbar .form-group.search-grow { flex: 2 1 220px; min-width: 200px; }
+    .eq-count {
+      font-size: 13px;
+      color: var(--text-light);
+      margin: 12px 0 18px;
+    }
+    .eq-count strong { color: var(--primary-green); }
+
+    .eq-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    .eq-card {
+      background: #fff;
+      border: 1px solid rgba(0,0,0,.08);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0,0,0,.06);
+      display: flex;
+      flex-direction: column;
+      transition: transform .18s ease, box-shadow .18s ease;
+    }
+    .eq-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 28px rgba(34, 197, 94, .12);
+    }
+
+    .eq-card-head {
+      height: 118px;
+      background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 45%, #43a047 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      position: relative;
+    }
+    .eq-card-head i { font-size: 44px; opacity: .95; }
+
+    .eq-card-body { padding: 18px 18px 16px; flex: 1; display: flex; flex-direction: column; }
+
+    .eq-name {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #0f172a;
+      line-height: 1.35;
+      margin-bottom: 10px;
+    }
+
+    .eq-use {
+      font-size: 12.5px;
+      color: #475569;
+      line-height: 1.55;
+      margin-bottom: 12px;
+      flex: 1;
+    }
+    .eq-use-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      color: #94a3b8;
+      margin-bottom: 4px;
+    }
+
+    .eq-price {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+      font-weight: 700;
+      color: #15803d;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      padding: 6px 12px;
+      border-radius: 10px;
+      margin-bottom: 12px;
+      width: fit-content;
+    }
+    .eq-price i { font-size: 13px; opacity: .85; }
+
+    .eq-crops-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      color: #94a3b8;
+      margin-bottom: 6px;
+    }
+    .eq-crop-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+    .eq-chip {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1e40af;
+    }
+    .eq-chip.all {
+      background: #fef3c7;
+      border-color: #fde68a;
+      color: #92400e;
+    }
+
+    .eq-desc {
+      font-size: 12px;
+      color: #64748b;
+      line-height: 1.5;
+      margin-bottom: 14px;
+      padding-top: 10px;
+      border-top: 1px solid #f1f5f9;
+    }
+
+    .eq-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .eq-actions a, .eq-actions button {
+      flex: 1;
+      min-width: 100px;
+      text-align: center;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .eq-btn-demo {
+      background: #fef2f2;
+      color: #b91c1c;
+      border: 1px solid #fecaca !important;
+    }
+    .eq-btn-buy {
+      background: var(--primary-green, #2e7d32);
+      color: #fff;
+    }
+
+    .eq-empty {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 48px 20px;
+      color: var(--text-light);
+    }
+    .eq-empty i { font-size: 40px; display: block; margin-bottom: 12px; opacity: .35; }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a class="ks-brand" href="../home.html" title="KrishiSetu"><img src="../images/krishisetu-logo.svg" alt="KrishiSetu" class="ks-brand-img" /></a>
+      </div>
+
+      <div class="sidebar-body">
+        <ul class="nav-menu">
+          <li class="nav-item">
+            <button class="nav-link" data-page="dashboard">
+              <i class="fas fa-home"></i>
+              <span class="nav-label">Dashboard</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="crop">
+              <i class="fas fa-leaf"></i>
+              <span class="nav-label">Crop Recommendation</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="disease">
+              <i class="fas fa-virus"></i>
+              <span class="nav-label">Disease Detection</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="pest">
+              <i class="fas fa-bug"></i>
+              <span class="nav-label">Pest Detection</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="fertilizer">
+              <i class="fas fa-droplet"></i>
+              <span class="nav-label">Fertilizer</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="market">
+              <i class="fas fa-chart-line"></i>
+              <span class="nav-label">Market</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link active" data-page="equipment">
+              <i class="fas fa-tools"></i>
+              <span class="nav-label">Equipment</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="schemes">
+              <i class="fas fa-file-contract"></i>
+              <span class="nav-label">Schemes</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="soil">
+              <i class="fas fa-earth-americas"></i>
+              <span class="nav-label">Soil Analysis</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="weather">
+              <i class="fas fa-cloud"></i>
+              <span class="nav-label">Weather</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="expert-queries">
+              <i class="fas fa-comments"></i>
+              <span class="nav-label">Expert Queries</span>
+            </button>
+          </li>
+        </ul>
+      </div>
+
+      <div class="sidebar-footer">
+        <button class="logout-btn">
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </button>
+      </div>
+    </aside>
+
+    <div class="main-wrapper">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="hamburger"><i class="fas fa-bars"></i></button>
+          <div class="topbar-title">Farm Equipment</div>
+        </div>
+        <div class="topbar-right">
+          <div class="notification-icon">
+            <i class="fas fa-bell"></i>
+            <div class="notification-badge">3</div>
+          </div>
+          <div class="profile-icon"><i class="fas fa-user-circle"></i></div>
+        </div>
+      </header>
+
+      <main class="content-area">
+        <div class="card" style="margin-bottom: 24px;">
+          <div class="card-title">
+            <i class="fas fa-tractor"></i> Equipment catalogue
+          </div>
+          <p style="color: var(--text-light); margin-bottom: 20px;">
+            Realistic tools and machines for Indian farms — with <strong>use case</strong>,
+            <strong>price band</strong>, and <strong>suitable crops</strong>. Filter by crop to see what fits your plan.
+          </p>
+
+          <form id="filterForm" class="eq-toolbar">
+            <div class="form-group">
+              <label class="form-label" for="filterCrop"><i class="fas fa-leaf" style="margin-right:4px;color:var(--primary-green);"></i>Suitable crop</label>
+              <select id="filterCrop" class="form-select">
+                <option value="">All equipment</option>
+                <option value="__universal__">Universal (any crop)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="filterCategory">Category</label>
+              <select id="filterCategory" class="form-select">
+                <option value="">All categories</option>
+                <option value="tractor">Tiller / power</option>
+                <option value="plow">Soil prep</option>
+                <option value="sprayer">Sprayers</option>
+                <option value="harvester">Harvest / processing</option>
+                <option value="seeder">Sowing / planting</option>
+                <option value="pump">Irrigation</option>
+                <option value="tools">Hand tools / accessories</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="filterBudget">Budget band</label>
+              <select id="filterBudget" class="form-select">
+                <option value="">Any price</option>
+                <option value="0-50000">Under ₹50,000</option>
+                <option value="50000-150000">₹50k – ₹1.5L</option>
+                <option value="150000-500000">₹1.5L – ₹5L</option>
+                <option value="500000">Above ₹5L</option>
+              </select>
+            </div>
+            <div class="form-group search-grow">
+              <label class="form-label" for="filterSearch">Search</label>
+              <input type="text" id="filterSearch" class="form-input" placeholder="Name, use case, description…" autocomplete="off">
+            </div>
+            <div class="form-group" style="flex:0 0 auto; min-width:auto;">
+              <label class="form-label" style="opacity:0;">.</label>
+              <button type="submit" class="btn btn-primary" style="white-space:nowrap;">
+                <i class="fas fa-filter"></i> Apply
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <p class="eq-count" id="eqCount" style="display:none;">
+          Showing <strong id="eqCountN">0</strong> of <strong id="eqTotalN">0</strong> items
+        </p>
+
+        <div id="equipmentContainer" class="eq-grid">
+          <div class="eq-empty" style="grid-column:1/-1;">
+            <i class="fas fa-spinner fa-spin"></i>
+            Loading equipment…
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="../js/app.js"></script>
+  <script>
+    /** @type {Array<Object>} */
+    let _eqAll = [];
+
+    function getEquipmentIcon(category) {
+      const icons = {
+        tractor: 'fa-tractor',
+        plow: 'fa-seedling',
+        sprayer: 'fa-spray-can-sparkles',
+        harvester: 'fa-wheat-awn',
+        seeder: 'fa-bars-staggered',
+        pump: 'fa-faucet-drip',
+        tools: 'fa-screwdriver-wrench',
+      };
+      return icons[category] || 'fa-tools';
+    }
+
+    function esc(s) {
+      return String(s ?? '')
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function cropMatch(eq, cropVal) {
+      if (!cropVal) return true;
+      const crops = (eq.suitable_crops || []).map(x => String(x).toLowerCase());
+      if (cropVal === '__universal__')
+        return crops.includes('all crops');
+      const want = cropVal.toLowerCase();
+      if (crops.includes('all crops')) return true;
+      return crops.some(sc => sc === want || sc.includes(want));
+    }
+
+    function budgetMatch(eq, budgetVal) {
+      if (!budgetVal) return true;
+      const minP = eq.price_min ?? 0;
+      const maxP = eq.price_max ?? minP;
+      if (budgetVal === '0-50000')
+        return maxP <= 50000;
+      if (budgetVal === '50000-150000')
+        return minP < 150000 && maxP >= 50000;
+      if (budgetVal === '150000-500000')
+        return minP < 500000 && maxP >= 150000;
+      if (budgetVal === '500000')
+        return minP >= 500000 || maxP >= 500000;
+      return true;
+    }
+
+    function categoryMatch(eq, cat) {
+      if (!cat) return true;
+      return (eq.category || '') === cat;
+    }
+
+    function searchMatch(eq, q) {
+      if (!q || !q.trim()) return true;
+      const t = q.trim().toLowerCase();
+      const blob = [
+        eq.name, eq.use_case, eq.description, (eq.suitable_crops || []).join(' '),
+      ].join(' ').toLowerCase();
+      return blob.includes(t);
+    }
+
+    function applyFilters() {
+      const crop = document.getElementById('filterCrop').value;
+      const cat = document.getElementById('filterCategory').value;
+      const budget = document.getElementById('filterBudget').value;
+      const search = document.getElementById('filterSearch').value;
+
+      const filtered = _eqAll.filter(eq =>
+        cropMatch(eq, crop) &&
+        categoryMatch(eq, cat) &&
+        budgetMatch(eq, budget) &&
+        searchMatch(eq, search)
+      );
+
+      renderCards(filtered);
+    }
+
+    function renderCards(list) {
+      const container = document.getElementById('equipmentContainer');
+      const countEl = document.getElementById('eqCount');
+      const countN = document.getElementById('eqCountN');
+      const totalN = document.getElementById('eqTotalN');
+
+      countEl.style.display = '';
+      countN.textContent = list.length;
+      totalN.textContent = _eqAll.length;
+
+      if (!list.length) {
+        container.innerHTML = `
+          <div class="eq-empty">
+            <i class="fas fa-search"></i>
+            No equipment matches your filters. Try another crop or clear filters.
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = list.map(eq => {
+        const crops = eq.suitable_crops || [];
+        const chips = crops.map(c => {
+          const isAll = String(c).toLowerCase() === 'all crops';
+          return `<span class="eq-chip ${isAll ? 'all' : ''}">${esc(c)}</span>`;
+        }).join('');
+
+        const demo = eq.youtube_link
+          ? `<a href="${esc(eq.youtube_link)}" target="_blank" rel="noopener" class="eq-btn-demo"><i class="fas fa-play"></i> Demo</a>`
+          : `<button type="button" class="eq-btn-demo" onclick="eqInfo(${eq.id})"><i class="fas fa-circle-info"></i> Tips</button>`;
+
+        const buy = eq.purchase_link
+          ? `<a href="${esc(eq.purchase_link)}" target="_blank" rel="noopener" class="eq-btn-buy"><i class="fas fa-store"></i> Where to buy</a>`
+          : `<button type="button" class="eq-btn-buy" onclick="eqBuy(${eq.id})"><i class="fas fa-cart-shopping"></i> Enquire</button>`;
+
+        return `
+          <article class="eq-card">
+            <div class="eq-card-head">
+              <i class="fas ${getEquipmentIcon(eq.category)}"></i>
+            </div>
+            <div class="eq-card-body">
+              <h3 class="eq-name">${esc(eq.name)}</h3>
+              <div>
+                <div class="eq-use-label">Use case</div>
+                <p class="eq-use">${esc(eq.use_case || eq.description || '')}</p>
+              </div>
+              <div class="eq-price"><i class="fas fa-indian-rupee-sign"></i> ${esc(eq.price_range || 'Price on request')}</div>
+              <div>
+                <div class="eq-crops-label">Suitable crops</div>
+                <div class="eq-crop-chips">${chips || '<span class="eq-chip">—</span>'}</div>
+              </div>
+              ${eq.description && eq.description !== eq.use_case ? `<p class="eq-desc">${esc(eq.description)}</p>` : ''}
+              <div class="eq-actions">${demo}${buy}</div>
+            </div>
+          </article>`;
+      }).join('');
+    }
+
+    function eqBuy(id) {
+      const eq = _eqAll.find(x => x.id === id);
+      const name = eq ? eq.name : 'Equipment';
+      alert(`Enquiry: ${name}\n\nKrishiSetu will connect you with dealers / KVK / custom hiring — feature coming soon.`);
+    }
+    function eqInfo(id) {
+      const eq = _eqAll.find(x => x.id === id);
+      const name = eq ? eq.name : 'Equipment';
+      alert(`Practical tips for: ${name}\n\nCheck PMFBY / state subsidies, compare ISI marks, and ask your local KVK for demonstrations.`);
+    }
+
+    function populateCropFilter(cropFilters) {
+      const sel = document.getElementById('filterCrop');
+      const keep = sel.querySelectorAll('option');
+      keep[0].selected = true;
+      // Remove dynamic options (beyond first two static)
+      while (sel.options.length > 2) sel.remove(2);
+
+      const seen = new Set(['all crops']);
+      (cropFilters || []).forEach(c => {
+        const label = String(c).trim();
+        if (!label) return;
+        const low = label.toLowerCase();
+        if (low === 'all crops') return;
+        if (seen.has(low)) return;
+        seen.add(low);
+        const opt = document.createElement('option');
+        opt.value = label;
+        opt.textContent = label;
+        sel.appendChild(opt);
+      });
+    }
+
+    async function loadEquipment() {
+      const container = document.getElementById('equipmentContainer');
+      try {
+        const response = await app.apiCall('/equipment/list', 'GET');
+        const list = response.data || response.equipment || [];
+        if (!Array.isArray(list) || list.length === 0) {
+          container.innerHTML = '<div class="eq-empty"><i class="fas fa-box-open"></i>No equipment in catalogue.</div>';
+          return;
+        }
+        _eqAll = list;
+        populateCropFilter(response.crop_filters || []);
+        applyFilters();
+      } catch (e) {
+        console.error(e);
+        container.innerHTML = `
+          <div class="eq-empty">
+            <i class="fas fa-plug-circle-xmark"></i>
+            Could not load equipment. Is the backend running?
+          </div>`;
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      setActiveNav('equipment');
+      attachNavigation();
+      attachHamburger();
+      attachLogout();
+      app.attachNotification();
+      app.attachProfileIcon();
+      loadEquipment();
+
+      document.getElementById('filterForm').addEventListener('submit', e => {
+        e.preventDefault();
+        applyFilters();
+      });
+      ['filterCrop', 'filterCategory', 'filterBudget'].forEach(id => {
+        document.getElementById(id).addEventListener('change', applyFilters);
+      });
+      let t;
+      document.getElementById('filterSearch').addEventListener('input', () => {
+        clearTimeout(t);
+        t = setTimeout(applyFilters, 280);
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — KrishiSetu</title>
+  <link rel="icon" href="../images/krishisetu-mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    /* ═══════════════════════════════════════════════
+       Dashboard variables & resets
+    ═══════════════════════════════════════════════ */
+    :root {
+      --dg:        #2e7d32;
+      --dg2:       #1b5e20;
+      --dg-lt:     #e8f5e9;
+      --dg-bd:     #c8e6c9;
+      --ds:        #0f172a;
+      --dm:        #64748b;
+      --dbg:       #faf8f5;
+      --dcard:     #ffffff;
+      --dborder:   #e2e8f0;
+      --dshadow:   0 1px 3px rgba(0,0,0,.07), 0 4px 16px rgba(0,0,0,.05);
+      --dshadow-lg:0 8px 32px rgba(0,0,0,.10);
+      --dradius:   14px;
+      --dtrans:    .2s ease;
+    }
+
+    body { background: var(--dbg); font-family: 'Poppins', sans-serif; }
+    .content-area { padding: 24px 28px; max-width: 1280px; }
+    @media (max-width: 768px) { .content-area { padding: 16px; } }
+
+    /* ═══════════════════════════════════════════
+       Welcome header
+    ═══════════════════════════════════════════ */
+    .dash-welcome {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 22px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .dash-welcome-text h1 {
+      font-size: 22px; font-weight: 700;
+      color: var(--ds); margin-bottom: 3px;
+    }
+    .dash-welcome-text p { font-size: 13px; color: var(--dm); }
+    .dash-date {
+      font-size: 13px; color: var(--dm);
+      background: var(--dcard);
+      border: 1px solid var(--dborder);
+      border-radius: 10px;
+      padding: 8px 14px;
+      display: flex; align-items: center; gap: 6px;
+    }
+
+    /* ═══════════════════════════════════════════
+       Summary cards strip
+    ═══════════════════════════════════════════ */
+    .kpi-strip {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+    @media (max-width: 1100px) { .kpi-strip { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 680px)  { .kpi-strip { grid-template-columns: repeat(2, 1fr); } }
+
+    .kpi-card {
+      background: var(--dcard);
+      border: 1px solid var(--dborder);
+      border-radius: var(--dradius);
+      padding: 18px 20px;
+      display: flex; align-items: center; gap: 14px;
+      box-shadow: var(--dshadow);
+      transition: box-shadow var(--dtrans), transform var(--dtrans);
+      position: relative; overflow: hidden;
+    }
+    .kpi-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: var(--kpi-color, var(--dg));
+      border-radius: 3px 3px 0 0;
+    }
+    .kpi-card.clickable { cursor: pointer; }
+    .kpi-card.clickable:hover { box-shadow: var(--dshadow-lg); transform: translateY(-2px); }
+
+    .kpi-icon {
+      width: 44px; height: 44px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+      background: var(--kpi-icon-bg, var(--dg-lt));
+      color: var(--kpi-color, var(--dg));
+    }
+    .kpi-body { flex: 1; min-width: 0; }
+    .kpi-label {
+      font-size: 11px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: .5px; color: var(--dm); margin-bottom: 3px;
+    }
+    .kpi-value {
+      font-size: 20px; font-weight: 800; color: var(--ds);
+      line-height: 1; white-space: nowrap;
+      overflow: hidden; text-overflow: ellipsis;
+    }
+    .kpi-sub { font-size: 11px; color: var(--dm); margin-top: 3px; }
+    .kpi-badge {
+      font-size: 11px; font-weight: 700; padding: 2px 8px;
+      border-radius: 10px; white-space: nowrap;
+    }
+    .kpi-badge.up   { background: #dcfce7; color: #166534; }
+    .kpi-badge.down { background: #fee2e2; color: #991b1b; }
+    .kpi-badge.ok   { background: #dcfce7; color: #166534; }
+    .kpi-badge.warn { background: #fee2e2; color: #991b1b; }
+    .kpi-badge.neu  { background: #f1f5f9; color: var(--dm); }
+
+    /* ═══════════════════════════════════════════
+       Main 2-column grid
+    ═══════════════════════════════════════════ */
+    .dash-grid {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 20px;
+    }
+    @media (max-width: 1000px) { .dash-grid { grid-template-columns: 1fr; } }
+
+    /* ── Shared card base ── */
+    .d-card {
+      background: var(--dcard);
+      border: 1px solid var(--dborder);
+      border-radius: var(--dradius);
+      box-shadow: var(--dshadow);
+      overflow: hidden;
+    }
+    .d-card-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 16px 20px 14px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .d-card-title {
+      font-size: 14px; font-weight: 700; color: var(--ds);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .d-card-title i { color: var(--dg); }
+    .d-card-link {
+      font-size: 12px; font-weight: 600; color: var(--dg);
+      background: none; border: none; cursor: pointer; text-decoration: none;
+    }
+    .d-card-link:hover { text-decoration: underline; }
+    .d-card-body { padding: 18px 20px; }
+
+    /* ═══════════════════════════════════════════
+       AI Insight panel
+    ═══════════════════════════════════════════ */
+    .ai-panel { display: flex; flex-direction: column; }
+
+    .ai-context-row {
+      display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px;
+    }
+    .ctx-chip {
+      font-size: 11.5px; font-weight: 600; padding: 4px 10px;
+      border-radius: 12px; background: var(--dg-lt);
+      border: 1px solid var(--dg-bd); color: var(--dg2);
+      display: flex; align-items: center; gap: 4px;
+    }
+    .ctx-chip.empty {
+      background: #f1f5f9; border-color: var(--dborder); color: var(--dm);
+    }
+
+    .ai-question-row { display: flex; gap: 8px; margin-bottom: 16px; }
+    .ai-input {
+      flex: 1; padding: 10px 14px;
+      border: 1.5px solid var(--dborder); border-radius: 10px;
+      font-size: 13.5px; font-family: 'Poppins', sans-serif;
+      outline: none; background: #fafafa;
+    }
+    .ai-input:focus {
+      border-color: var(--dg); background: #fff;
+      box-shadow: 0 0 0 3px rgba(22,163,74,.1);
+    }
+    .ai-ask-btn {
+      padding: 10px 18px; background: var(--dg); color: #fff;
+      border: none; border-radius: 10px;
+      font-size: 13px; font-weight: 700; cursor: pointer;
+      transition: opacity .15s; white-space: nowrap;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .ai-ask-btn:hover:not(:disabled) { opacity: .87; }
+    .ai-ask-btn:disabled { opacity: .55; cursor: not-allowed; }
+
+    .ai-response-area { min-height: 110px; }
+    .ai-placeholder {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; padding: 28px 20px;
+      border: 2px dashed var(--dg-bd); border-radius: 12px;
+      gap: 8px; color: var(--dm);
+    }
+    .ai-placeholder i { font-size: 28px; color: var(--dg); opacity: .5; }
+    .ai-placeholder p { font-size: 13px; text-align: center; }
+
+    .ai-reply-card {
+      border-radius: 12px; padding: 16px 18px;
+      background: linear-gradient(135deg, var(--dg-lt), #fff);
+      border: 1px solid var(--dg-bd);
+    }
+    .ai-reply-text {
+      font-size: 13.5px; color: #1e3a2f; line-height: 1.65; margin-bottom: 10px;
+    }
+    .ai-insight-chip {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 12px; font-weight: 600; padding: 4px 12px;
+      border-radius: 12px; background: #fffbeb;
+      border: 1px solid #fde68a; color: #92400e; margin-bottom: 10px;
+    }
+    .ai-conf {
+      font-size: 11px; font-weight: 700;
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 8px; border-radius: 8px; margin-top: 4px;
+    }
+    .ai-conf.high   { background: #dcfce7; color: #166534; }
+    .ai-conf.medium { background: #fffbeb; color: #92400e; }
+    .ai-conf.low    { background: #fee2e2; color: #991b1b; }
+
+    .ai-quick-chips {
+      display: flex; gap: 6px; flex-wrap: wrap;
+      margin-top: 14px; padding-top: 14px;
+      border-top: 1px solid #f1f5f9;
+    }
+    .ai-qchip {
+      font-size: 12px; font-weight: 600; padding: 5px 12px;
+      border-radius: 14px; background: #f1f5f9;
+      border: 1px solid var(--dborder); color: var(--dm);
+      cursor: pointer; transition: background .12s, color .12s;
+    }
+    .ai-qchip:hover { background: var(--dg-lt); color: var(--dg); border-color: var(--dg-bd); }
+
+    .ai-typing {
+      display: flex; align-items: center; gap: 10px;
+      padding: 18px; color: var(--dm); font-size: 13px;
+    }
+    .ai-spin { animation: _aispin .7s linear infinite; display: inline-block; }
+    @keyframes _aispin { to { transform: rotate(360deg); } }
+
+    /* ═══════════════════════════════════════════
+       Right column
+    ═══════════════════════════════════════════ */
+    .right-col { display: flex; flex-direction: column; gap: 18px; }
+
+    /* ── Notification Preview ── */
+    .notif-item {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 11px 0; border-bottom: 1px solid #f8fafc;
+    }
+    .notif-item:last-child { border-bottom: none; }
+    .notif-ico {
+      width: 34px; height: 34px; border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; flex-shrink: 0;
+    }
+    .notif-ico.disease { background: #fee2e2; color: #b91c1c; }
+    .notif-ico.expert  { background: #dbeafe; color: #1e40af; }
+    .notif-ico.info    { background: #f1f5f9; color: var(--dm); }
+    .notif-body { flex: 1; min-width: 0; }
+    .notif-msg  { font-size: 13px; color: var(--ds); font-weight: 500; line-height: 1.4; }
+    .notif-time { font-size: 11px; color: var(--dm); margin-top: 2px; }
+    .notif-dot  {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--dg); margin-top: 6px; flex-shrink: 0;
+    }
+    .notif-unread-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 20px; height: 20px; padding: 0 6px;
+      border-radius: 10px; background: #b91c1c; color: #fff;
+      font-size: 11px; font-weight: 700;
+    }
+
+    /* ── Quick Actions ── */
+    .qa-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+    }
+    .qa-btn {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 7px; padding: 14px 6px;
+      border-radius: 12px; border: 1.5px solid var(--dborder);
+      background: #fafafa; cursor: pointer; text-decoration: none;
+      color: var(--ds); transition: background .15s, border-color .15s, transform .15s, box-shadow .15s;
+    }
+    .qa-btn:hover {
+      background: var(--dg-lt); border-color: var(--dg-bd);
+      transform: translateY(-2px); box-shadow: 0 4px 12px rgba(22,163,74,.12);
+    }
+    .qa-btn i  { font-size: 20px; color: var(--dg); }
+    .qa-btn span { font-size: 11.5px; font-weight: 600; text-align: center; line-height: 1.3; }
+
+    /* ── Misc ── */
+    .empty-hint {
+      padding: 22px 0; text-align: center;
+      color: var(--dm); font-size: 12.5px;
+    }
+    .empty-hint i { display: block; font-size: 24px; margin-bottom: 8px; opacity: .4; }
+  </style>
+</head>
+
+<body>
+<div class="app-container">
+
+  <!-- ══════════════════════════════════════════
+       SIDEBAR
+  ══════════════════════════════════════════════ -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <a class="ks-brand" href="../home.html" title="KrishiSetu">
+        <img src="../images/krishisetu-logo.svg" alt="KrishiSetu" class="ks-brand-img" />
+      </a>
+    </div>
+    <div class="sidebar-body">
+      <ul class="nav-menu">
+        <li class="nav-item">
+          <button class="nav-link active" data-page="dashboard">
+            <i class="fas fa-home"></i><span class="nav-label">Dashboard</span>
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-page="crop">
+            <i class="fas fa-leaf"></i><span class="nav-label">Crop Recommendation</span>
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-page="disease">
+            <i class="fas fa-virus"></i><span class="nav-label">Disease Detection</span>
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-page="pest">
+            <i class="fas fa-bug"></i><span class="nav-label">Pest Detection</span>
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-page="fertilizer">
+            <i class="fas fa-droplet"></i><span class="nav-label">Fertilizer</span>
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-page="market">
+            <i class="fas fa-chart-line"></i><span class="nav-label">Market</span>
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-page="yield">
+            <i class="fas fa-wheat-awn"></i><span class="nav-label">Yield Prediction</span>
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-page="weather">
+            <i class="fas fa-cloud-sun"></i><span class="nav-label">Weather</span>
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-page="expert-queries">
+            <i class="fas fa-comments"></i><span class="nav-label">Expert Queries</span>
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-page="notifications">
+            <i class="fas fa-bell"></i><span class="nav-label">Notifications</span>
+          </button>
+        </li>
+      </ul>
+    </div>
+    <div class="sidebar-footer">
+      <button class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+    </div>
+  </aside>
+
+  <!-- ══════════════════════════════════════════
+       MAIN
+  ══════════════════════════════════════════════ -->
+  <div class="main-wrapper">
+
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="hamburger"><i class="fas fa-bars"></i></button>
+        <div class="topbar-title">Dashboard</div>
+      </div>
+      <div class="topbar-right">
+        <div class="notification-icon" title="Notifications">
+          <i class="fas fa-bell"></i>
+        </div>
+        <div class="profile-icon"><i class="fas fa-user-circle"></i></div>
+      </div>
+    </header>
+
+    <main class="content-area">
+
+      <!-- ── Welcome ─────────────────────────────────────── -->
+      <div class="dash-welcome">
+        <div class="dash-welcome-text">
+          <h1>Good <span id="greeting">morning</span>, <span id="userName">Farmer</span> 👋</h1>
+          <p>Here's your farm intelligence summary for today.</p>
+        </div>
+        <div class="dash-date">
+          <i class="fas fa-calendar-day" style="color:var(--dg);"></i>
+          <span id="todayDate">—</span>
+        </div>
+      </div>
+
+      <!-- ── Summary Cards ───────────────────────────────── -->
+      <div class="kpi-strip">
+
+        <!-- Notifications -->
+        <div class="kpi-card clickable"
+             style="--kpi-color:#2e7d32; --kpi-icon-bg:#e8f5e9;"
+             onclick="location.href='notifications.html'">
+          <div class="kpi-icon"><i class="fas fa-bell"></i></div>
+          <div class="kpi-body">
+            <div class="kpi-label">Notifications</div>
+            <div class="kpi-value" id="kpi-notif">—</div>
+            <div class="kpi-sub">unread alerts</div>
+          </div>
+        </div>
+
+        <!-- Current Crop -->
+        <div class="kpi-card clickable"
+             style="--kpi-color:#2563eb; --kpi-icon-bg:#eff6ff;"
+             onclick="location.href='crop.html'">
+          <div class="kpi-icon"><i class="fas fa-seedling"></i></div>
+          <div class="kpi-body">
+            <div class="kpi-label">Current Crop</div>
+            <div class="kpi-value" id="kpi-crop">—</div>
+            <div class="kpi-sub">active season</div>
+          </div>
+        </div>
+
+        <!-- Yield Estimate -->
+        <div class="kpi-card clickable"
+             style="--kpi-color:#7c3aed; --kpi-icon-bg:#f5f3ff;"
+             onclick="location.href='yield.html'">
+          <div class="kpi-icon"><i class="fas fa-chart-bar"></i></div>
+          <div class="kpi-body">
+            <div class="kpi-label">Yield Estimate</div>
+            <div class="kpi-value" id="kpi-yield">—</div>
+            <div class="kpi-sub">kg projected</div>
+          </div>
+        </div>
+
+        <!-- Market Price -->
+        <div class="kpi-card clickable"
+             style="--kpi-color:#d97706; --kpi-icon-bg:#fffbeb;"
+             onclick="location.href='market.html'">
+          <div class="kpi-icon"><i class="fas fa-indian-rupee-sign"></i></div>
+          <div class="kpi-body">
+            <div class="kpi-label">Market Price</div>
+            <div class="kpi-value" id="kpi-price">—</div>
+            <div class="kpi-sub" id="kpi-price-sub">₹ / quintal</div>
+          </div>
+          <div id="kpi-trend" style="display:none;"></div>
+        </div>
+
+        <!-- Health Status -->
+        <div class="kpi-card clickable"
+             style="--kpi-color:#059669; --kpi-icon-bg:#ecfdf5;"
+             onclick="location.href='disease.html'">
+          <div class="kpi-icon"><i class="fas fa-heart-pulse"></i></div>
+          <div class="kpi-body">
+            <div class="kpi-label">Health Status</div>
+            <div class="kpi-value" id="kpi-health">—</div>
+            <div id="kpi-health-sub" class="kpi-sub">disease &amp; pest</div>
+          </div>
+          <div id="kpi-health-badge" style="display:none;"></div>
+        </div>
+
+      </div>
+
+      <!-- ── Main grid: AI panel + Right column ──────────── -->
+      <div class="dash-grid">
+
+        <!-- LEFT — AI Insight panel -->
+        <div class="d-card ai-panel">
+          <div class="d-card-header">
+            <div class="d-card-title">
+              <i class="fas fa-robot"></i> AI Farm Advisor
+            </div>
+            <a href="../smart_assistant.html" class="d-card-link">Open full chat →</a>
+          </div>
+          <div class="d-card-body">
+
+            <!-- Context chips (auto-built from localStorage) -->
+            <div class="ai-context-row" id="aiContextChips">
+              <span class="ctx-chip empty">
+                <i class="fas fa-info-circle"></i> No context loaded yet
+              </span>
+            </div>
+
+            <!-- Ask input -->
+            <div class="ai-question-row">
+              <input class="ai-input" id="aiInput"
+                     placeholder="Ask about your crop, disease, profit, market…"
+                     onkeydown="if(event.key==='Enter') askAI()" />
+              <button class="ai-ask-btn" id="aiAskBtn" onclick="askAI()">
+                <i class="fas fa-paper-plane"></i> Ask
+              </button>
+            </div>
+
+            <!-- Response area -->
+            <div class="ai-response-area" id="aiResponseArea">
+              <div class="ai-placeholder">
+                <i class="fas fa-robot"></i>
+                <p>Ask a question above — the AI uses your farm context to give specific advice.</p>
+              </div>
+            </div>
+
+            <!-- Quick question chips -->
+            <div class="ai-quick-chips">
+              <span style="font-size:11px; color:var(--dm); font-weight:600; align-self:center;">
+                Quick ask:
+              </span>
+              <button class="ai-qchip" onclick="setAIQuestion('Will I make a profit this season?')">Profit outlook</button>
+              <button class="ai-qchip" onclick="setAIQuestion('What is the best crop for my conditions?')">Best crop</button>
+              <button class="ai-qchip" onclick="setAIQuestion('How do I treat the detected disease?')">Treat disease</button>
+              <button class="ai-qchip" onclick="setAIQuestion('When should I harvest for maximum price?')">Harvest timing</button>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- RIGHT column -->
+        <div class="right-col">
+
+          <!-- Notification Preview -->
+          <div class="d-card">
+            <div class="d-card-header">
+              <div class="d-card-title">
+                <i class="fas fa-bell"></i> Notifications
+                <span id="notifBadge" style="display:none;" class="notif-unread-badge"></span>
+              </div>
+              <a href="notifications.html" class="d-card-link">View all →</a>
+            </div>
+            <div class="d-card-body" style="padding: 10px 20px 14px;">
+              <div id="notifList">
+                <div class="empty-hint">
+                  <i class="fas fa-bell-slash"></i>
+                  No unread notifications
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Actions -->
+          <div class="d-card">
+            <div class="d-card-header">
+              <div class="d-card-title">
+                <i class="fas fa-bolt"></i> Quick Actions
+              </div>
+            </div>
+            <div class="d-card-body">
+              <div class="qa-grid">
+                <a href="disease.html" class="qa-btn">
+                  <i class="fas fa-virus"></i>
+                  <span>Detect<br>Disease</span>
+                </a>
+                <a href="pest.html" class="qa-btn">
+                  <i class="fas fa-bug"></i>
+                  <span>Detect<br>Pest</span>
+                </a>
+                <a href="fertilizer.html" class="qa-btn">
+                  <i class="fas fa-droplet"></i>
+                  <span>Fertilizer<br>Advice</span>
+                </a>
+                <a href="market.html" class="qa-btn">
+                  <i class="fas fa-chart-line"></i>
+                  <span>Market<br>Prices</span>
+                </a>
+                <a href="yield.html" class="qa-btn">
+                  <i class="fas fa-wheat-awn"></i>
+                  <span>Predict<br>Yield</span>
+                </a>
+                <a href="../smart_assistant.html" class="qa-btn">
+                  <i class="fas fa-robot"></i>
+                  <span>AI<br>Chatbot</span>
+                </a>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   KrishiSetu Dashboard
+═══════════════════════════════════════════════════════════ */
+
+const API = 'http://127.0.0.1:5000';
+
+const LS = {
+  CROP:    'ks_last_crop',
+  DISEASE: 'ks_last_disease',
+  PEST:    'ks_last_pest',
+  YIELD:   'ks_last_yield',
+  PRICE:   'ks_last_price',
+  COST:    'ks_last_cost',
+};
+
+function esc(s) {
+  return String(s || '')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function ls(k) { return localStorage.getItem(k) || ''; }
+
+function greeting() {
+  const h = new Date().getHours();
+  if (h < 12) return 'morning';
+  if (h < 17) return 'afternoon';
+  return 'evening';
+}
+
+function todayStr() {
+  return new Date().toLocaleDateString('en-IN', {
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+  });
+}
+
+// ── Header ──────────────────────────────────────────────────────────────────
+function initHeader() {
+  document.getElementById('greeting').textContent  = greeting();
+  document.getElementById('userName').textContent  = localStorage.getItem('userName') || 'Farmer';
+  document.getElementById('todayDate').textContent = todayStr();
+}
+
+// ── Summary cards (KPIs) ────────────────────────────────────────────────────
+async function loadKPIs() {
+  // 1. Notifications unread count
+  try {
+    const r = await fetch(`${API}/notifications/`, { credentials: 'include' });
+    if (r.ok) {
+      const d   = await r.json();
+      const cnt = d.unread_count || 0;
+      const el  = document.getElementById('kpi-notif');
+      el.textContent = cnt;
+      el.style.color = cnt > 0 ? '#b91c1c' : 'var(--ds)';
+    }
+  } catch {}
+
+  // 2. Current crop
+  const crop = ls(LS.CROP);
+  document.getElementById('kpi-crop').textContent = crop || 'Not set';
+
+  // 3. Yield
+  const yld = ls(LS.YIELD);
+  document.getElementById('kpi-yield').textContent =
+    yld ? Number(yld).toLocaleString('en-IN') : '—';
+
+  // 4. Market price — use cache, then live fetch
+  const cachedPrice = ls(LS.PRICE);
+  if (cachedPrice) {
+    document.getElementById('kpi-price').textContent =
+      '₹' + Number(cachedPrice).toLocaleString('en-IN');
+  } else if (crop) {
+    try {
+      const r = await fetch(
+        `${API}/market/intelligence?crop=${encodeURIComponent(crop)}&location=karnataka`,
+        { credentials: 'include' },
+      );
+      if (r.ok) {
+        const d = await r.json();
+        const p = d.current_price || d.data?.current_price;
+        if (p) {
+          document.getElementById('kpi-price').textContent =
+            '₹' + Number(p).toLocaleString('en-IN');
+          localStorage.setItem(LS.PRICE, String(p));
+          const trend   = d.trend_direction || d.data?.trend_direction || '';
+          const trendEl = document.getElementById('kpi-trend');
+          if (trend && trendEl) {
+            trendEl.style.display = '';
+            trendEl.className =
+              `kpi-badge ${trend === 'rising' ? 'up' : trend === 'falling' ? 'down' : 'neu'}`;
+            trendEl.textContent =
+              trend === 'rising' ? '↑ Rising' : trend === 'falling' ? '↓ Falling' : '→ Stable';
+          }
+        }
+      }
+    } catch {}
+  }
+
+  // 5. Health status — combine disease + pest from localStorage
+  const disease  = ls(LS.DISEASE);
+  const pest     = ls(LS.PEST);
+  const healthEl = document.getElementById('kpi-health');
+  const healthBadge = document.getElementById('kpi-health-badge');
+  const healthSub   = document.getElementById('kpi-health-sub');
+
+  const diseaseOk = !disease || disease.toLowerCase() === 'healthy';
+  const pestOk    = !pest    || pest.toLowerCase()    === 'healthy';
+
+  if (!disease && !pest) {
+    healthEl.textContent    = 'Not scanned';
+    healthSub.textContent   = 'run disease / pest check';
+  } else if (diseaseOk && pestOk) {
+    healthEl.textContent    = 'Healthy';
+    healthEl.style.color    = '#166534';
+    healthBadge.style.display = '';
+    healthBadge.className   = 'kpi-badge ok';
+    healthBadge.textContent = '✓ All clear';
+    healthSub.textContent   = 'no issues detected';
+  } else {
+    const issues = [
+      !diseaseOk && disease,
+      !pestOk    && pest,
+    ].filter(Boolean);
+    healthEl.textContent    = issues[0];
+    healthEl.style.color    = '#b91c1c';
+    healthBadge.style.display = '';
+    healthBadge.className   = 'kpi-badge warn';
+    healthBadge.textContent = '⚠ Needs attention';
+    healthSub.textContent   = issues.length > 1 ? `+ ${issues.slice(1).join(', ')}` : 'treatment required';
+  }
+}
+
+// ── Notification preview ─────────────────────────────────────────────────────
+async function loadNotifPreview() {
+  const list  = document.getElementById('notifList');
+  const badge = document.getElementById('notifBadge');
+  try {
+    const r = await fetch(`${API}/notifications/`, { credentials: 'include' });
+    if (!r.ok) { renderEmptyNotifs(list); return; }
+    const d      = await r.json();
+    const all    = d.notifications || [];
+    const unread = all.filter(n => !n.read);
+
+    // Update badge
+    if (unread.length > 0) {
+      badge.style.display  = 'inline-flex';
+      badge.textContent    = unread.length > 9 ? '9+' : unread.length;
+    } else {
+      badge.style.display  = 'none';
+    }
+
+    // Show up to 4 unread, fallback to 4 read
+    const items = (unread.length > 0 ? unread : all).slice(0, 4);
+    if (items.length === 0) { renderEmptyNotifs(list); return; }
+
+    const iconMap = { disease: 'fas fa-virus', expert: 'fas fa-user-tie' };
+    const clsMap  = { disease: 'disease',      expert: 'expert'          };
+
+    list.innerHTML = items.map(n => `
+      <div class="notif-item">
+        <div class="notif-ico ${clsMap[n.type] || 'info'}">
+          <i class="${iconMap[n.type] || 'fas fa-info-circle'}"></i>
+        </div>
+        <div class="notif-body">
+          <div class="notif-msg">${esc(n.message)}</div>
+          <div class="notif-time">
+            <i class="fas fa-clock" style="font-size:10px;"></i>
+            ${esc(n.time_label || n.time || '')}
+          </div>
+        </div>
+        ${!n.read ? '<div class="notif-dot"></div>' : ''}
+      </div>
+    `).join('');
+
+  } catch { renderEmptyNotifs(list); }
+}
+
+function renderEmptyNotifs(container) {
+  container.innerHTML =
+    '<div class="empty-hint"><i class="fas fa-shield-check"></i>All clear — no new notifications</div>';
+}
+
+// ── AI Context chips ──────────────────────────────────────────────────────────
+function buildContextChips() {
+  const crop    = ls(LS.CROP);
+  const disease = ls(LS.DISEASE);
+  const pest    = ls(LS.PEST);
+  const yld     = ls(LS.YIELD);
+  const price   = ls(LS.PRICE);
+
+  const chips = [];
+  if (crop)
+    chips.push(`<span class="ctx-chip"><i class="fas fa-seedling"></i>${esc(crop)}</span>`);
+  if (disease && disease.toLowerCase() !== 'healthy')
+    chips.push(`<span class="ctx-chip"><i class="fas fa-virus"></i>${esc(disease)}</span>`);
+  if (pest && pest.toLowerCase() !== 'healthy')
+    chips.push(`<span class="ctx-chip"><i class="fas fa-bug"></i>${esc(pest)}</span>`);
+  if (yld)
+    chips.push(`<span class="ctx-chip"><i class="fas fa-chart-bar"></i>${Number(yld).toLocaleString('en-IN')} kg</span>`);
+  if (price)
+    chips.push(`<span class="ctx-chip"><i class="fas fa-tag"></i>₹${Number(price).toLocaleString('en-IN')}/q</span>`);
+
+  const container = document.getElementById('aiContextChips');
+  container.innerHTML = chips.length > 0
+    ? chips.join('')
+    : '<span class="ctx-chip empty"><i class="fas fa-info-circle"></i> Use modules to build farm context</span>';
+}
+
+// ── AI ask ────────────────────────────────────────────────────────────────────
+function setAIQuestion(q) {
+  document.getElementById('aiInput').value = q;
+  askAI();
+}
+
+async function askAI() {
+  const input = document.getElementById('aiInput');
+  const btn   = document.getElementById('aiAskBtn');
+  const area  = document.getElementById('aiResponseArea');
+  const msg   = input.value.trim();
+  if (!msg) { input.focus(); return; }
+
+  btn.disabled   = true;
+  area.innerHTML = `<div class="ai-typing">
+    <span class="ai-spin"><i class="fas fa-circle-notch"></i></span>
+    Analysing your farm data…
+  </div>`;
+
+  const ctx = {
+    crop:         ls(LS.CROP),
+    disease:      ls(LS.DISEASE),
+    pest:         ls(LS.PEST),
+    yield_value:  ls(LS.YIELD),
+    market_price: ls(LS.PRICE),
+    cost:         ls(LS.COST),
+  };
+  const hasCtx = Object.values(ctx).some(v => v.length > 0);
+
+  try {
+    const res  = await fetch(`${API}/api/chatbot`, {
+      method:      'POST',
+      headers:     { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body:        JSON.stringify({ message: msg, context: hasCtx ? ctx : undefined }),
+    });
+    const data       = await res.json();
+    const reply      = (data.reply || data.message || 'No response.').replace(/<br>/g, '\n');
+    const insight    = data.insight  || '';
+    const confidence = data.confidence || 'medium';
+    const confClass  = { high: 'high', medium: 'medium', low: 'low' }[confidence] || 'medium';
+
+    area.innerHTML = `
+      <div class="ai-reply-card">
+        ${insight
+          ? `<div class="ai-insight-chip"><i class="fas fa-lightbulb"></i>${esc(insight)}</div>`
+          : ''}
+        <div class="ai-reply-text">${esc(reply)}</div>
+        <span class="ai-conf ${confClass}">
+          <i class="fas fa-circle" style="font-size:7px;"></i>
+          ${confidence.toUpperCase()} confidence
+        </span>
+      </div>`;
+
+  } catch {
+    area.innerHTML = `
+      <div class="ai-reply-card" style="border-color:#fecaca; background:#fef2f2;">
+        <div class="ai-reply-text" style="color:#b91c1c;">
+          <i class="fas fa-triangle-exclamation"></i>
+          Could not reach AI. Please check your connection.
+        </div>
+      </div>`;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  setActiveNav('dashboard');
+  attachNavigation();
+  attachHamburger();
+  attachLogout();
+  app.attachNotification();
+  app.attachProfileIcon();
+
+  initHeader();
+  buildContextChips();
+
+  loadKPIs();
+  loadNotifPreview();
+
+  // Refresh every 30 s
+  setInterval(() => {
+    loadKPIs();
+    loadNotifPreview();
+  }, 30000);
+});
+</script>
+<script src="../js/app.js"></script>
+</body>
+</html>

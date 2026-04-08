@@ -1,0 +1,19 @@
+{
+  "labels": [
+    "Leaf Blight",
+    "Powdery Mildew",
+    "Rust",
+    "Healthy"
+  ],
+  "input_shape": [
+    224,
+    224,
+    3
+  ],
+  "n_classes": 4,
+  "backbone": "MobileNetV2",
+  "backbone_weights": "imagenet",
+  "preprocessing": "route divides by 255 \u2192 model rescales [0,1] to [-1,1]",
+  "head_trained": false,
+  "note": "Backbone has real ImageNet pretrained weights. Classification head is randomly initialised. Fine-tune on PlantVillage data for production accuracy."
+}

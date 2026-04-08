@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Profile – KrishiSetu</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* ── page-scoped extras ───────────────────────────────────── */
+    .profile-avatar {
+      width: 80px; height: 80px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary-green), #81c784);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 32px; color: #fff; font-weight: 700;
+      flex-shrink: 0;
+    }
+    .profile-header {
+      display: flex; align-items: center; gap: 20px;
+      margin-bottom: 30px;
+    }
+    .profile-header-info h2 {
+      font-size: 22px; font-weight: 700;
+      color: var(--text-dark); margin-bottom: 4px;
+    }
+    .profile-header-info p {
+      font-size: 14px; color: var(--text-light);
+    }
+    .section-divider {
+      border: none; border-top: 1px solid var(--border-light);
+      margin: 24px 0;
+    }
+    .section-label {
+      font-size: 11px; font-weight: 700; letter-spacing: 1.2px;
+      text-transform: uppercase; color: var(--primary-green);
+      margin-bottom: 16px; display: flex; align-items: center; gap-8px;
+    }
+    .section-label i { margin-right: 6px; }
+    .readonly-input {
+      background: #f8fafc !important;
+      color: var(--text-light) !important;
+      cursor: not-allowed;
+    }
+
+    /* ── soil upload zone ──────────────────────────────────────── */
+    .upload-zone {
+      border: 2px dashed var(--border-light);
+      border-radius: 12px; padding: 32px 20px;
+      text-align: center; background: #fafafa;
+      cursor: pointer; position: relative;
+      transition: border-color .2s, background .2s;
+    }
+    .upload-zone:hover, .upload-zone.drag-over {
+      border-color: var(--primary-green);
+      background: rgba(34,197,94,.04);
+    }
+    .upload-zone input[type="file"] {
+      position: absolute; inset: 0; opacity: 0;
+      cursor: pointer; width: 100%; height: 100%;
+    }
+    .upload-zone i { font-size: 32px; color: var(--primary-green); margin-bottom: 8px; }
+    .upload-zone p  { font-size: 14px; color: var(--text-light); margin: 0; }
+    .upload-zone .hint { font-size: 12px; color: #94a3b8; margin-top: 4px; }
+    .upload-filename {
+      margin-top: 10px; font-size: 13px; color: var(--primary-green);
+      display: none; align-items: center; gap: 6px; justify-content: center;
+    }
+
+    /* ── NPK result card ───────────────────────────────────────── */
+    .soil-result {
+      display: none;
+      background: linear-gradient(135deg,rgba(34,197,94,.06),rgba(22,163,74,.04));
+      border: 1px solid rgba(34,197,94,.25); border-radius: 12px;
+      padding: 20px; margin-top: 20px;
+    }
+    .soil-result.visible { display: block; }
+    .soil-result h4 {
+      font-size: 14px; font-weight: 700;
+      color: var(--primary-green); margin-bottom: 16px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .npk-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+    }
+    @media(max-width:600px){ .npk-grid { grid-template-columns: 1fr 1fr; } }
+    .npk-chip {
+      background: #fff; border-radius: 10px;
+      padding: 14px 10px; text-align: center;
+      box-shadow: 0 1px 4px rgba(0,0,0,.06);
+      border: 1px solid rgba(34,197,94,.15);
+    }
+    .npk-chip .val {
+      font-size: 22px; font-weight: 800; color: var(--primary-green);
+    }
+    .npk-chip .lbl { font-size: 11px; color: var(--text-light); margin-top: 2px; }
+    .npk-actions { margin-top: 16px; display: flex; gap: 10px; flex-wrap: wrap; }
+
+    /* ── spinner on upload btn ────────────────────────────────── */
+    .btn-loading { position: relative; color: transparent !important; }
+    .btn-loading::after {
+      content: ""; position: absolute;
+      width: 16px; height: 16px;
+      top: 50%; left: 50%; margin: -8px;
+      border: 2px solid rgba(255,255,255,.4);
+      border-top-color: #fff; border-radius: 50%;
+      animation: spin .6s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+<div class="app-container">
+  <!-- ── SIDEBAR (matches all other pages) ──────────────────────────── -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <a class="ks-brand" href="../home.html" title="KrishiSetu"><img src="../images/krishisetu-logo.svg" alt="KrishiSetu" class="ks-brand-img" /></a>
+    </div>
+    <div class="sidebar-body">
+      <ul class="nav-menu">
+        <li class="nav-item"><button class="nav-link" data-page="dashboard"><i class="fas fa-home"></i><span class="nav-label">Dashboard</span></button></li>
+        <li class="nav-item"><button class="nav-link" data-page="crop"><i class="fas fa-leaf"></i><span class="nav-label">Crop Recommendation</span></button></li>
+        <li class="nav-item"><button class="nav-link" data-page="disease"><i class="fas fa-virus"></i><span class="nav-label">Disease Detection</span></button></li>
+        <li class="nav-item"><button class="nav-link" data-page="pest"><i class="fas fa-bug"></i><span class="nav-label">Pest Detection</span></button></li>
+        <li class="nav-item"><button class="nav-link" data-page="fertilizer"><i class="fas fa-droplet"></i><span class="nav-label">Fertilizer</span></button></li>
+        <li class="nav-item"><button class="nav-link" data-page="market"><i class="fas fa-chart-line"></i><span class="nav-label">Market</span></button></li>
+        <li class="nav-item"><button class="nav-link" data-page="equipment"><i class="fas fa-tools"></i><span class="nav-label">Equipment</span></button></li>
+        <li class="nav-item"><button class="nav-link" data-page="schemes"><i class="fas fa-file-contract"></i><span class="nav-label">Schemes</span></button></li>
+        <li class="nav-item"><button class="nav-link" data-page="soil"><i class="fas fa-earth-americas"></i><span class="nav-label">Soil Analysis</span></button></li>
+        <li class="nav-item"><button class="nav-link" data-page="weather"><i class="fas fa-cloud"></i><span class="nav-label">Weather</span></button></li>
+        <li class="nav-item"><button class="nav-link" data-page="expert-queries"><i class="fas fa-comments"></i><span class="nav-label">Expert Queries</span></button></li>
+      </ul>
+    </div>
+    <div class="sidebar-footer">
+      <button class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+    </div>
+  </aside>
+
+  <div class="main-wrapper">
+    <!-- ── TOPBAR ──────────────────────────────────────────────────── -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="hamburger"><i class="fas fa-bars"></i></button>
+        <div class="topbar-title">My Profile</div>
+      </div>
+      <div class="topbar-right">
+        <div class="notification-icon">
+          <i class="fas fa-bell"></i>
+          <div class="notification-badge">0</div>
+        </div>
+        <div class="profile-icon" title="My Profile" style="color:var(--primary-green);cursor:default">
+          <i class="fas fa-user-circle"></i>
+        </div>
+      </div>
+    </header>
+
+    <main class="content-area">
+
+      <!-- ── GLOBAL ALERT AREA ───────────────────────────────────── -->
+      <div id="globalAlert" style="margin-bottom:16px"></div>
+
+      <!-- ══════════════════════════════════════════════════════════
+           SECTION 1 — ACCOUNT INFO
+      ══════════════════════════════════════════════════════════ -->
+      <div class="card" style="margin-bottom:24px">
+        <div class="profile-header">
+          <div class="profile-avatar" id="avatarInitial">?</div>
+          <div class="profile-header-info">
+            <h2 id="displayName">Loading…</h2>
+            <p id="displayEmail" style="color:var(--text-light)"></p>
+            <p style="font-size:12px;color:#94a3b8;margin-top:4px">
+              <i class="fas fa-shield-halved" style="color:var(--primary-green)"></i>
+              Farmer Account
+            </p>
+          </div>
+        </div>
+
+        <p class="section-label"><i class="fas fa-lock"></i>Account (read-only)</p>
+        <div class="grid grid-2">
+          <div class="form-group">
+            <label class="form-label">Username</label>
+            <input id="username" class="form-input readonly-input" readonly>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input id="email" class="form-input readonly-input" readonly>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Aadhaar Number</label>
+            <input id="aadhaar_number" class="form-input readonly-input" readonly
+                   placeholder="Not set">
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════════════
+           SECTION 2 — FARM DETAILS
+      ══════════════════════════════════════════════════════════ -->
+      <div class="card" style="margin-bottom:24px">
+        <p class="section-label"><i class="fas fa-tractor"></i>Farm Details</p>
+
+        <form id="profileForm">
+          <div class="grid grid-2">
+            <div class="form-group">
+              <label class="form-label">Mobile Number <span style="color:red">*</span></label>
+              <input id="mobile_number" class="form-input" placeholder="10-digit mobile" maxlength="15" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Survey Number</label>
+              <input id="survey_number" class="form-input" placeholder="Land survey number">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Crop Type <span style="color:red">*</span></label>
+              <input id="crop_type" class="form-input" placeholder="e.g. Rice, Wheat" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Location <span style="color:red">*</span></label>
+              <input id="location" class="form-input" placeholder="District, State" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Land Size (acres) <span style="color:red">*</span></label>
+              <input type="number" id="land_size" class="form-input" placeholder="e.g. 2.5" step="any" min="0" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Irrigation Type</label>
+              <select id="irrigation_type" class="form-select">
+                <option value="">Select…</option>
+                <option value="Drip">Drip</option>
+                <option value="Sprinkler">Sprinkler</option>
+                <option value="Flood">Flood</option>
+                <option value="Canal">Canal</option>
+                <option value="Rainfed">Rainfed</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="profileAlert" style="margin-top:12px"></div>
+
+          <div style="display:flex;gap:12px;margin-top:20px;flex-wrap:wrap">
+            <button type="submit" id="saveProfileBtn" class="btn btn-primary">
+              <i class="fas fa-save"></i> Save Profile
+            </button>
+            <button type="button" class="btn btn-outline"
+                    onclick="window.location.href='crop.html'">
+              <i class="fas fa-leaf"></i> Go to Crop Recommendation
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════════════
+           SECTION 3 — SOIL REPORT UPLOAD
+      ══════════════════════════════════════════════════════════ -->
+      <div class="card">
+        <p class="section-label"><i class="fas fa-flask"></i>Soil Report Upload</p>
+        <p style="font-size:13px;color:var(--text-light);margin-bottom:20px">
+          Upload your soil test report (PDF or image). The system will automatically
+          extract nitrogen, phosphorus, potassium, and pH values and pre-fill
+          the crop recommendation form for you.
+        </p>
+
+        <!-- Upload zone -->
+        <div class="upload-zone" id="uploadZone">
+          <input type="file" id="soilReportFile" accept=".pdf,.jpg,.jpeg,.png">
+          <i class="fas fa-cloud-arrow-up"></i>
+          <p>Click to upload or drag &amp; drop</p>
+          <p class="hint">PDF, JPG, PNG — max 5 MB</p>
+        </div>
+        <div class="upload-filename" id="fileDisplay">
+          <i class="fas fa-paperclip"></i><span id="fileName"></span>
+        </div>
+
+        <div style="margin-top:16px">
+          <button id="uploadBtn" class="btn btn-secondary" disabled>
+            <i class="fas fa-upload"></i> Analyse &amp; Save
+          </button>
+        </div>
+
+        <!-- NPK result (shown after upload / if already extracted) -->
+        <div class="soil-result" id="soilResult">
+          <h4><i class="fas fa-circle-check"></i> Soil Analysis Complete</h4>
+          <div class="npk-grid">
+            <div class="npk-chip">
+              <div class="val" id="resN">—</div>
+              <div class="lbl">Nitrogen (N)<br><small>kg/ha</small></div>
+            </div>
+            <div class="npk-chip">
+              <div class="val" id="resP">—</div>
+              <div class="lbl">Phosphorus (P)<br><small>kg/ha</small></div>
+            </div>
+            <div class="npk-chip">
+              <div class="val" id="resK">—</div>
+              <div class="lbl">Potassium (K)<br><small>kg/ha</small></div>
+            </div>
+            <div class="npk-chip">
+              <div class="val" id="resPH">—</div>
+              <div class="lbl">pH<br><small>0 – 14</small></div>
+            </div>
+          </div>
+          <div class="npk-actions">
+            <button class="btn btn-primary" onclick="window.location.href='crop.html'">
+              <i class="fas fa-wand-magic-sparkles"></i> Get Crop Recommendation
+            </button>
+          </div>
+        </div>
+
+        <div id="uploadAlert" style="margin-top:12px"></div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script>
+const API = "http://127.0.0.1:5000";
+
+// ── helpers ────────────────────────────────────────────────────────────────
+function showAlert(containerId, msg, type) {
+  var c = document.getElementById(containerId);
+  if (!c) return;
+  var icon = type === "success" ? "✓" : type === "info" ? "ℹ" : "✕";
+  c.innerHTML = `<div class="alert alert-${type}"><span class="alert-icon">${icon}</span>${msg}</div>`;
+  if (type !== "success") return;
+  setTimeout(function(){ c.innerHTML = ""; }, 4000);
+}
+function setBtn(id, loading) {
+  var b = document.getElementById(id);
+  if (!b) return;
+  b.disabled = loading;
+  b.classList.toggle("btn-loading", loading);
+}
+function showNPK(soil) {
+  var r = document.getElementById("soilResult");
+  if (!r) return;
+  document.getElementById("resN").textContent  = soil.nitrogen   != null ? Number(soil.nitrogen).toFixed(1)   : "—";
+  document.getElementById("resP").textContent  = soil.phosphorus != null ? Number(soil.phosphorus).toFixed(1) : "—";
+  document.getElementById("resK").textContent  = soil.potassium  != null ? Number(soil.potassium).toFixed(1)  : "—";
+  document.getElementById("resPH").textContent = soil.ph         != null ? Number(soil.ph).toFixed(1)         : "—";
+  r.classList.add("visible");
+}
+
+// ── load profile on page open ──────────────────────────────────────────────
+async function loadProfile() {
+  try {
+    var res  = await fetch(API + "/api/profile", { credentials: "include" });
+    var p    = await res.json();
+
+    if (!p.success) {
+      // Only redirect on auth errors from authenticated routes; this endpoint
+      // should always succeed (falls back to farmer_id = 1).
+      console.warn("Profile load failed:", p.message);
+      return;
+    }
+
+    // Avatar + header
+    var uname = p.username || localStorage.getItem("userName") || "Farmer";
+    document.getElementById("avatarInitial").textContent = uname.charAt(0).toUpperCase();
+    document.getElementById("displayName").textContent   = uname;
+    document.getElementById("displayEmail").textContent  = p.email || "";
+
+    // Read-only account fields
+    document.getElementById("username").value       = p.username      || "";
+    document.getElementById("email").value          = p.email         || "";
+    document.getElementById("aadhaar_number").value = p.aadhaar       || "";
+
+    // Editable farm fields
+    document.getElementById("mobile_number").value   = p.mobile        || "";
+    document.getElementById("survey_number").value   = p.survey_number || "";
+    document.getElementById("crop_type").value       = p.crop_type     || "";
+    document.getElementById("location").value        = p.location      || "";
+    document.getElementById("land_size").value       = p.land_size != null ? p.land_size : "";
+    document.getElementById("irrigation_type").value = p.irrigation    || "";
+
+    // Soil data card
+    if (p.has_soil_data) {
+      showNPK({ nitrogen: p.nitrogen, phosphorus: p.phosphorus,
+                potassium: p.potassium, ph: p.ph });
+    }
+
+    // Cache username for other pages
+    if (p.username) localStorage.setItem("userName", p.username);
+
+  } catch (e) {
+    console.warn("Profile load error:", e);
+  }
+}
+
+// ── save farm details ──────────────────────────────────────────────────────
+document.getElementById("profileForm").addEventListener("submit", async function(e) {
+  e.preventDefault();
+
+  var mobile    = document.getElementById("mobile_number").value.trim();
+  var cropType  = document.getElementById("crop_type").value.trim();
+  var location  = document.getElementById("location").value.trim();
+  var landSize  = parseFloat(document.getElementById("land_size").value);
+
+  if (!mobile || !cropType || !location || isNaN(landSize)) {
+    showAlert("profileAlert", "Please fill all required fields (mobile, crop, location, land size).", "danger");
+    return;
+  }
+
+  var payload = {
+    mobile:        mobile,
+    crop_type:     cropType,
+    location:      location,
+    land_size:     landSize,
+    irrigation:    document.getElementById("irrigation_type").value,
+    survey_number: document.getElementById("survey_number").value.trim(),
+  };
+
+  setBtn("saveProfileBtn", true);
+  try {
+    var res  = await fetch(API + "/api/profile/save", {
+      method: "POST", credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    var json = await res.json();
+
+    if (json.success) {
+      showAlert("profileAlert", "✓ Profile saved successfully!", "success");
+      // Reload profile so displayed data matches what was just saved
+      await loadProfile();
+    } else {
+      showAlert("profileAlert", json.message || "Save failed.", "danger");
+    }
+  } catch (err) {
+    showAlert("profileAlert", "Server error. Is the backend running?", "danger");
+  } finally {
+    setBtn("saveProfileBtn", false);
+  }
+});
+
+// ── file input handling ────────────────────────────────────────────────────
+(function() {
+  var zone = document.getElementById("uploadZone");
+  var inp  = document.getElementById("soilReportFile");
+  var disp = document.getElementById("fileDisplay");
+  var nm   = document.getElementById("fileName");
+  var btn  = document.getElementById("uploadBtn");
+
+  function setFile(file) {
+    if (!file) return;
+    nm.textContent = file.name;
+    disp.style.display = "flex";
+    btn.disabled = false;
+  }
+  inp.addEventListener("change", function() { setFile(inp.files[0]); });
+  zone.addEventListener("dragover", function(e) { e.preventDefault(); zone.classList.add("drag-over"); });
+  zone.addEventListener("dragleave", function() { zone.classList.remove("drag-over"); });
+  zone.addEventListener("drop", function(e) {
+    e.preventDefault(); zone.classList.remove("drag-over");
+    if (e.dataTransfer && e.dataTransfer.files.length) {
+      inp.files = e.dataTransfer.files;
+      setFile(e.dataTransfer.files[0]);
+    }
+  });
+})();
+
+// ── upload & analyse ───────────────────────────────────────────────────────
+document.getElementById("uploadBtn").addEventListener("click", async function() {
+  var file = document.getElementById("soilReportFile").files[0];
+  if (!file) { showAlert("uploadAlert", "Select a file first.", "danger"); return; }
+  if (file.size > 5 * 1024 * 1024) { showAlert("uploadAlert", "File must be under 5 MB.", "danger"); return; }
+
+  setBtn("uploadBtn", true);
+  document.getElementById("uploadAlert").innerHTML = "";
+
+  var fd = new FormData();
+  fd.append("soil_report", file);
+
+  try {
+    var res = await fetch(API + "/farmer/upload-soil-report", {
+      method: "POST", credentials: "include", body: fd,
+    });
+    var json = await res.json();
+    if (json.success && json.data && json.data.soil) {
+      showNPK(json.data.soil);
+      showAlert("uploadAlert", "Soil report analysed! Values saved to your profile.", "success");
+      // Cache for crop page auto-fill
+      localStorage.setItem("soilData", JSON.stringify(json.data.soil));
+    } else {
+      showAlert("uploadAlert", json.message || "Upload failed.", "danger");
+    }
+  } catch (err) {
+    showAlert("uploadAlert", "Server error during upload.", "danger");
+  } finally {
+    setBtn("uploadBtn", false);
+  }
+});
+
+// ── boot ──────────────────────────────────────────────────────────────────
+document.addEventListener("DOMContentLoaded", function() {
+  setActiveNav("profile");   // no sidebar item for profile — safe no-op
+  attachNavigation();
+  attachHamburger();
+  attachLogout();
+  loadProfile();
+});
+</script>
+<script src="../js/app.js"></script>
+</body>
+</html>

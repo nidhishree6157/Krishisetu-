@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Schemes &amp; Profit Intelligence — KrishiSetu</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* ── Page-scoped tokens ─────────────────────────────────── */
+    :root {
+      --sp-green:   #2e7d32;
+      --sp-light:   #f0fdf4;
+      --sp-border:  #bbf7d0;
+      --sp-yellow:  #fef08a;
+      --sp-red:     #fee2e2;
+      --sp-red-txt: #b91c1c;
+      --sp-amber:   #fef3c7;
+      --sp-amber-txt:#92400e;
+      --sp-blue:    #dbeafe;
+      --sp-blue-txt:#1e40af;
+    }
+
+    /* ── Tab system ─────────────────────────────────────────── */
+    .tab-bar {
+      display: flex;
+      gap: 0;
+      border-bottom: 2px solid var(--border-light, #e5e7eb);
+      margin-bottom: 28px;
+    }
+    .tab-btn {
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      padding: 12px 22px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-light, #6b7280);
+      cursor: pointer;
+      margin-bottom: -2px;
+      transition: color .2s, border-color .2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .tab-btn.active {
+      color: var(--sp-green);
+      border-bottom-color: var(--sp-green);
+    }
+    .tab-btn:hover:not(.active) { color: var(--primary-green, #2e7d32); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ── Scheme cards ────────────────────────────────────────── */
+    .scheme-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    .scheme-card {
+      background: #fff;
+      border: 1px solid var(--border-light, #e5e7eb);
+      border-radius: 14px;
+      padding: 20px;
+      transition: box-shadow .2s, transform .2s;
+      display: flex;
+      flex-direction: column;
+    }
+    .scheme-card:hover {
+      box-shadow: 0 8px 24px rgba(0,0,0,.08);
+      transform: translateY(-2px);
+    }
+    .scheme-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .scheme-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-primary, #111827);
+      flex: 1;
+      line-height: 1.4;
+    }
+    .badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .badge-national  { background: var(--sp-blue);  color: var(--sp-blue-txt); }
+    .badge-state     { background: var(--sp-amber);  color: var(--sp-amber-txt); }
+    .badge-subsidy   { background: var(--sp-light);  color: var(--sp-green); }
+    .badge-insurance { background: #fce7f3;           color: #9d174d; }
+    .badge-loan      { background: #ede9fe;           color: #5b21b6; }
+    .badge-grant     { background: var(--sp-yellow);  color: #713f12; }
+
+    .scheme-benefit {
+      font-size: 13.5px;
+      color: var(--sp-green);
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .scheme-meta {
+      font-size: 12.5px;
+      color: var(--text-light, #6b7280);
+      line-height: 1.6;
+      flex: 1;
+    }
+    .scheme-meta span { display: block; }
+    .scheme-footer {
+      margin-top: 14px;
+      display: flex;
+      gap: 8px;
+    }
+    .btn-apply {
+      flex: 1;
+      padding: 9px 0;
+      border-radius: 8px;
+      background: var(--sp-green);
+      color: #fff;
+      border: none;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity .2s;
+      text-align: center;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+    }
+    .btn-apply:hover { opacity: .85; }
+    .btn-outline-sm {
+      flex: 1;
+      padding: 9px 0;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--sp-green);
+      border: 1.5px solid var(--sp-green);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+    }
+    .btn-outline-sm:hover { background: var(--sp-light); }
+
+    /* ── Profit calculator ───────────────────────────────────── */
+    .profit-form {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 18px;
+      margin-bottom: 20px;
+    }
+    .profit-form .form-group { margin: 0; }
+
+    .profit-result {
+      display: none;
+      margin-top: 24px;
+    }
+    .profit-result.visible { display: block; }
+
+    .profit-headline {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    @media (max-width: 600px) {
+      .profit-headline { grid-template-columns: 1fr; }
+    }
+    .profit-kpi {
+      border-radius: 14px;
+      padding: 20px;
+      text-align: center;
+    }
+    .profit-kpi .kpi-label {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      margin-bottom: 8px;
+    }
+    .profit-kpi .kpi-value {
+      font-size: 26px;
+      font-weight: 800;
+      line-height: 1;
+    }
+    .kpi-revenue  { background: var(--sp-blue);  color: var(--sp-blue-txt); }
+    .kpi-cost     { background: var(--sp-red);   color: var(--sp-red-txt); }
+    .kpi-profit-p { background: var(--sp-light); color: var(--sp-green); }
+    .kpi-profit-n { background: var(--sp-red);   color: var(--sp-red-txt); }
+
+    .breakdown-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .breakdown-item {
+      background: var(--card-bg, #f9fafb);
+      border: 1px solid var(--border-light, #e5e7eb);
+      border-radius: 10px;
+      padding: 14px 16px;
+    }
+    .breakdown-item .bi-label {
+      font-size: 11.5px;
+      color: var(--text-light, #6b7280);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .4px;
+      margin-bottom: 4px;
+    }
+    .breakdown-item .bi-value {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text-primary, #111827);
+    }
+
+    .rating-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
+    .rating-excellent { background: var(--sp-light); color: var(--sp-green); }
+    .rating-good      { background: #d1fae5;         color: #065f46; }
+    .rating-average   { background: var(--sp-amber); color: var(--sp-amber-txt); }
+    .rating-low       { background: #fed7aa;         color: #92400e; }
+    .rating-loss      { background: var(--sp-red);   color: var(--sp-red-txt); }
+
+    .advice-box {
+      border-radius: 10px;
+      padding: 14px 18px;
+      font-size: 13.5px;
+      line-height: 1.6;
+      border-left: 4px solid;
+    }
+    .advice-positive { background: var(--sp-light); border-color: var(--sp-green);   color: #14532d; }
+    .advice-neutral  { background: var(--sp-amber); border-color: #d97706;           color: var(--sp-amber-txt); }
+    .advice-negative { background: var(--sp-red);   border-color: var(--sp-red-txt); color: var(--sp-red-txt); }
+
+    .auto-fill-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+    .auto-fill-btn {
+      font-size: 12px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      border: 1.5px solid var(--sp-green);
+      background: var(--sp-light);
+      color: var(--sp-green);
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .auto-fill-btn:hover { background: #dcfce7; }
+
+    /* ── Filter bar ──────────────────────────────────────────── */
+    .filter-bar {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      margin-bottom: 22px;
+    }
+    .filter-bar .form-group { margin: 0; min-width: 160px; }
+
+    /* ── Utility ─────────────────────────────────────────────── */
+    .loading-state, .empty-state {
+      padding: 48px 20px;
+      text-align: center;
+      color: var(--text-light, #6b7280);
+    }
+    .loading-state i, .empty-state i { font-size: 36px; display: block; margin-bottom: 12px; }
+
+    .section-tip {
+      background: var(--sp-blue);
+      color: var(--sp-blue-txt);
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 13px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .section-tip i { margin-top: 1px; flex-shrink: 0; }
+  </style>
+</head>
+<body>
+<div class="app-container">
+  <!-- ── Sidebar ──────────────────────────────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <a class="ks-brand" href="../home.html" title="KrishiSetu"><img src="../images/krishisetu-logo.svg" alt="KrishiSetu" class="ks-brand-img" /></a>
+    </div>
+    <div class="sidebar-body">
+      <ul class="nav-menu">
+        <li class="nav-item"><button class="nav-link" data-page="dashboard"><i class="fas fa-home"></i><span class="nav-label">Dashboard</span></button></li>
+        <li class="nav-item"><button class="nav-link" data-page="crop"><i class="fas fa-leaf"></i><span class="nav-label">Crop Recommendation</span></button></li>
+        <li class="nav-item"><button class="nav-link" data-page="disease"><i class="fas fa-virus"></i><span class="nav-label">Disease Detection</span></button></li>
+        <li class="nav-item"><button class="nav-link" data-page="pest"><i class="fas fa-bug"></i><span class="nav-label">Pest Detection</span></button></li>
+        <li class="nav-item"><button class="nav-link" data-page="fertilizer"><i class="fas fa-droplet"></i><span class="nav-label">Fertilizer</span></button></li>
+        <li class="nav-item"><button class="nav-link" data-page="market"><i class="fas fa-chart-line"></i><span class="nav-label">Market</span></button></li>
+        <li class="nav-item"><button class="nav-link" data-page="yield"><i class="fas fa-wheat-awn"></i><span class="nav-label">Yield Prediction</span></button></li>
+        <li class="nav-item"><button class="nav-link" data-page="equipment"><i class="fas fa-tools"></i><span class="nav-label">Equipment</span></button></li>
+        <li class="nav-item"><button class="nav-link active" data-page="schemes"><i class="fas fa-file-contract"></i><span class="nav-label">Schemes &amp; Profit</span></button></li>
+        <li class="nav-item"><button class="nav-link" data-page="soil"><i class="fas fa-earth-americas"></i><span class="nav-label">Soil Analysis</span></button></li>
+        <li class="nav-item"><button class="nav-link" data-page="weather"><i class="fas fa-cloud"></i><span class="nav-label">Weather</span></button></li>
+        <li class="nav-item"><button class="nav-link" data-page="expert-queries"><i class="fas fa-comments"></i><span class="nav-label">Expert Queries</span></button></li>
+      </ul>
+    </div>
+    <div class="sidebar-footer">
+      <button class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+    </div>
+  </aside>
+
+  <!-- ── Main wrapper ─────────────────────────────────────────────────── -->
+  <div class="main-wrapper">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="hamburger"><i class="fas fa-bars"></i></button>
+        <div class="topbar-title">Schemes &amp; Profit Intelligence</div>
+      </div>
+      <div class="topbar-right">
+        <div class="notification-icon">
+          <i class="fas fa-bell"></i>
+          <div class="notification-badge">3</div>
+        </div>
+        <div class="profile-icon"><i class="fas fa-user-circle"></i></div>
+      </div>
+    </header>
+
+    <main class="content-area">
+
+      <!-- ── Tab bar ─────────────────────────────────────────────────── -->
+      <div class="tab-bar">
+        <button class="tab-btn active" data-tab="schemes-tab">
+          <i class="fas fa-file-contract"></i> Scheme Finder
+        </button>
+        <button class="tab-btn" data-tab="profit-tab">
+          <i class="fas fa-indian-rupee-sign"></i> Profit Calculator
+        </button>
+        <button class="tab-btn" data-tab="all-schemes-tab">
+          <i class="fas fa-list"></i> All Schemes
+        </button>
+      </div>
+
+      <!-- ════════════════════════════════════════════════════════════════
+           TAB 1 — SCHEME FINDER
+      ═══════════════════════════════════════════════════════════════════ -->
+      <div class="tab-panel active" id="schemes-tab">
+
+        <div class="section-tip">
+          <i class="fas fa-lightbulb"></i>
+          <span>Enter your crop and state to discover national &amp; state-specific government schemes you qualify for.</span>
+        </div>
+
+        <!-- Filter bar -->
+        <div class="filter-bar">
+          <div class="form-group">
+            <label class="form-label" for="sf-crop">Crop</label>
+            <select id="sf-crop" class="form-select">
+              <option value="">Select Crop</option>
+              <option value="rice">Rice</option>
+              <option value="wheat">Wheat</option>
+              <option value="maize">Maize</option>
+              <option value="cotton">Cotton</option>
+              <option value="coconut">Coconut</option>
+              <option value="arecanut">Arecanut</option>
+              <option value="coffee">Coffee</option>
+              <option value="pepper">Pepper</option>
+              <option value="turmeric">Turmeric</option>
+              <option value="sugarcane">Sugarcane</option>
+              <option value="groundnut">Groundnut</option>
+              <option value="soybean">Soybean</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="sf-state">State</label>
+            <select id="sf-state" class="form-select">
+              <option value="">Select State</option>
+              <option value="karnataka">Karnataka</option>
+              <option value="maharashtra">Maharashtra</option>
+              <option value="punjab">Punjab</option>
+              <option value="haryana">Haryana</option>
+              <option value="madhya-pradesh">Madhya Pradesh</option>
+              <option value="uttar-pradesh">Uttar Pradesh</option>
+              <option value="gujarat">Gujarat</option>
+              <option value="andhra-pradesh">Andhra Pradesh</option>
+              <option value="telangana">Telangana</option>
+              <option value="kerala">Kerala</option>
+              <option value="tamil-nadu">Tamil Nadu</option>
+              <option value="rajasthan">Rajasthan</option>
+              <option value="bihar">Bihar</option>
+            </select>
+          </div>
+
+          <button class="btn btn-primary" onclick="findSchemes()">
+            <i class="fas fa-search"></i> Find Schemes
+          </button>
+        </div>
+
+        <div id="schemeFinderResult">
+          <div class="empty-state">
+            <i class="fas fa-search"></i>
+            <p>Select a crop and state, then click <strong>Find Schemes</strong>.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════════════════════════════════════════════════════════════
+           TAB 2 — PROFIT CALCULATOR
+      ═══════════════════════════════════════════════════════════════════ -->
+      <div class="tab-panel" id="profit-tab">
+
+        <div class="section-tip">
+          <i class="fas fa-info-circle"></i>
+          <span>Use <strong>Auto-fill from Yield Module</strong> and <strong>Auto-fill from Market Module</strong> to pre-populate yield and price, then enter your total farming cost to see profit estimates.</span>
+        </div>
+
+        <!-- Auto-fill row -->
+        <div class="auto-fill-row">
+          <button class="auto-fill-btn" onclick="autoFillYield()">
+            <i class="fas fa-wheat-awn"></i> Auto-fill from Yield Module
+          </button>
+          <button class="auto-fill-btn" onclick="autoFillMarket()">
+            <i class="fas fa-chart-line"></i> Auto-fill from Market Module
+          </button>
+        </div>
+
+        <div class="card">
+          <div class="card-title"><i class="fas fa-calculator"></i> Profit Input</div>
+
+          <div class="profit-form">
+            <div class="form-group">
+              <label class="form-label" for="pc-crop">Crop</label>
+              <select id="pc-crop" class="form-select" onchange="onCropChange()">
+                <option value="">Select Crop</option>
+                <option value="rice">Rice</option>
+                <option value="wheat">Wheat</option>
+                <option value="maize">Maize</option>
+                <option value="cotton">Cotton</option>
+                <option value="coconut">Coconut</option>
+                <option value="arecanut">Arecanut</option>
+                <option value="coffee">Coffee</option>
+                <option value="pepper">Pepper</option>
+                <option value="sugarcane">Sugarcane</option>
+                <option value="groundnut">Groundnut</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="pc-area">Farm Area (hectares)</label>
+              <input type="number" id="pc-area" class="form-input" placeholder="e.g. 2.5" step="0.1" min="0.1" value="1">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="pc-yield">
+                Total Yield (kg)
+                <span style="font-size:11px; color: var(--sp-green);">(from Yield Module)</span>
+              </label>
+              <input type="number" id="pc-yield" class="form-input" placeholder="e.g. 5200" min="0">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="pc-price">
+                Market Price (₹/quintal)
+                <span style="font-size:11px; color: var(--sp-green);">(from Market Module)</span>
+              </label>
+              <input type="number" id="pc-price" class="form-input" placeholder="e.g. 2200" min="0">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="pc-cost">Total Farming Cost (₹)</label>
+              <input type="number" id="pc-cost" class="form-input" placeholder="e.g. 18000" min="0">
+            </div>
+
+            <div class="form-group" style="display: flex; align-items: flex-end;">
+              <button class="btn btn-primary" style="width:100%;" onclick="calcProfit()">
+                <i class="fas fa-calculator"></i> Calculate Profit
+              </button>
+            </div>
+          </div>
+
+          <!-- Profit result ─────────────────────────────────────────── -->
+          <div id="profitResult" class="profit-result">
+
+            <!-- Headline KPIs -->
+            <div class="profit-headline">
+              <div class="profit-kpi kpi-revenue">
+                <div class="kpi-label">Revenue</div>
+                <div class="kpi-value" id="pr-revenue">₹0</div>
+              </div>
+              <div class="profit-kpi kpi-cost">
+                <div class="kpi-label">Cost</div>
+                <div class="kpi-value" id="pr-cost">₹0</div>
+              </div>
+              <div class="profit-kpi" id="pr-profit-kpi">
+                <div class="kpi-label">Profit / Loss</div>
+                <div class="kpi-value" id="pr-profit">₹0</div>
+              </div>
+            </div>
+
+            <!-- Breakdown grid -->
+            <div class="breakdown-grid">
+              <div class="breakdown-item">
+                <div class="bi-label">Yield (Quintals)</div>
+                <div class="bi-value" id="pr-quintals">—</div>
+              </div>
+              <div class="breakdown-item">
+                <div class="bi-label">Profit / Hectare</div>
+                <div class="bi-value" id="pr-per-ha">—</div>
+              </div>
+              <div class="breakdown-item">
+                <div class="bi-label">Margin %</div>
+                <div class="bi-value" id="pr-margin">—</div>
+              </div>
+              <div class="breakdown-item">
+                <div class="bi-label">Break-even Price</div>
+                <div class="bi-value" id="pr-breakeven">—</div>
+              </div>
+            </div>
+
+            <!-- Rating + advice -->
+            <div id="pr-rating-badge" class="rating-badge"></div>
+            <div id="pr-advice" class="advice-box advice-positive"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════════════════════════════════════════════════════════════
+           TAB 3 — ALL SCHEMES (legacy list, kept intact)
+      ═══════════════════════════════════════════════════════════════════ -->
+      <div class="tab-panel" id="all-schemes-tab">
+        <div class="section-tip">
+          <i class="fas fa-info-circle"></i>
+          <span>Browse the full list of schemes stored in the database, or use the Scheme Finder tab for crop-specific results.</span>
+        </div>
+
+        <div class="card" style="margin-bottom: 24px;">
+          <div class="card-title"><i class="fas fa-filter"></i> Filter Schemes</div>
+          <form id="filterForm">
+            <div class="grid grid-3">
+              <div class="form-group">
+                <label class="form-label" for="state">Your State</label>
+                <select id="state" name="state" class="form-select">
+                  <option value="">Select State</option>
+                  <option value="maharashtra">Maharashtra</option>
+                  <option value="punjab">Punjab</option>
+                  <option value="haryana">Haryana</option>
+                  <option value="madhya-pradesh">Madhya Pradesh</option>
+                  <option value="uttar-pradesh">Uttar Pradesh</option>
+                  <option value="karnataka">Karnataka</option>
+                  <option value="all">All India</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="type">Scheme Type</label>
+                <select id="type" name="type" class="form-select">
+                  <option value="">All Types</option>
+                  <option value="subsidy">Subsidy</option>
+                  <option value="loan">Loan</option>
+                  <option value="grant">Grant</option>
+                  <option value="insurance">Insurance</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="status">Status</label>
+                <select id="status" name="status" class="form-select">
+                  <option value="">All Status</option>
+                  <option value="active">Active</option>
+                  <option value="upcoming">Upcoming</option>
+                  <option value="closed">Closed</option>
+                </select>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary" style="margin-top: 15px;">
+              <i class="fas fa-search"></i> Search Schemes
+            </button>
+          </form>
+        </div>
+
+        <div id="schemesContainer" class="scheme-grid">
+          <div style="grid-column:1/-1" class="loading-state">
+            <i class="fas fa-spinner fa-spin"></i>
+            Loading schemes…
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+// ── Tab switching ─────────────────────────────────────────────────────────────
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.tab).classList.add('active');
+    if (btn.dataset.tab === 'all-schemes-tab') loadAllSchemes();
+  });
+});
+
+// ── Scheme Finder ─────────────────────────────────────────────────────────────
+async function findSchemes() {
+  const crop     = document.getElementById('sf-crop').value;
+  const location = document.getElementById('sf-state').value;
+  const container = document.getElementById('schemeFinderResult');
+
+  if (!crop && !location) {
+    container.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>Please select at least a crop or state.</p></div>';
+    return;
+  }
+
+  container.innerHTML = '<div class="loading-state"><i class="fas fa-spinner fa-spin"></i><p>Finding schemes…</p></div>';
+
+  try {
+    const params  = new URLSearchParams();
+    if (crop)     params.set('crop', crop);
+    if (location) params.set('location', location);
+
+    const res  = await fetch(`http://127.0.0.1:5000/schemes/recommend?${params}`, { credentials: 'include' });
+    const data = await res.json();
+
+    if (!data.success || !data.schemes || data.schemes.length === 0) {
+      container.innerHTML = '<div class="empty-state"><i class="fas fa-info-circle"></i><p>No schemes found for your selection.</p></div>';
+      return;
+    }
+
+    renderSchemes(container, data.schemes);
+  } catch (err) {
+    console.error(err);
+    container.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Could not load schemes. Please try again.</p></div>';
+  }
+}
+
+function renderSchemes(container, schemes) {
+  const typeBadgeClass = {
+    'Cash Transfer': 'badge-subsidy',
+    'Insurance':     'badge-insurance',
+    'Subsidy':       'badge-subsidy',
+    'Loan':          'badge-loan',
+    'Grant':         'badge-grant',
+  };
+
+  container.innerHTML = `
+    <p style="font-size:13px; color: var(--text-light); margin-bottom:16px;">
+      <i class="fas fa-check-circle" style="color:var(--sp-green);"></i>
+      Found <strong>${schemes.length}</strong> scheme(s) applicable to your selection.
+    </p>
+    <div class="scheme-grid">
+      ${schemes.map(s => `
+        <div class="scheme-card">
+          <div class="scheme-header">
+            <div class="scheme-name">${s.name}</div>
+            <div style="display:flex; flex-direction:column; gap:4px; align-items:flex-end;">
+              <span class="badge ${s.scope === 'National' ? 'badge-national' : 'badge-state'}">${s.scope}</span>
+              <span class="badge ${typeBadgeClass[s.type] || 'badge-subsidy'}">${s.type}</span>
+            </div>
+          </div>
+          <div class="scheme-benefit"><i class="fas fa-gift" style="margin-right:5px;"></i>${s.benefit}</div>
+          <div class="scheme-meta">
+            <span><i class="fas fa-user-check" style="width:14px; color:var(--sp-green);"></i> ${s.eligibility}</span>
+            <span style="margin-top:4px;"><i class="fas fa-calendar" style="width:14px; color:var(--sp-green);"></i> Deadline: ${s.deadline}</span>
+          </div>
+          <div class="scheme-footer">
+            <a href="${s.apply_url || '#'}" target="_blank" rel="noopener" class="btn-apply">
+              <i class="fas fa-external-link-alt"></i> Apply Now
+            </a>
+            <button class="btn-outline-sm" onclick="alert('Scheme: ${s.name.replace(/'/g,"\\'")}\\n\\nBenefit: ${s.benefit.replace(/'/g,"\\'")}\\n\\nEligibility: ${s.eligibility.replace(/'/g,"\\'")}')">
+              <i class="fas fa-info-circle"></i> Details
+            </button>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+// ── Profit Calculator ─────────────────────────────────────────────────────────
+
+function onCropChange() {
+  // Offer to auto-fill default cost hint per crop
+  const cropCosts = {
+    rice: 20000, wheat: 18000, maize: 15000, cotton: 30000,
+    coconut: 25000, arecanut: 22000, coffee: 35000, pepper: 28000,
+    sugarcane: 40000, groundnut: 18000
+  };
+  const crop = document.getElementById('pc-crop').value;
+  if (crop && cropCosts[crop]) {
+    const costEl = document.getElementById('pc-cost');
+    if (!costEl.value) costEl.placeholder = `Avg. ~₹${cropCosts[crop].toLocaleString('en-IN')}`;
+  }
+}
+
+async function autoFillYield() {
+  const crop = document.getElementById('pc-crop').value;
+  const area = parseFloat(document.getElementById('pc-area').value) || 1;
+  if (!crop) { alert('Please select a crop first.'); return; }
+
+  try {
+    const res  = await fetch('http://127.0.0.1:5000/yield/predict', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ crop, area })
+    });
+    const data = await res.json();
+    if (data.success && data.total_yield) {
+      document.getElementById('pc-yield').value = data.total_yield;
+      showAutoFillNotice('pc-yield', `Auto-filled from Yield Module: ${data.total_yield} kg (${data.rating || ''})`);
+    } else {
+      alert('Yield module returned no data. Enter manually.');
+    }
+  } catch (err) {
+    console.error(err);
+    alert('Could not reach Yield Module. Please enter yield manually.');
+  }
+}
+
+async function autoFillMarket() {
+  const crop = document.getElementById('pc-crop').value;
+  if (!crop) { alert('Please select a crop first.'); return; }
+
+  try {
+    const res  = await fetch(`http://127.0.0.1:5000/market/intelligence?crop=${crop}&location=karnataka`, {
+      credentials: 'include'
+    });
+    const data = await res.json();
+    const price = data?.current_price || data?.data?.current_price;
+    if (price) {
+      document.getElementById('pc-price').value = price;
+      showAutoFillNotice('pc-price', `Auto-filled from Market Module: ₹${price}/quintal`);
+    } else {
+      alert('Market module returned no price. Enter manually.');
+    }
+  } catch (err) {
+    console.error(err);
+    alert('Could not reach Market Module. Please enter price manually.');
+  }
+}
+
+function showAutoFillNotice(fieldId, msg) {
+  const el = document.getElementById(fieldId);
+  el.style.borderColor = 'var(--sp-green)';
+  const notice = document.createElement('div');
+  notice.style.cssText = 'font-size:11.5px; color:var(--sp-green); margin-top:3px;';
+  notice.textContent = '✓ ' + msg;
+  const existing = el.parentNode.querySelector('.autofill-notice');
+  if (existing) existing.remove();
+  notice.classList.add('autofill-notice');
+  el.parentNode.appendChild(notice);
+  setTimeout(() => { el.style.borderColor = ''; notice.remove(); }, 4000);
+}
+
+async function calcProfit() {
+  const yieldKg  = parseFloat(document.getElementById('pc-yield').value);
+  const price    = parseFloat(document.getElementById('pc-price').value);
+  const cost     = parseFloat(document.getElementById('pc-cost').value);
+  const area     = parseFloat(document.getElementById('pc-area').value) || 1;
+
+  if (isNaN(yieldKg) || isNaN(price) || isNaN(cost)) {
+    alert('Please fill in Yield, Price, and Cost fields.');
+    return;
+  }
+
+  try {
+    const res  = await fetch('http://127.0.0.1:5000/schemes/profit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ yield_kg: yieldKg, price_per_quintal: price, cost, area_ha: area })
+    });
+    const d = await res.json();
+    if (!d.success) { alert(d.message || 'Calculation failed.'); return; }
+    renderProfit(d);
+  } catch (err) {
+    console.error(err);
+    // Client-side fallback
+    const yieldQ   = yieldKg / 100;
+    const revenue  = Math.round(yieldQ * price);
+    const profit   = revenue - cost;
+    const margin   = revenue > 0 ? Math.round((profit / revenue) * 100 * 10) / 10 : 0;
+    const breakevenP = yieldQ > 0 ? Math.round(cost / yieldQ) : 0;
+    renderProfit({
+      success: true, yield_kg: yieldKg, yield_quintals: yieldQ,
+      price_per_quintal: price, area_ha: area,
+      revenue, cost: Math.round(cost), profit,
+      profit_per_hectare: Math.round(profit / area),
+      margin_pct: margin, breakeven_price: breakevenP,
+      rating: profit > 0 ? 'Good' : 'Loss',
+      advice: profit > 0 ? 'Positive profit expected.' : 'Cost exceeds revenue. Reduce expenses.'
+    });
+  }
+}
+
+function renderProfit(d) {
+  const fmt = n => '₹' + Math.abs(n).toLocaleString('en-IN');
+  const sign = d.profit < 0 ? '-' : '';
+
+  document.getElementById('pr-revenue').textContent  = fmt(d.revenue);
+  document.getElementById('pr-cost').textContent     = fmt(d.cost);
+  document.getElementById('pr-profit').textContent   = sign + fmt(d.profit);
+  document.getElementById('pr-quintals').textContent = `${d.yield_quintals} q`;
+  document.getElementById('pr-per-ha').textContent   = (d.profit < 0 ? '-' : '') + fmt(d.profit_per_hectare) + '/ha';
+  document.getElementById('pr-margin').textContent   = `${d.margin_pct}%`;
+  document.getElementById('pr-breakeven').textContent= `₹${d.breakeven_price}/q`;
+
+  // KPI colour for profit
+  const profitKpi = document.getElementById('pr-profit-kpi');
+  profitKpi.className = 'profit-kpi ' + (d.profit >= 0 ? 'kpi-profit-p' : 'kpi-profit-n');
+
+  // Rating badge
+  const ratingEl = document.getElementById('pr-rating-badge');
+  const ratingMap = {
+    Excellent:  ['rating-excellent', 'fas fa-star'],
+    Good:       ['rating-good',      'fas fa-thumbs-up'],
+    Average:    ['rating-average',   'fas fa-minus-circle'],
+    'Low Margin':['rating-low',      'fas fa-exclamation-circle'],
+    Loss:       ['rating-loss',      'fas fa-times-circle'],
+  };
+  const [cls, icon] = ratingMap[d.rating] || ['rating-average', 'fas fa-info-circle'];
+  ratingEl.className = `rating-badge ${cls}`;
+  ratingEl.innerHTML = `<i class="${icon}"></i> ${d.rating}`;
+
+  // Advice
+  const adviceEl = document.getElementById('pr-advice');
+  adviceEl.textContent = d.advice;
+  adviceEl.className = 'advice-box ' +
+    (d.profit > 0
+      ? (d.margin_pct >= 30 ? 'advice-positive' : 'advice-neutral')
+      : 'advice-negative');
+
+  document.getElementById('profitResult').classList.add('visible');
+  document.getElementById('profitResult').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ── All Schemes (legacy DB list) ─────────────────────────────────────────────
+async function loadAllSchemes() {
+  const container = document.getElementById('schemesContainer');
+  container.innerHTML = '<div style="grid-column:1/-1" class="loading-state"><i class="fas fa-spinner fa-spin"></i><p>Loading schemes…</p></div>';
+
+  try {
+    const res  = await fetch('http://127.0.0.1:5000/schemes/all', { credentials: 'include' });
+    const data = await res.json();
+    const schemes = Array.isArray(data) ? data : (data.schemes || data.data || []);
+
+    if (schemes.length === 0) {
+      container.innerHTML = '<div style="grid-column:1/-1" class="empty-state"><i class="fas fa-inbox"></i><p>No schemes found in database.</p></div>';
+      return;
+    }
+
+    container.innerHTML = schemes.map(s => `
+      <div class="scheme-card">
+        <div class="scheme-header">
+          <div class="scheme-name">${s.scheme_name || s.name || 'Unknown Scheme'}</div>
+          <span class="badge badge-subsidy">${s.type || 'Scheme'}</span>
+        </div>
+        <div class="scheme-meta">
+          <span>${s.description || ''}</span>
+          <span style="margin-top:4px;"><i class="fas fa-calendar" style="color:var(--sp-green);"></i> ${s.last_date || 'N/A'}</span>
+        </div>
+        <div class="scheme-footer">
+          <button class="btn-apply" onclick="alert('${(s.scheme_name || s.name || '').replace(/'/g,"\\'")}: ${(s.eligibility || 'See official portal').replace(/'/g,"\\'")}')">
+            <i class="fas fa-info-circle"></i> Eligibility
+          </button>
+        </div>
+      </div>
+    `).join('');
+  } catch (err) {
+    loadMockSchemes();
+  }
+}
+
+function loadMockSchemes() {
+  const container = document.getElementById('schemesContainer');
+  const mock = [
+    { scheme_name: 'PM Kisan Samman Nidhi', type: 'Cash Transfer', description: 'Direct income support ₹6,000/year to farmers', last_date: 'Rolling', eligibility: 'All Indian Farmers with land records' },
+    { scheme_name: 'PMFBY Crop Insurance',  type: 'Insurance',     description: 'Coverage against crop losses at subsidised premium', last_date: 'Before sowing', eligibility: 'Loanee + Non-loanee farmers' },
+    { scheme_name: 'Kisan Credit Card',     type: 'Loan',          description: 'Credit up to ₹3 lakh at 7% interest', last_date: 'Rolling', eligibility: 'All farmers' },
+    { scheme_name: 'Soil Health Card',      type: 'Subsidy',       description: 'Free soil testing and NPK recommendations', last_date: 'Rolling', eligibility: 'All farmers' },
+    { scheme_name: 'PKVY Organic Farming',  type: 'Grant',         description: '₹50,000/ha over 3 years for organic cluster', last_date: 'Check state portal', eligibility: 'Groups of ≥50 farmers' },
+    { scheme_name: 'Agri Infrastructure Fund', type: 'Loan',       description: 'Up to ₹2 crore at 3% interest subvention', last_date: 'Till 2025-26', eligibility: 'Farmers, FPOs, co-ops' },
+  ];
+  container.innerHTML = mock.map(s => `
+    <div class="scheme-card">
+      <div class="scheme-header">
+        <div class="scheme-name">${s.scheme_name}</div>
+        <span class="badge badge-subsidy">${s.type}</span>
+      </div>
+      <div class="scheme-meta">
+        <span>${s.description}</span>
+        <span style="margin-top:4px;"><i class="fas fa-calendar" style="color:var(--sp-green);"></i> ${s.last_date}</span>
+      </div>
+      <div class="scheme-footer">
+        <button class="btn-apply" onclick="alert('${s.scheme_name}\\n\\nEligibility: ${s.eligibility}')">
+          <i class="fas fa-info-circle"></i> Eligibility
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+document.getElementById('filterForm').addEventListener('submit', e => {
+  e.preventDefault();
+  loadAllSchemes();
+});
+
+// ── App init ──────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  setActiveNav('schemes');
+  attachNavigation();
+  attachHamburger();
+  attachLogout();
+  if (typeof app !== 'undefined') {
+    app.attachNotification();
+    app.attachProfileIcon();
+  }
+});
+</script>
+<script src="../js/app.js"></script>
+</body>
+</html>

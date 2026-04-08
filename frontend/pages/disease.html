@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Disease Detection - KrishiSetu</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div class="app-container">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a class="ks-brand" href="../home.html" title="KrishiSetu"><img src="../images/krishisetu-logo.svg" alt="KrishiSetu" class="ks-brand-img" /></a>
+      </div>
+
+      <div class="sidebar-body">
+        <ul class="nav-menu">
+          <li class="nav-item">
+            <button class="nav-link" data-page="dashboard">
+              <i class="fas fa-home"></i>
+              <span class="nav-label">Dashboard</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="crop">
+              <i class="fas fa-leaf"></i>
+              <span class="nav-label">Crop Recommendation</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link active" data-page="disease">
+              <i class="fas fa-virus"></i>
+              <span class="nav-label">Disease Detection</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="pest">
+              <i class="fas fa-bug"></i>
+              <span class="nav-label">Pest Detection</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="fertilizer">
+              <i class="fas fa-droplet"></i>
+              <span class="nav-label">Fertilizer</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="market">
+              <i class="fas fa-chart-line"></i>
+              <span class="nav-label">Market</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="equipment">
+              <i class="fas fa-tools"></i>
+              <span class="nav-label">Equipment</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="schemes">
+              <i class="fas fa-file-contract"></i>
+              <span class="nav-label">Schemes</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="soil">
+              <i class="fas fa-earth-americas"></i>
+              <span class="nav-label">Soil Analysis</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="weather">
+              <i class="fas fa-cloud"></i>
+              <span class="nav-label">Weather</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="expert-queries">
+              <i class="fas fa-comments"></i>
+              <span class="nav-label">Expert Queries</span>
+            </button>
+          </li>
+        </ul>
+      </div>
+
+      <div class="sidebar-footer">
+        <button class="logout-btn">
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </button>
+      </div>
+    </aside>
+
+    <div class="main-wrapper">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="hamburger">
+            <i class="fas fa-bars"></i>
+          </button>
+          <div class="topbar-title">Disease Detection</div>
+        </div>
+        <div class="topbar-right">
+          <div class="notification-icon">
+            <i class="fas fa-bell"></i>
+            <div class="notification-badge">3</div>
+          </div>
+          <div class="profile-icon">
+            <i class="fas fa-user-circle"></i>
+          </div>
+        </div>
+      </header>
+
+      <main class="content-area">
+        <div class="card">
+          <div class="card-title">
+            <i class="fas fa-virus"></i> Disease Detection AI
+          </div>
+          <p style="color: var(--text-light); margin-bottom: 25px;">Upload a leaf or plant image to detect diseases using advanced AI analysis</p>
+
+          <form id="diseaseForm">
+            <div class="form-group">
+              <label class="form-label">Upload Plant/Leaf Image</label>
+              <div class="upload-area" id="uploadArea">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <p class="upload-text">Click to upload or drag & drop</p>
+                <p class="upload-subtext">PNG, JPG, JPEG up to 5MB</p>
+                <input type="file" id="imageInput" class="upload-input" accept="image/*" capture="environment" required>
+              </div>
+              <img id="imagePreview" class="image-preview" style="display: none;">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="cropType">Crop Type</label>
+              <select id="cropType" name="cropType" class="form-select" required>
+                <option value="">Select Crop</option>
+                <option value="rice">Rice</option>
+                <option value="wheat">Wheat</option>
+                <option value="corn">Corn</option>
+                <option value="potato">Potato</option>
+                <option value="tomato">Tomato</option>
+                <option value="cotton">Cotton</option>
+                <option value="sugarcane">Sugarcane</option>
+                <option value="coconut">Coconut</option>
+                <option value="arecanut">Arecanut</option>
+                <option value="coffee">Coffee</option>
+                <option value="pepper">Pepper</option>
+              </select>
+            </div>
+
+            <div id="alertContainer"></div>
+
+            <div style="display: flex; gap: 15px; margin-top: 25px;">
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-wand-magic-sparkles"></i> Analyze Image
+              </button>
+              <button type="reset" class="btn btn-outline">
+                <i class="fas fa-redo"></i> Clear
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div id="resultContainer"></div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      setActiveNav('disease');
+      attachNavigation();
+      attachHamburger();
+      attachLogout();
+      app.attachNotification();
+      app.attachProfileIcon();
+      setupImageUpload();
+    });
+
+    function setupImageUpload() {
+      const uploadArea = document.getElementById('uploadArea');
+      const imageInput = document.getElementById('imageInput');
+      const imagePreview = document.getElementById('imagePreview');
+
+      // Guard: all elements must exist
+      if (!uploadArea || !imageInput || !imagePreview) {
+        console.warn('Image upload elements not found');
+        return;
+      }
+
+      uploadArea.addEventListener('click', () => imageInput.click());
+      uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.style.background = 'rgba(27, 94, 32, 0.1)';
+      });
+      uploadArea.addEventListener('dragleave', () => {
+        uploadArea.style.background = 'rgba(27, 94, 32, 0.02)';
+      });
+      uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.style.background = 'rgba(27, 94, 32, 0.02)';
+        const files = e.dataTransfer.files;
+        if (files.length) imageInput.files = files;
+        handleImageChange();
+      });
+
+      imageInput.addEventListener('change', handleImageChange);
+
+      function handleImageChange() {
+        const file = imageInput.files[0];
+        if (!file) return;
+
+        if (file.size > 5 * 1024 * 1024) {
+          app.showAlert(document.getElementById('alertContainer'), 'File size must be less than 5MB', 'danger');
+          imageInput.value = '';
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          imagePreview.src = e.target.result;
+          imagePreview.style.display = 'block';
+          uploadArea.style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    document.getElementById('diseaseForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const alertContainer = document.getElementById('alertContainer');
+      const submitBtn = e.target.querySelector('button[type="submit"]');
+      const resultContainer = document.getElementById('resultContainer');
+      const imageInput = document.getElementById('imageInput');
+      const cropType = document.getElementById('cropType').value;
+
+      if (!imageInput.files[0]) {
+        app.showAlert(alertContainer, 'Please upload an image', 'danger');
+        return;
+      }
+
+      setButtonLoading(submitBtn, true);
+      app.showLoading(resultContainer);
+
+      const formDataObj = new FormData();
+      formDataObj.append('image', imageInput.files[0]);
+      formDataObj.append('crop_type', cropType);
+
+      try {
+        const response = await app.apiCall('/disease/predict', 'POST', null, formDataObj);
+
+        if (response && response.success) {
+          // Use data.label (preferred); fall back to data.disease for safety
+          const label     = response.label || response.disease;
+          const healthy   = response.is_healthy;
+          const iconColor = healthy ? '#4CAF50' : (response.severity === 'High' ? '#E74C3C' : '#FF9800');
+          const iconClass = healthy ? 'fa-leaf' : 'fa-virus';
+          const confPct   = response.confidence_pct || `${(response.confidence * 100).toFixed(1)}%`;
+          const confLabel = response.confidence_label || '';
+
+          const severityBadge = healthy
+            ? `<span style="background:#e8f5e9;color:#2e7d32;padding:2px 10px;border-radius:20px;font-size:12px;font-weight:600;">Healthy</span>`
+            : `<span style="background:${response.severity==='High'?'#ffebee':'#fff3e0'};color:${response.severity==='High'?'#c62828':'#e65100'};padding:2px 10px;border-radius:20px;font-size:12px;font-weight:600;">${response.severity} Severity</span>`;
+
+          // Demo mode banner
+          const demoNote = response.demo_note
+            ? `<div style="background:#fff3cd;border-left:4px solid #ffc107;padding:10px 14px;border-radius:6px;margin-bottom:12px;font-size:13px;color:#856404;">
+                <i class="fas fa-flask"></i> <strong>Demo Mode:</strong> ${response.demo_note}
+               </div>` : '';
+
+          // Crop-disease mismatch advisory (non-blocking note from backend)
+          const mismatchNote = response.note
+            ? `<div style="background:#e3f2fd;border-left:4px solid #2196F3;padding:10px 14px;border-radius:6px;margin-bottom:12px;font-size:13px;color:#0d47a1;">
+                <i class="fas fa-info-circle"></i> <strong>Note:</strong> ${response.note}
+               </div>` : '';
+
+          // Quick explanation (one-liner summary)
+          const explanationHtml = response.explanation
+            ? `<div class="result-item">
+                <div class="result-label"><i class="fas fa-lightbulb"></i> Explanation</div>
+                <div class="result-value" style="font-size:13px;line-height:1.6;">${response.explanation}</div>
+               </div>` : '';
+
+          const diseaseSection = !healthy ? `
+            ${explanationHtml}
+            <div class="result-item">
+              <div class="result-label"><i class="fas fa-circle-info"></i> Description</div>
+              <div class="result-value" style="font-size:13px;line-height:1.6;">${response.description}</div>
+            </div>
+            <div class="result-item">
+              <div class="result-label"><i class="fas fa-syringe"></i> Treatment</div>
+              <div class="result-value" style="font-size:13px;line-height:1.6;">${response.treatment || 'Consult an expert'}</div>
+            </div>
+            <div class="result-item">
+              <div class="result-label"><i class="fas fa-flask"></i> Fertilizer / Action</div>
+              <div class="result-value" style="font-size:13px;line-height:1.6;">${response.fertilizer || 'Consult your agronomist'}</div>
+            </div>
+            <div class="result-item">
+              <div class="result-label"><i class="fas fa-shield"></i> Prevention</div>
+              <div class="result-value" style="font-size:13px;line-height:1.6;">${response.prevention || 'Use recommended practices'}</div>
+            </div>
+            <div class="result-item">
+              <div class="result-label"><i class="fas fa-seedling"></i> Organic Option</div>
+              <div class="result-value" style="font-size:13px;line-height:1.6;">${response.organic_option}</div>
+            </div>
+            ${response.crop_note ? `
+            <div class="result-item">
+              <div class="result-label"><i class="fas fa-wheat-awn"></i> Crop-Specific Note</div>
+              <div class="result-value" style="font-size:13px;line-height:1.6;">${response.crop_note}</div>
+            </div>` : ''}
+            <div style="background:#fff8e1;border-left:4px solid #FFC107;padding:10px 14px;border-radius:6px;margin-top:8px;font-size:13px;color:#5d4037;">
+              <i class="fas fa-clock"></i> <strong>Urgency:</strong> ${response.urgency}
+            </div>
+          ` : `
+            ${explanationHtml}
+            <div class="result-item">
+              <div class="result-label"><i class="fas fa-shield"></i> Maintenance Tips</div>
+              <div class="result-value" style="font-size:13px;line-height:1.6;">${response.prevention}</div>
+            </div>
+            <div class="result-item">
+              <div class="result-label"><i class="fas fa-flask"></i> Fertilizer Advice</div>
+              <div class="result-value" style="font-size:13px;line-height:1.6;">${response.fertilizer || 'Continue balanced fertilization'}</div>
+            </div>
+          `;
+
+          const resultHTML = `
+            <div class="result-section">
+              ${demoNote}
+              ${mismatchNote}
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
+                <div style="display:flex;align-items:center;gap:14px;">
+                  <i class="fas ${iconClass}" style="font-size:36px;color:${iconColor};"></i>
+                  <div>
+                    <div class="result-label">Detection Result</div>
+                    <div class="result-value" style="font-size:20px;">${label}</div>
+                  </div>
+                </div>
+                ${severityBadge}
+              </div>
+
+              <div class="result-item">
+                <div class="result-label"><i class="fas fa-chart-bar"></i> Confidence</div>
+                <div class="result-value">
+                  ${confPct}
+                  <span style="font-size:12px;color:#888;margin-left:8px;">${confLabel}</span>
+                </div>
+              </div>
+
+              ${diseaseSection}
+
+              <button class="btn btn-secondary" style="margin-top:20px;width:100%;justify-content:center;"
+                onclick="window.location.href='expert-queries.html'">
+                <i class="fas fa-comments"></i> Ask Expert
+              </button>
+            </div>
+          `;
+
+          resultContainer.innerHTML = resultHTML;
+          app.showAlert(alertContainer, healthy ? 'Plant looks healthy!' : 'Disease detected — see treatment below', healthy ? 'success' : 'warning');
+        } else {
+          app.showAlert(alertContainer, response?.message || 'Analysis failed. Please try again.', 'danger');
+        }
+      } catch (error) {
+        app.showAlert(alertContainer, 'Failed to analyze image', 'danger');
+      } finally {
+        setButtonLoading(submitBtn, false);
+      }
+    });
+  </script>
+  <script src="../js/app.js"></script>
+</body>
+</html>

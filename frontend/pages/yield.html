@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yield Prediction - KrishiSetu</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    /* ── Yield-specific styles ──────────────────────────────────────────── */
+
+    /* Big yield display */
+    .yield-hero {
+      background: linear-gradient(135deg, #1b5e20, #2e7d32);
+      border-radius: 16px;
+      padding: 32px 28px;
+      color: #fff;
+      text-align: center;
+      margin-bottom: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .yield-hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(circle at 80% 20%, rgba(255,255,255,.12), transparent 60%);
+    }
+    .yield-hero-label {
+      font-size: 13px; opacity: .8; letter-spacing: .8px;
+      text-transform: uppercase; margin-bottom: 6px;
+    }
+    .yield-hero-amount {
+      font-size: 52px; font-weight: 700; line-height: 1;
+      letter-spacing: -1px;
+    }
+    .yield-hero-unit {
+      font-size: 16px; opacity: .75; margin-top: 4px;
+    }
+    .yield-hero-crop {
+      display: inline-block; margin-top: 10px;
+      background: rgba(255,255,255,.18); border-radius: 50px;
+      padding: 4px 14px; font-size: 13px;
+    }
+
+    /* Per-hectare badge */
+    .per-ha-chip {
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.25);
+      border-radius: 50px; padding: 6px 16px;
+      font-size: 13px; margin-top: 12px; display: inline-block;
+    }
+
+    /* Rating badge */
+    .rating-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 14px; border-radius: 50px;
+      font-size: 13px; font-weight: 600; margin-bottom: 16px;
+    }
+    .rating-excellent   { background: #e8f5e9; color: #1b5e20; }
+    .rating-good        { background: #f1f8e9; color: #33691e; }
+    .rating-average     { background: #fff8e1; color: #f57f17; }
+    .rating-belowaverage{ background: #fff3e0; color: #e65100; }
+    .rating-poor        { background: #ffebee; color: #b71c1c; }
+
+    /* Confidence ring */
+    .confidence-wrap {
+      display: flex; align-items: center; gap: 16px;
+      padding: 16px 0; border-top: 1px solid #f0f0f0;
+      border-bottom: 1px solid #f0f0f0; margin: 16px 0;
+    }
+    .confidence-ring {
+      position: relative; width: 72px; height: 72px; flex-shrink: 0;
+    }
+    .confidence-ring svg { transform: rotate(-90deg); }
+    .confidence-ring .ring-bg { fill: none; stroke: #e8f5e9; stroke-width: 7; }
+    .confidence-ring .ring-fg {
+      fill: none; stroke: #4CAF50; stroke-width: 7;
+      stroke-linecap: round;
+      transition: stroke-dasharray .6s ease;
+    }
+    .confidence-ring .ring-text {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 700; color: #2e7d32;
+    }
+    .confidence-info { flex: 1; }
+    .confidence-info-label { font-size: 12px; color: var(--text-light); margin-bottom: 3px; }
+    .confidence-info-value { font-size: 18px; font-weight: 700; color: var(--text-dark); }
+
+    /* Factor breakdown */
+    .factor-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+      margin-bottom: 20px;
+    }
+    .factor-box {
+      background: #f8fafb; border: 1px solid #e8f0e8;
+      border-radius: 10px; padding: 14px 12px; text-align: center;
+    }
+    .factor-label { font-size: 11px; color: var(--text-light); margin-bottom: 6px; text-transform: uppercase; }
+    .factor-bar-bg {
+      background: #e0e0e0; border-radius: 50px; height: 6px;
+      overflow: hidden; margin-bottom: 6px;
+    }
+    .factor-bar-fg {
+      height: 100%; border-radius: 50px;
+      transition: width .6s ease;
+    }
+    .factor-value { font-size: 13px; font-weight: 600; }
+    .factor-good  { background: #4CAF50; color: #1b5e20; }
+    .factor-ok    { background: #FF9800; color: #e65100; }
+    .factor-poor  { background: #E74C3C; color: #b71c1c; }
+
+    /* Advice box */
+    .advice-box {
+      border-left: 4px solid #4CAF50;
+      background: #f1f8e9; border-radius: 0 10px 10px 0;
+      padding: 14px 16px; font-size: 13px; color: #33691e;
+      line-height: 1.65;
+    }
+
+    /* Total value card */
+    .value-card {
+      background: linear-gradient(135deg, #e8f5e9, #f1f8e9);
+      border: 1px solid #c8e6c9; border-radius: 12px;
+      padding: 16px 20px; display: flex;
+      align-items: center; justify-content: space-between;
+      margin-top: 16px;
+    }
+    .value-card-label { font-size: 13px; color: var(--text-light); }
+    .value-card-amount { font-size: 22px; font-weight: 700; color: #2e7d32; }
+
+    @media (max-width: 600px) {
+      .factor-grid { grid-template-columns: 1fr 1fr; }
+      .yield-hero-amount { font-size: 38px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a class="ks-brand" href="../home.html" title="KrishiSetu"><img src="../images/krishisetu-logo.svg" alt="KrishiSetu" class="ks-brand-img" /></a>
+      </div>
+      <div class="sidebar-body">
+        <ul class="nav-menu">
+          <li class="nav-item"><button class="nav-link" data-page="dashboard"><i class="fas fa-home"></i><span class="nav-label">Dashboard</span></button></li>
+          <li class="nav-item"><button class="nav-link" data-page="crop"><i class="fas fa-leaf"></i><span class="nav-label">Crop Recommendation</span></button></li>
+          <li class="nav-item"><button class="nav-link" data-page="disease"><i class="fas fa-virus"></i><span class="nav-label">Disease Detection</span></button></li>
+          <li class="nav-item"><button class="nav-link" data-page="pest"><i class="fas fa-bug"></i><span class="nav-label">Pest Detection</span></button></li>
+          <li class="nav-item"><button class="nav-link" data-page="fertilizer"><i class="fas fa-droplet"></i><span class="nav-label">Fertilizer</span></button></li>
+          <li class="nav-item"><button class="nav-link" data-page="market"><i class="fas fa-chart-line"></i><span class="nav-label">Market</span></button></li>
+          <li class="nav-item"><button class="nav-link active" data-page="yield"><i class="fas fa-seedling"></i><span class="nav-label">Yield Prediction</span></button></li>
+          <li class="nav-item"><button class="nav-link" data-page="equipment"><i class="fas fa-tools"></i><span class="nav-label">Equipment</span></button></li>
+          <li class="nav-item"><button class="nav-link" data-page="schemes"><i class="fas fa-file-contract"></i><span class="nav-label">Schemes</span></button></li>
+          <li class="nav-item"><button class="nav-link" data-page="soil"><i class="fas fa-earth-americas"></i><span class="nav-label">Soil Analysis</span></button></li>
+          <li class="nav-item"><button class="nav-link" data-page="weather"><i class="fas fa-cloud"></i><span class="nav-label">Weather</span></button></li>
+          <li class="nav-item"><button class="nav-link" data-page="expert-queries"><i class="fas fa-comments"></i><span class="nav-label">Expert Queries</span></button></li>
+        </ul>
+      </div>
+      <div class="sidebar-footer">
+        <button class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+      </div>
+    </aside>
+
+    <div class="main-wrapper">
+      <!-- Topbar -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="hamburger"><i class="fas fa-bars"></i></button>
+          <div class="topbar-title">Yield Prediction</div>
+        </div>
+        <div class="topbar-right">
+          <div class="notification-icon">
+            <i class="fas fa-bell"></i>
+            <div class="notification-badge">3</div>
+          </div>
+          <div class="profile-icon"><i class="fas fa-user-circle"></i></div>
+        </div>
+      </header>
+
+      <main class="content-area">
+
+        <!-- ── Input form ──────────────────────────────────────────────── -->
+        <div class="card">
+          <div class="card-title">
+            <i class="fas fa-seedling"></i> Crop Yield Predictor
+          </div>
+          <p style="color: var(--text-light); margin-bottom: 24px;">
+            Enter your farm details to get an AI-powered yield estimate with confidence score
+          </p>
+
+          <form id="yieldForm">
+            <div class="grid grid-3">
+
+              <div class="form-group">
+                <label class="form-label" for="crop">Crop</label>
+                <select id="crop" class="form-select" required>
+                  <option value="">Select crop</option>
+                  <option value="rice">Rice</option>
+                  <option value="wheat">Wheat</option>
+                  <option value="maize">Maize</option>
+                  <option value="soybean">Soybean</option>
+                  <option value="groundnut">Groundnut</option>
+                  <option value="cotton">Cotton</option>
+                  <option value="sugarcane">Sugarcane</option>
+                  <option value="tomato">Tomato</option>
+                  <option value="onion">Onion</option>
+                  <option value="potato">Potato</option>
+                  <option value="coconut">Coconut</option>
+                  <option value="arecanut">Arecanut</option>
+                  <option value="coffee">Coffee</option>
+                  <option value="pepper">Pepper</option>
+                  <option value="turmeric">Turmeric</option>
+                  <option value="ginger">Ginger</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="location">Location / State</label>
+                <select id="location" class="form-select" required>
+                  <option value="">Select state</option>
+                  <option value="karnataka">Karnataka</option>
+                  <option value="maharashtra">Maharashtra</option>
+                  <option value="punjab">Punjab</option>
+                  <option value="haryana">Haryana</option>
+                  <option value="madhya-pradesh">Madhya Pradesh</option>
+                  <option value="uttar-pradesh">Uttar Pradesh</option>
+                  <option value="gujarat">Gujarat</option>
+                  <option value="andhra-pradesh">Andhra Pradesh</option>
+                  <option value="telangana">Telangana</option>
+                  <option value="tamil-nadu">Tamil Nadu</option>
+                  <option value="kerala">Kerala</option>
+                  <option value="west-bengal">West Bengal</option>
+                  <option value="rajasthan">Rajasthan</option>
+                  <option value="bihar">Bihar</option>
+                  <option value="odisha">Odisha</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="area">Farm Area (hectares)</label>
+                <input type="number" id="area" class="form-input"
+                       placeholder="e.g. 2.5" min="0.1" step="0.1" value="1">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="rainfall">Avg Rainfall (mm/month)</label>
+                <input type="number" id="rainfall" class="form-input"
+                       placeholder="e.g. 120" min="0" step="1">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="temperature">Avg Temperature (°C)</label>
+                <input type="number" id="temperature" class="form-input"
+                       placeholder="e.g. 28" min="0" max="50" step="0.5">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="soilType">Soil Type</label>
+                <select id="soilType" class="form-select">
+                  <option value="loamy">Loamy</option>
+                  <option value="alluvial">Alluvial</option>
+                  <option value="black">Black Cotton Soil</option>
+                  <option value="clay">Clay</option>
+                  <option value="sandy loam">Sandy Loam</option>
+                  <option value="red laterite">Red Laterite</option>
+                  <option value="sandy">Sandy</option>
+                  <option value="silty">Silty</option>
+                  <option value="peaty">Peaty</option>
+                </select>
+              </div>
+
+            </div><!-- /grid -->
+
+            <div id="formAlert"></div>
+
+            <div style="display:flex; gap:12px; margin-top:20px;">
+              <button type="submit" class="btn btn-primary" id="predictBtn">
+                <i class="fas fa-chart-bar"></i> Predict Yield
+              </button>
+              <button type="reset" class="btn btn-outline" id="resetBtn">
+                <i class="fas fa-redo"></i> Reset
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- ── Result ─────────────────────────────────────────────────── -->
+        <div id="resultContainer" style="margin-top: 24px;"></div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="../js/app.js"></script>
+  <script>
+    /* ── Init ────────────────────────────────────────────────────────────── */
+    document.addEventListener('DOMContentLoaded', () => {
+      setActiveNav('yield');
+      attachNavigation();
+      attachHamburger();
+      attachLogout();
+      app.attachNotification();
+      app.attachProfileIcon();
+    });
+
+    /* ── Rating → CSS class ──────────────────────────────────────────────── */
+    function ratingClass(r) {
+      return 'rating-' + r.toLowerCase().replace(/\s+/g, '');
+    }
+    function ratingIcon(r) {
+      const icons = {
+        'Excellent': 'fa-star', 'Good': 'fa-thumbs-up',
+        'Average': 'fa-minus-circle', 'Below Average': 'fa-exclamation-triangle',
+        'Poor': 'fa-times-circle'
+      };
+      return icons[r] || 'fa-seedling';
+    }
+
+    /* ── Factor bar colour ───────────────────────────────────────────────── */
+    function factorColour(f) {
+      if (f >= 0.95) return '#4CAF50';
+      if (f >= 0.80) return '#FF9800';
+      return '#E74C3C';
+    }
+    function factorClass(f) {
+      if (f >= 0.95) return 'factor-good';
+      if (f >= 0.80) return 'factor-ok';
+      return 'factor-poor';
+    }
+
+    /* ── Confidence SVG ring ─────────────────────────────────────────────── */
+    function confidenceRing(pct) {
+      const r   = 30;
+      const c   = 2 * Math.PI * r;
+      const off = c - (pct / 100) * c;
+      const clr = pct >= 85 ? '#4CAF50' : (pct >= 75 ? '#FF9800' : '#E74C3C');
+      return `
+        <div class="confidence-ring">
+          <svg viewBox="0 0 72 72" width="72" height="72">
+            <circle class="ring-bg" cx="36" cy="36" r="${r}"/>
+            <circle class="ring-fg" cx="36" cy="36" r="${r}"
+              stroke="${clr}"
+              stroke-dasharray="${c}"
+              stroke-dashoffset="${off}"/>
+          </svg>
+          <div class="ring-text">${pct}%</div>
+        </div>`;
+    }
+
+    /* ── Factor row HTML ─────────────────────────────────────────────────── */
+    function factorHTML(label, value, icon) {
+      const pct  = Math.min(100, Math.round(value * 100));
+      const clr  = factorColour(value);
+      const fcls = factorClass(value);
+      return `
+        <div class="factor-box">
+          <div class="factor-label"><i class="fas ${icon}"></i> ${label}</div>
+          <div class="factor-bar-bg">
+            <div class="factor-bar-fg" style="width:${pct}%;background:${clr};"></div>
+          </div>
+          <div class="factor-value ${fcls}">${value.toFixed(2)}×</div>
+        </div>`;
+    }
+
+    /* ── Render result ───────────────────────────────────────────────────── */
+    function renderResult(d) {
+      const confPct  = parseInt(d.confidence_pct) || Math.round(d.confidence * 100);
+      const bk       = d.breakdown || {};
+      const area     = parseFloat(d.area_ha) || 1;
+      const estVal   = Math.round(d.yield_per_hectare * area * 22);   // ₹22/kg rough estimate
+      const unit     = d.unit || 'kg';
+
+      document.getElementById('resultContainer').innerHTML = `
+        <!-- Big yield display -->
+        <div class="yield-hero">
+          <div class="yield-hero-label">Estimated Total Yield</div>
+          <div class="yield-hero-amount">${(d.total_yield || d.yield_prediction).toLocaleString('en-IN')}</div>
+          <div class="yield-hero-unit">${unit} over ${area} hectare${area !== 1 ? 's' : ''}</div>
+          <div class="per-ha-chip">
+            <i class="fas fa-ruler-combined"></i>
+            ${(d.yield_per_hectare).toLocaleString('en-IN')} ${unit}/hectare
+          </div>
+          <div class="yield-hero-crop"><i class="fas fa-leaf"></i> ${d.crop}</div>
+        </div>
+
+        <div class="result-section">
+
+          <!-- Rating badge + confidence ring -->
+          <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+            <div>
+              <div style="font-size:12px;color:var(--text-light);margin-bottom:6px;">Yield Rating</div>
+              <span class="rating-badge ${ratingClass(d.rating)}">
+                <i class="fas ${ratingIcon(d.rating)}"></i> ${d.rating}
+              </span>
+            </div>
+            <div class="confidence-wrap" style="border:none;padding:0;margin:0;">
+              ${confidenceRing(confPct)}
+              <div class="confidence-info">
+                <div class="confidence-info-label">Model Confidence</div>
+                <div class="confidence-info-value">${d.confidence_pct}</div>
+                <div style="font-size:11px;color:var(--text-light);margin-top:2px;">Based on input factors</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Factor breakdown -->
+          <div style="font-size:12px;font-weight:600;color:var(--text-light);
+                      text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px;">
+            Factor Breakdown
+          </div>
+          <div class="factor-grid">
+            ${factorHTML('Rainfall',    bk.rainfall_factor    || 1, 'fa-cloud-rain')}
+            ${factorHTML('Temperature', bk.temperature_factor || 1, 'fa-temperature-half')}
+            ${factorHTML('Soil',        bk.soil_factor        || 1, 'fa-hill')}
+          </div>
+
+          <!-- Estimated value -->
+          <div class="value-card">
+            <div>
+              <div class="value-card-label">
+                <i class="fas fa-sack-dollar"></i>
+                Estimated farm value (₹22/kg approx)
+              </div>
+              <div class="value-card-amount">₹${estVal.toLocaleString('en-IN')}</div>
+            </div>
+            <i class="fas fa-seedling" style="font-size:36px;opacity:.25;color:#2e7d32;"></i>
+          </div>
+
+          <!-- Advice -->
+          <div style="font-size:12px;font-weight:600;color:var(--text-light);
+                      text-transform:uppercase;letter-spacing:.6px;
+                      margin:20px 0 8px;">
+            Recommendation
+          </div>
+          <div class="advice-box">
+            <i class="fas fa-lightbulb" style="margin-right:6px;"></i>${d.advice}
+          </div>
+
+          <!-- Action -->
+          <div style="display:flex;gap:12px;margin-top:20px;">
+            <button class="btn btn-secondary" style="flex:1;justify-content:center;"
+              onclick="window.location.href='expert-queries.html'">
+              <i class="fas fa-comments"></i> Ask Expert
+            </button>
+            <button class="btn btn-outline" style="flex:1;justify-content:center;"
+              onclick="window.location.href='market.html'">
+              <i class="fas fa-chart-line"></i> Check Market Prices
+            </button>
+          </div>
+        </div>`;
+    }
+
+    /* ── Form submit ─────────────────────────────────────────────────────── */
+    document.getElementById('yieldForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const alertBox   = document.getElementById('formAlert');
+      const resultBox  = document.getElementById('resultContainer');
+      const submitBtn  = document.getElementById('predictBtn');
+
+      const crop        = document.getElementById('crop').value;
+      const location    = document.getElementById('location').value;
+      const area        = parseFloat(document.getElementById('area').value)        || 1;
+      const rainfall    = parseFloat(document.getElementById('rainfall').value)    || 120;
+      const temperature = parseFloat(document.getElementById('temperature').value) || 26;
+      const soil_type   = document.getElementById('soilType').value || 'loamy';
+
+      if (!crop || !location) {
+        app.showAlert(alertBox, 'Please select crop and location.', 'danger');
+        return;
+      }
+      app.showAlert(alertBox, '', '');
+      setButtonLoading(submitBtn, true);
+      app.showLoading(resultBox);
+
+      try {
+        const res = await fetch('http://127.0.0.1:5000/yield/predict', {
+          method:      'POST',
+          headers:     { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ crop, location, area, rainfall, temperature, soil_type }),
+        });
+
+        const rawText = await res.text();
+        console.log('[Yield] HTTP', res.status, rawText.slice(0, 200));
+
+        if (res.status === 401) {
+          app.showAlert(alertBox, 'Session expired — please log in again.', 'danger');
+          resultBox.innerHTML = '';
+          return;
+        }
+
+        let data;
+        try { data = JSON.parse(rawText); }
+        catch (_) {
+          app.showAlert(alertBox, 'Unexpected server response.', 'danger');
+          resultBox.innerHTML = '';
+          return;
+        }
+
+        if (!data.success) {
+          app.showAlert(alertBox, data.message || 'Prediction failed.', 'danger');
+          resultBox.innerHTML = '';
+          return;
+        }
+
+        renderResult(data);
+        app.showAlert(alertBox, 'Yield prediction ready!', 'success');
+
+      } catch (err) {
+        resultBox.innerHTML = '';
+        app.showAlert(alertBox, 'Could not reach server. Is the backend running?', 'danger');
+      } finally {
+        setButtonLoading(submitBtn, false);
+      }
+    });
+
+    /* ── Reset ───────────────────────────────────────────────────────────── */
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      document.getElementById('resultContainer').innerHTML = '';
+      document.getElementById('formAlert').innerHTML = '';
+    });
+  </script>
+</body>
+</html>

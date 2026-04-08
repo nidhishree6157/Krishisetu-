@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>KrishiSetu</title>
+<link rel="icon" href="images/krishisetu-mark.svg" type="image/svg+xml">
+
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=JetBrains+Mono&display=swap" rel="stylesheet">
+
+<style>
+
+:root {
+    --bg: #faf8f5;
+    --text: #1a1a1a;
+    --accent: #2e7d32;
+    --accent-dark: #1b5e20;
+    --accent-soft: #e8f5e9;
+    --card: #ffffff;
+}
+
+.dark {
+    --bg: #0f172a;
+    --text: #e2e8f0;
+    --accent: #22c55e;
+    --card: #1e293b;
+}
+
+body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    transition: 0.4s;
+}
+
+.container {
+    max-width: 1100px;
+    margin: auto;
+    padding: 40px 20px;
+}
+
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.home-brand {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+}
+.home-brand img {
+    height: 38px;
+    width: auto;
+    filter: drop-shadow(0 2px 8px rgba(46, 125, 50, 0.12));
+}
+
+.toggle {
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: 20px;
+    background: var(--card);
+}
+
+/* HERO */
+.hero-bg {
+    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+                url("images/farm2.jpg");
+    background-size: cover;
+    background-position: center;
+    padding: 100px 20px;
+    border-radius: 20px;
+    color: white;
+    margin-top: 60px;
+}
+
+.hero-bg .hero {
+    margin-top: 0;
+}
+
+.hero-bg .hero h1 {
+    color: #fff;
+    text-shadow: 0 2px 24px rgba(0, 0, 0, 0.35);
+}
+
+.hero-bg .hero span {
+    color: #86efac;
+}
+
+.hero-bg .hero p {
+    color: rgba(255, 255, 255, 0.92);
+    opacity: 0.95;
+}
+
+.hero-bg .secondary {
+    border-color: rgba(255, 255, 255, 0.9);
+    color: #fff;
+}
+
+.hero-bg .secondary:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.hero {
+    margin-top: 60px;
+    text-align: center;
+}
+
+.hero h1 {
+    font-size: 40px;
+    font-weight: 600;
+}
+
+.hero span {
+    color: var(--accent);
+}
+
+.hero p {
+    margin-top: 10px;
+    opacity: 0.7;
+}
+
+.scan-container {
+    position: relative;
+    height: 120px;
+    margin-top: 20px;
+    overflow: hidden;
+}
+
+.scan-line {
+    position: absolute;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    animation: scanMove 3s infinite;
+}
+
+@keyframes scanMove {
+    0% { top: 0; }
+    100% { top: 100%; }
+}
+
+/* BUTTONS */
+.buttons {
+    margin-top: 20px;
+}
+
+button {
+    padding: 12px 24px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    margin: 5px;
+    font-weight: 600;
+}
+
+.primary {
+    background: var(--accent);
+    color: white;
+}
+
+.secondary {
+    background: transparent;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+}
+
+.stats {
+    margin-top: 30px;
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    font-family: 'JetBrains Mono';
+    font-size: 14px;
+}
+
+.chart-box {
+    margin-top: 40px;
+    max-width: 640px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 24px;
+    background: var(--card);
+    border-radius: 16px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+}
+
+.chart-box h3 {
+    margin: 0 0 16px;
+    font-size: 18px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.about {
+    margin-top: 48px;
+    text-align: center;
+    max-width: 640px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0 8px;
+}
+
+.about h2 {
+    margin: 0 0 16px;
+    font-size: 26px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+}
+
+.about p {
+    margin: 0;
+    font-size: 16px;
+    line-height: 1.65;
+    opacity: 0.75;
+}
+
+.dashboard-preview {
+    margin-top: 48px;
+    text-align: center;
+    max-width: 640px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.dashboard-preview h2 {
+    margin: 0 0 8px;
+    font-size: 26px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+}
+
+.dashboard-preview > p {
+    margin: 0 0 20px;
+    font-size: 16px;
+    line-height: 1.5;
+    opacity: 0.75;
+}
+
+.mock-card {
+    width: 100%;
+    max-width: 380px;
+    padding: 16px 20px;
+    background: var(--card);
+    border-radius: 16px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+    font-size: 15px;
+    font-weight: 500;
+    text-align: left;
+}
+
+.mock-card + .mock-card {
+    margin-top: 12px;
+}
+
+/* IMAGE GALLERY */
+.gallery-section {
+    margin-top: 60px;
+    text-align: center;
+}
+
+.gallery-section h2 {
+    margin: 0;
+    font-size: 26px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--text);
+}
+
+.gallery {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.gallery .card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 15px;
+    padding: 0;
+    background: transparent;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+}
+
+.gallery .card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+    display: block;
+}
+
+.gallery .card:hover img {
+    transform: scale(1.1);
+}
+
+.gallery .overlay {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+@media (max-width: 768px) {
+    .gallery {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .hero-bg {
+        padding: 72px 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .gallery {
+        grid-template-columns: 1fr;
+    }
+
+    .hero-bg {
+        padding: 56px 14px;
+        border-radius: 16px;
+    }
+
+    .hero h1 {
+        font-size: clamp(1.5rem, 7vw, 40px);
+    }
+}
+
+/* BENTO GRID */
+.grid {
+    margin-top: 60px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+}
+
+.card {
+    background: var(--card);
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+}
+
+.card h3 {
+    margin: 0;
+}
+
+.code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    margin-top: 10px;
+    opacity: 0.7;
+}
+
+/* FOOTER */
+.footer {
+    margin-top: 60px;
+    text-align: center;
+    font-size: 14px;
+    opacity: 0.6;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<!-- NAV -->
+<nav>
+    <a class="home-brand" href="home.html" title="KrishiSetu">
+      <img src="images/krishisetu-logo.svg" alt="KrishiSetu">
+    </a>
+    <div class="toggle" onclick="toggleMode()">🌙</div>
+</nav>
+
+<!-- HERO -->
+<div class="hero-bg">
+<div class="hero">
+    <h1>Smart Farming Meets <span>AI Intelligence</span></h1>
+    <p>Analyze soil. Predict crops. Optimize yield. All in one platform.</p>
+
+    <div class="scan-container">
+        <div class="scan-line"></div>
+    </div>
+
+    <div class="buttons">
+        <button class="primary" onclick="location.href='pages/login.html'">Login</button>
+        <button class="secondary" onclick="location.href='pages/register.html'">Register</button>
+    </div>
+</div>
+</div>
+
+<div class="gallery-section">
+
+    <h2>Smart Agriculture in Action</h2>
+
+    <div class="gallery">
+
+        <!-- Tech -->
+        <div class="card">
+            <img src="images/farm10.webp" alt="AI monitoring in agriculture">
+            <div class="overlay">AI Monitoring</div>
+        </div>
+
+        <!-- Soil -->
+        <div class="card">
+            <img src="images/farm6.webp" alt="Soil analysis">
+            <div class="overlay">Soil Analysis</div>
+        </div>
+
+        <!-- Farmer -->
+        <div class="card">
+            <img src="images/farm18.jpg" alt="Farmer with digital tools">
+            <div class="overlay">Farmer + AI</div>
+        </div>
+
+        <!-- Crop -->
+        <div class="card">
+            <img src="images/farm20.jpg" alt="Crop field optimization">
+            <div class="overlay">Crop Optimization</div>
+        </div>
+
+        <!-- Extra -->
+        <div class="card">
+            <img src="images/farm8.webp" alt="Smart irrigation">
+            <div class="overlay">Smart Irrigation</div>
+        </div>
+
+        <div class="card">
+            <img src="images/farm25.jpg" alt="Sustainable farming">
+            <div class="overlay">Sustainable Farming</div>
+        </div>
+
+    </div>
+</div>
+
+<div class="stats">
+    <div>N: <span id="n">0</span>%</div>
+    <div>P: <span id="p">0</span>%</div>
+    <div>K: <span id="k">0</span>%</div>
+</div>
+
+<div class="chart-box">
+    <h3>Yield Prediction</h3>
+    <canvas id="chart"></canvas>
+</div>
+
+<div class="about">
+    <h2>How KrishiSetu Works</h2>
+    <p>
+    KrishiSetu analyzes soil data, predicts crops, recommends seeds,
+    and suggests fertilizers using AI and rule-based logic.
+    It also connects farmers with experts for real-time help.
+    </p>
+</div>
+
+<div class="dashboard-preview">
+    <h2>Smart Dashboard</h2>
+    <p>Monitor your farm intelligently</p>
+
+    <div class="mock-card">Crop: Rice ✔</div>
+    <div class="mock-card">Fertilizer: Urea</div>
+</div>
+
+<!-- BENTO GRID -->
+<div class="grid">
+
+    <div class="card">
+        <h3>🌾 Crop Recommendation</h3>
+        <div class="code">model.predict(soil_data)</div>
+    </div>
+
+    <div class="card">
+        <h3>🌱 Seed Intelligence</h3>
+        <div class="code">select_best_seed(crop)</div>
+    </div>
+
+    <div class="card">
+        <h3>🧪 Fertilizer Engine</h3>
+        <div class="code">NPK → optimized output</div>
+    </div>
+
+    <div class="card">
+        <h3>👨‍🌾 Expert Support</h3>
+        <div class="code">human + AI hybrid</div>
+    </div>
+
+    <div class="card">
+        <h3>📍 Location Aware</h3>
+        <div class="code">geo-based decision system</div>
+    </div>
+
+    <div class="card">
+        <h3>⚡ Real-Time Insights</h3>
+        <div class="code">data-driven farming</div>
+    </div>
+
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+    Built for modern agriculture • KrishiSetu
+</div>
+
+</div>
+
+<script>
+function toggleMode() {
+    document.body.classList.toggle("dark");
+}
+</script>
+
+<script>
+function animateValue(id, end) {
+    let start = 0;
+    let interval = setInterval(() => {
+        start++;
+        document.getElementById(id).innerText = start;
+        if (start >= end) clearInterval(interval);
+    }, 20);
+}
+
+animateValue("n", 78);
+animateValue("p", 62);
+animateValue("k", 55);
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const ctx = document.getElementById('chart');
+
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr'],
+        datasets: [{
+            label: 'Yield',
+            data: [12, 19, 15, 25],
+            borderColor: '#2e7d32',
+            tension: 0.4
+        }]
+    }
+});
+</script>
+
+</body>
+</html>

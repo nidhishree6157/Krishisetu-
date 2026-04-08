@@ -1,0 +1,23 @@
+{
+  "features": [
+    "temperature",
+    "humidity",
+    "rainfall",
+    "ph"
+  ],
+  "classes": [
+    "Arecanut",
+    "Banana",
+    "Coconut",
+    "Coffee",
+    "Cotton",
+    "Groundnut",
+    "Maize",
+    "Pepper",
+    "Rice",
+    "Soybean",
+    "Sugarcane",
+    "Wheat"
+  ],
+  "n_estimators": 300
+}

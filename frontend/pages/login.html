@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In – KrishiSetu</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+/* ═══════════════════════════════════════════════════════
+   TOKENS — LIGHT THEME
+═══════════════════════════════════════════════════════ */
+:root{
+  --surface:   rgba(255,255,255,0.85);
+  --border:    rgba(0,0,0,0.07);
+  --bf:        rgba(34,197,94,0.45);
+  --text:      #0f172a;
+  --sub:       #475569;
+  --muted:     #94a3b8;
+  --accent:    #2e7d32;
+  --accent-lt: #43a047;
+  --glow:      rgba(34,197,94,0.14);
+  --red:       #dc2626;
+  --red-bg:    rgba(220,38,38,0.06);
+  --R:         13px;
+  --T:         220ms cubic-bezier(.4,0,.2,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+/* ═══════════════════════════════════════════════════════
+   BODY
+═══════════════════════════════════════════════════════ */
+body{
+  min-height:100vh;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Inter',sans-serif;
+  padding:32px 16px;
+  color:var(--text);
+  overflow-x:hidden;
+  background:
+    radial-gradient(ellipse 70% 60% at 15% 20%, rgba(34,197,94,0.09) 0%,transparent 60%),
+    radial-gradient(ellipse 60% 50% at 85% 80%, rgba(34,197,94,0.06) 0%,transparent 60%),
+    linear-gradient(150deg,#f0fdf4 0%,#f8fafc 45%,#eff6ff 100%);
+}
+
+/* ═══════════════════════════════════════════════════════
+   BACKGROUND SCENE
+═══════════════════════════════════════════════════════ */
+.scene{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+
+/* subtle grid */
+.scene-grid{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(34,197,94,.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(34,197,94,.04) 1px,transparent 1px);
+  background-size:52px 52px;
+}
+
+/* soft floating blobs (light version) */
+.blob{position:absolute;border-radius:50%;animation:blobDrift ease-in-out infinite}
+.b1{width:600px;height:600px;background:radial-gradient(circle,rgba(34,197,94,.1) 0%,transparent 65%);filter:blur(100px);top:-20%;left:-16%;animation-duration:24s}
+.b2{width:440px;height:440px;background:radial-gradient(circle,rgba(16,185,129,.07) 0%,transparent 65%);filter:blur(90px);bottom:-16%;right:-10%;animation-duration:32s;animation-delay:-12s}
+.b3{width:280px;height:280px;background:radial-gradient(circle,rgba(99,102,241,.05) 0%,transparent 70%);filter:blur(80px);top:40%;left:60%;animation-duration:40s;animation-delay:-20s}
+@keyframes blobDrift{
+  0%,100%{transform:scale(1)translate(0,0)}
+  33%{transform:scale(1.06)translate(24px,-30px)}
+  66%{transform:scale(.94)translate(-18px,22px)}
+}
+
+/* particles */
+.scene-particles{position:absolute;inset:0;overflow:hidden}
+.pt{
+  position:absolute;border-radius:50%;
+  background:rgba(34,197,94,.55);
+  animation:ptRise linear infinite;
+  will-change:transform,opacity;
+}
+@keyframes ptRise{
+  0%{opacity:0;transform:translateY(0)translateX(0)}
+  8%{opacity:1}90%{opacity:.6}
+  100%{opacity:0;transform:translateY(-115vh)translateX(var(--dx))}
+}
+
+/* card-area glow */
+.scene-glow{
+  position:absolute;width:500px;height:500px;
+  background:radial-gradient(circle,rgba(34,197,94,.1) 0%,transparent 65%);
+  border-radius:50%;filter:blur(60px);
+  top:50%;left:50%;transform:translate(-50%,-50%);
+  animation:glowPulse 6s ease-in-out infinite;
+}
+@keyframes glowPulse{
+  0%,100%{opacity:.4;transform:translate(-50%,-50%)scale(1)}
+  50%{opacity:.75;transform:translate(-50%,-50%)scale(1.16)}
+}
+
+/* ═══════════════════════════════════════════════════════
+   LAYOUT
+═══════════════════════════════════════════════════════ */
+.page{position:relative;z-index:1;width:100%;max-width:420px}
+
+.brand{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  margin-bottom:26px;
+}
+.brand img,.brand .brand-logo-wide{
+  width:auto;height:42px;object-fit:contain;
+  filter:drop-shadow(0 2px 10px rgba(46,125,50,.12));
+}
+
+/* ═══════════════════════════════════════════════════════
+   CARD
+═══════════════════════════════════════════════════════ */
+.card-wrap{animation:cardFloat 7s ease-in-out infinite}
+@keyframes cardFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+
+.card{
+  background:var(--surface);
+  backdrop-filter:blur(20px)saturate(180%);
+  -webkit-backdrop-filter:blur(20px)saturate(180%);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:40px 36px;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,.9) inset,
+    0 8px 32px rgba(15,23,42,.08),
+    0 32px 64px rgba(15,23,42,.06),
+    0 0 0 1px rgba(0,0,0,.04);
+  position:relative;overflow:hidden;
+}
+/* top shimmer */
+.card::before{
+  content:"";position:absolute;top:0;left:10%;right:10%;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.95),transparent);
+}
+/* left accent */
+.card::after{
+  content:"";position:absolute;top:20%;left:0;width:2px;height:60%;
+  background:linear-gradient(180deg,transparent,rgba(22,163,74,.4),transparent);
+  border-radius:2px;
+}
+
+/* ═══════════════════════════════════════════════════════
+   STEPS
+═══════════════════════════════════════════════════════ */
+.steps{position:relative}
+.step{transition:opacity var(--T),transform var(--T)}
+.step.hidden{
+  opacity:0;transform:translateY(14px)scale(.96);
+  pointer-events:none;position:absolute;top:0;left:0;right:0;
+}
+.step.entering{animation:stepIn 320ms cubic-bezier(.4,0,.2,1) forwards}
+@keyframes stepIn{from{opacity:0;transform:translateY(16px)scale(.96)}to{opacity:1;transform:translateY(0)scale(1)}}
+
+/* ═══════════════════════════════════════════════════════
+   CARD HEADER
+═══════════════════════════════════════════════════════ */
+.ch{margin-bottom:28px}
+.badge{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;
+  color:var(--accent);background:rgba(22,163,74,.08);
+  border:1px solid rgba(22,163,74,.18);
+  padding:4px 11px;border-radius:20px;margin-bottom:14px;
+}
+.ch h2{font-size:26px;font-weight:800;letter-spacing:-.4px;line-height:1.2;margin-bottom:6px;color:var(--text)}
+.ch p{font-size:13.5px;color:var(--sub);line-height:1.55}
+.ch strong{color:var(--text)}
+
+/* ═══════════════════════════════════════════════════════
+   FLOATING LABEL FIELDS
+═══════════════════════════════════════════════════════ */
+.field{position:relative;margin-bottom:18px}
+.field .fi{
+  position:absolute;left:14px;top:50%;transform:translateY(-50%);
+  color:var(--muted);font-size:13px;pointer-events:none;
+  transition:color var(--T);z-index:2;
+}
+.field input{
+  width:100%;
+  padding:22px 44px 8px 42px;
+  background:#fff;
+  border:1.5px solid #e2e8f0;
+  border-radius:var(--R);
+  font-size:14px;font-family:inherit;font-weight:500;
+  color:var(--text);outline:none;
+  transition:border-color var(--T),box-shadow var(--T),background var(--T);
+  caret-color:var(--accent);
+}
+.field input::placeholder{color:transparent}
+.field input:focus{
+  border-color:var(--bf);
+  background:#fff;
+  box-shadow:0 0 0 3px var(--glow),0 1px 4px rgba(0,0,0,.06);
+}
+.field input:focus~.fi{color:var(--accent)}
+
+/* floating label */
+.field label{
+  position:absolute;left:42px;top:50%;transform:translateY(-50%);
+  font-size:14px;color:var(--muted);pointer-events:none;
+  transition:all var(--T);font-weight:400;user-select:none;
+}
+.field input:focus~label,
+.field input:not(:placeholder-shown)~label{
+  top:13px;transform:none;
+  font-size:10.5px;font-weight:700;color:var(--accent);letter-spacing:.3px;
+}
+
+/* pw toggle */
+.pw-btn{
+  position:absolute;right:13px;top:50%;transform:translateY(-50%);
+  background:none;border:none;cursor:pointer;
+  color:var(--muted);font-size:13px;transition:color var(--T);
+}
+.pw-btn:hover{color:var(--accent)}
+
+/* ═══════════════════════════════════════════════════════
+   BUTTON
+═══════════════════════════════════════════════════════ */
+.btn{
+  width:100%;padding:13.5px;
+  background:linear-gradient(135deg,#43a047 0%,#2e7d32 100%);
+  color:#fff;border:none;border-radius:var(--R);
+  font-size:14.5px;font-weight:700;font-family:inherit;letter-spacing:.2px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
+  box-shadow:0 4px 16px rgba(46,125,50,.32),0 1px 3px rgba(0,0,0,.1);
+  transition:transform var(--T),box-shadow var(--T),filter var(--T);
+  margin-top:6px;position:relative;overflow:hidden;
+}
+.btn::after{
+  content:"";position:absolute;top:0;left:-80%;width:50%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.2),transparent);
+  transition:left .55s ease;pointer-events:none;
+}
+.btn:hover:not(:disabled)::after{left:130%}
+.btn:hover:not(:disabled){
+  transform:translateY(-2px);
+  box-shadow:0 8px 28px rgba(46,125,50,.38),0 2px 6px rgba(0,0,0,.08);
+  filter:brightness(1.04);
+}
+.btn:active:not(:disabled){transform:scale(.98)translateY(0);filter:none}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.btn.loading{color:transparent}
+.btn.loading::before{
+  content:"";position:absolute;width:18px;height:18px;top:50%;left:50%;margin:-9px;
+  border:2px solid rgba(255,255,255,.4);border-top-color:#fff;
+  border-radius:50%;animation:spin .65s linear infinite;z-index:2;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ═══════════════════════════════════════════════════════
+   ALERT
+═══════════════════════════════════════════════════════ */
+.alert{
+  padding:11px 14px;border-radius:10px;
+  font-size:13px;font-weight:500;margin-bottom:16px;
+  display:flex;align-items:center;gap:8px;
+  border:1px solid transparent;animation:alertIn .22s ease;
+}
+@keyframes alertIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.alert.success{background:rgba(22,163,74,.08);color:#15803d;border-color:rgba(22,163,74,.2)}
+.alert.error{background:var(--red-bg);color:var(--red);border-color:rgba(220,38,38,.15)}
+
+/* ═══════════════════════════════════════════════════════
+   LINKS
+═══════════════════════════════════════════════════════ */
+.links{
+  margin-top:22px;text-align:center;
+  font-size:13px;color:var(--sub);
+}
+.links a{color:var(--accent);font-weight:600;text-decoration:none;transition:color var(--T)}
+.links a:hover{color:var(--accent-lt)}
+.links .d{margin:0 8px;color:var(--muted)}
+
+/* ═══════════════════════════════════════════════════════
+   BACK BUTTON
+═══════════════════════════════════════════════════════ */
+.back-btn{
+  background:none;border:none;font-family:inherit;font-size:13px;
+  color:var(--sub);cursor:pointer;
+  display:inline-flex;align-items:center;gap:5px;
+  padding:0;margin-bottom:18px;transition:color var(--T);
+}
+.back-btn:hover{color:var(--accent)}
+
+/* ═══════════════════════════════════════════════════════
+   OTP
+═══════════════════════════════════════════════════════ */
+.otp-desc{font-size:13.5px;color:var(--sub);line-height:1.55;margin-bottom:24px}
+.otp-desc strong{color:var(--text)}
+.otp-row{display:flex;gap:10px;justify-content:center;margin-bottom:24px}
+.otp-row input{
+  width:52px;height:58px;text-align:center;
+  font-size:22px;font-weight:700;font-family:inherit;color:var(--text);
+  background:#fff;border:1.5px solid #e2e8f0;border-radius:12px;
+  outline:none;caret-color:transparent;
+  transition:border-color var(--T),box-shadow var(--T),transform .15s;
+}
+.otp-row input:focus{
+  border-color:var(--accent-lt);
+  box-shadow:0 0 0 3px var(--glow),0 2px 8px rgba(0,0,0,.06);
+  transform:scale(1.07);
+}
+.otp-row input.filled{border-color:rgba(22,163,74,.5);background:#f0fdf4}
+.otp-row input.shake{animation:shake .4s ease}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+
+/* resend */
+.resend-row{
+  display:flex;align-items:center;justify-content:space-between;
+  font-size:13px;color:var(--sub);margin-bottom:20px;
+}
+#resendBtn{
+  background:none;border:none;font-family:inherit;font-size:13px;font-weight:600;
+  cursor:pointer;color:var(--muted);transition:color var(--T);
+}
+#resendBtn.ready{color:var(--accent)}
+#resendBtn.ready:hover{color:var(--accent-lt)}
+#resendTimer{color:var(--accent);font-weight:700}
+
+@media(max-width:440px){
+  .card{padding:28px 20px}
+  .otp-row input{width:44px;height:50px;font-size:18px}
+  .otp-row{gap:7px}
+}
+  </style>
+</head>
+<body>
+
+<div class="scene" aria-hidden="true">
+  <div class="scene-grid"></div>
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="blob b3"></div>
+  <div class="scene-particles" id="bgParticles"></div>
+  <div class="scene-glow"></div>
+</div>
+
+<div class="page">
+
+  <div class="brand">
+    <img src="../images/krishisetu-logo.svg" alt="KrishiSetu" class="brand-logo-wide">
+  </div>
+
+  <div class="card-wrap">
+    <div class="card">
+      <div class="steps">
+
+        <!-- STEP 1 -->
+        <div class="step" id="stepLogin">
+          <div class="ch">
+            <div class="badge"><i class="fas fa-leaf"></i>&nbsp;Welcome back</div>
+            <h2>Sign in to your account</h2>
+            <p>Enter your credentials to continue</p>
+          </div>
+          <div id="loginAlert"></div>
+          <form id="loginForm" onsubmit="doLogin(event)" novalidate>
+            <div class="field">
+              <input type="text" id="username" placeholder=" " autocomplete="username" required>
+              <label for="username">Username or Email</label>
+              <i class="fi fas fa-at"></i>
+            </div>
+            <div class="field">
+              <input type="password" id="password" placeholder=" " autocomplete="current-password" required>
+              <label for="password">Password</label>
+              <i class="fi fas fa-lock"></i>
+              <button type="button" class="pw-btn" onclick="togglePw('password',this)" tabindex="-1">
+                <i class="fas fa-eye"></i>
+              </button>
+            </div>
+            <button type="submit" id="loginBtn" class="btn">
+              <i class="fas fa-arrow-right"></i> Continue
+            </button>
+          </form>
+          <div class="links">
+            <a href="forgot-password.html">Forgot password?</a>
+            <span class="d">·</span>
+            <a href="register.html">Create account</a>
+          </div>
+        </div>
+
+        <!-- STEP 2 -->
+        <div class="step hidden" id="stepOtp">
+          <div class="ch">
+            <div class="badge"><i class="fas fa-shield-halved"></i>&nbsp;Verification</div>
+            <h2>Check your email</h2>
+            <p>6-digit code sent to <strong id="otpDestEmail">your email</strong></p>
+          </div>
+          <button class="back-btn" id="editLoginBtn" type="button">
+            <i class="fas fa-chevron-left"></i> Edit login details
+          </button>
+          <div id="otpAlert"></div>
+          <p class="otp-desc">Enter the code below — expires in <strong>5 minutes</strong>.</p>
+          <div class="otp-row" id="otpBoxes">
+            <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="one-time-code">
+            <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]">
+            <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]">
+            <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]">
+            <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]">
+            <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]">
+          </div>
+          <div class="resend-row">
+            <span>Didn't receive it?</span>
+            <button type="button" id="resendBtn" disabled>
+              Resend in <span id="resendTimer">30s</span>
+            </button>
+          </div>
+          <button type="button" id="verifyOtpBtn" class="btn">
+            <i class="fas fa-check"></i> Verify &amp; Sign In
+          </button>
+          <div class="links"><a href="register.html">No account? Create one</a></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  var c=document.getElementById("bgParticles");if(!c)return;
+  for(var i=0;i<28;i++){
+    var p=document.createElement("span");
+    var sz=.5+Math.random()*2.4,dur=16+Math.random()*22,delay=-Math.random()*dur,dx=(Math.random()-.5)*120;
+    p.className="pt";
+    p.style.cssText=["left:"+Math.random()*100+"%","bottom:"+(-sz*2)+"px","width:"+sz+"px","height:"+sz+"px","opacity:"+(0.1+Math.random()*0.22),"animation-duration:"+dur+"s","animation-delay:"+delay+"s","--dx:"+dx+"px"].join(";");
+    c.appendChild(p);
+  }
+})();
+
+var pendingLoginId="",resendInterval=null,resendSeconds=30;
+
+function showAlert(id,msg,type){
+  var el=document.getElementById(id);
+  el.innerHTML='<div class="alert '+type+'"><i class="fas '+(type==="success"?"fa-circle-check":"fa-circle-exclamation")+'"></i>'+msg+'</div>';
+  if(type!=="success")setTimeout(function(){if(el.firstChild){el.firstChild.style.transition="opacity .4s";el.firstChild.style.opacity="0";}},3800);
+}
+function clearAlert(id){document.getElementById(id).innerHTML=""}
+function togglePw(id,btn){
+  var i=document.getElementById(id),t=i.type==="text";
+  i.type=t?"password":"text";btn.querySelector("i").className=t?"fas fa-eye":"fas fa-eye-slash";
+}
+function setLoading(btn,on){btn.disabled=on;btn.classList.toggle("loading",on)}
+function showStep(id){
+  document.querySelectorAll(".step").forEach(function(s){
+    if(s.id===id){s.classList.remove("hidden");s.classList.add("entering");setTimeout(function(){s.classList.remove("entering")},360);}
+    else s.classList.add("hidden");
+  });
+}
+(function(){
+  var boxes=document.querySelectorAll("#otpBoxes input");
+  boxes.forEach(function(b,i){
+    b.addEventListener("input",function(){b.value=b.value.replace(/\D/g,"").slice(0,1);b.classList.toggle("filled",!!b.value);if(b.value&&i<boxes.length-1)boxes[i+1].focus();});
+    b.addEventListener("keydown",function(e){
+      if(e.key==="Backspace"){if(!b.value&&i>0){boxes[i-1].value="";boxes[i-1].classList.remove("filled");boxes[i-1].focus();}else{b.value="";b.classList.remove("filled");}}
+      if(e.key==="Enter")doVerify();
+    });
+    b.addEventListener("paste",function(e){
+      e.preventDefault();var t=(e.clipboardData||window.clipboardData).getData("text").replace(/\D/g,"").slice(0,6);
+      boxes.forEach(function(b2,j){b2.value=t[j]||"";b2.classList.toggle("filled",!!b2.value);});
+      boxes[Math.min(t.length,boxes.length-1)].focus();
+    });
+  });
+})();
+function getOtp(){return[].slice.call(document.querySelectorAll("#otpBoxes input")).map(function(b){return b.value}).join("")}
+function clearOtp(){document.querySelectorAll("#otpBoxes input").forEach(function(b){b.value="";b.classList.remove("filled");})}
+function shakeOtp(){document.querySelectorAll("#otpBoxes input").forEach(function(b){b.classList.remove("shake");void b.offsetWidth;b.classList.add("shake");setTimeout(function(){b.classList.remove("shake")},400);})}
+function startCountdown(){
+  resendSeconds=30;
+  var btn=document.getElementById("resendBtn");btn.disabled=true;btn.classList.remove("ready");
+  btn.innerHTML='Resend in <span id="resendTimer">30s</span>';clearInterval(resendInterval);
+  resendInterval=setInterval(function(){resendSeconds--;var t=document.getElementById("resendTimer");if(t)t.textContent=resendSeconds+"s";if(resendSeconds<=0){clearInterval(resendInterval);btn.disabled=false;btn.classList.add("ready");btn.textContent="Resend OTP";}},1000);
+}
+async function doLogin(e){
+  e.preventDefault();clearAlert("loginAlert");
+  var id=document.getElementById("username").value.trim(),pw=document.getElementById("password").value;
+  if(!id||!pw){showAlert("loginAlert","Please enter your username/email and password.","error");return;}
+  var btn=document.getElementById("loginBtn");setLoading(btn,true);
+  var body=id.includes("@")?{email:id,password:pw}:{username:id,password:pw};
+  try{
+    var res=await fetch("http://127.0.0.1:5000/auth/login",{method:"POST",headers:{"Content-Type":"application/json"},credentials:"include",body:JSON.stringify(body)});
+    var data=await res.json();
+    if(data.success){
+      pendingLoginId=id;
+      document.getElementById("otpDestEmail").textContent=id.includes("@")?id:"your registered email";
+      clearOtp();showStep("stepOtp");startCountdown();
+      setTimeout(function(){document.querySelector("#otpBoxes input").focus();},360);
+    }else{showAlert("loginAlert",data.message||"Invalid credentials.","error");}
+  }catch(err){showAlert("loginAlert","Cannot reach the server. Check your connection.","error");}
+  finally{setLoading(btn,false);}
+}
+async function doVerify(){
+  clearAlert("otpAlert");
+  var otp=getOtp();
+  if(otp.length<6){shakeOtp();showAlert("otpAlert","Please enter the complete 6-digit code.","error");return;}
+  var btn=document.getElementById("verifyOtpBtn");setLoading(btn,true);
+  var id=pendingLoginId.trim(),payload=id.includes("@")?{email:id,otp:otp}:{username:id,otp:otp};
+  try{
+    var res=await fetch("http://127.0.0.1:5000/auth/verify-otp",{method:"POST",headers:{"Content-Type":"application/json"},credentials:"include",body:JSON.stringify(payload)});
+    var data=await res.json();
+    if(data.success&&data.data){
+      if(data.data.username)localStorage.setItem("userName",data.data.username);
+      showAlert("otpAlert","Verified! Redirecting…","success");
+      setTimeout(function(){window.location.href=data.data.role==="Expert"?"../expert-dashboard.html":"dashboard.html";},700);
+    }else{shakeOtp();showAlert("otpAlert",data.message||"Invalid or expired code.","error");}
+  }catch(err){showAlert("otpAlert","Cannot reach the server.","error");}
+  finally{setLoading(btn,false);}
+}
+function doResend(){clearAlert("otpAlert");showAlert("otpAlert","Please go back and sign in again to get a new code.","error");}
+document.getElementById("verifyOtpBtn").addEventListener("click",doVerify);
+document.getElementById("resendBtn").addEventListener("click",doResend);
+document.getElementById("editLoginBtn").addEventListener("click",function(){
+  clearInterval(resendInterval);clearOtp();clearAlert("otpAlert");clearAlert("loginAlert");
+  showStep("stepLogin");setTimeout(function(){document.getElementById("username").focus();},360);
+});
+</script>
+</body>
+</html>

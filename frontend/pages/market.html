@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Market Intelligence - KrishiSetu</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <style>
+    /* ── Market-specific overrides ──────────────────────────────────────── */
+    .price-hero {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 24px;
+      background: linear-gradient(135deg, #e8f5e9, #f1f8e9);
+      border-radius: 12px;
+      margin-bottom: 24px;
+      border: 1px solid #c8e6c9;
+    }
+    .price-hero-icon { font-size: 48px; color: var(--primary-green); }
+    .price-hero-main { flex: 1; }
+    .price-hero-amount {
+      font-size: 36px; font-weight: 700;
+      color: var(--text-dark); line-height: 1;
+    }
+    .price-hero-unit { font-size: 14px; color: var(--text-light); margin-top: 4px; }
+    .price-hero-badge {
+      padding: 6px 14px; border-radius: 20px;
+      font-size: 13px; font-weight: 600; display: inline-flex;
+      align-items: center; gap: 6px;
+    }
+    .badge-up     { background: #e8f5e9; color: #2e7d32; }
+    .badge-down   { background: #ffebee; color: #c62828; }
+    .badge-stable { background: #fff8e1; color: #f57f17; }
+
+    .stat-row {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+      margin-bottom: 24px;
+    }
+    .stat-box {
+      background: #fafafa; border: 1px solid #e0e0e0;
+      border-radius: 10px; padding: 16px; text-align: center;
+    }
+    .stat-box-label {
+      font-size: 12px; color: var(--text-light);
+      text-transform: uppercase; letter-spacing: .6px; margin-bottom: 6px;
+    }
+    .stat-box-value { font-size: 20px; font-weight: 700; color: var(--text-dark); }
+
+    .chart-wrap {
+      position: relative; height: 240px; margin-bottom: 20px;
+    }
+
+    .advice-box {
+      border-left: 4px solid var(--primary-green);
+      background: #f1f8e9; border-radius: 8px;
+      padding: 14px 16px; font-size: 13px;
+      color: #33691e; line-height: 1.6;
+      margin-top: 4px;
+    }
+
+    .source-chip {
+      display: inline-block; font-size: 11px; font-weight: 500;
+      padding: 2px 10px; border-radius: 50px;
+      background: #e3f2fd; color: #1565c0; margin-left: 8px;
+    }
+    .source-chip.sim { background: #f3e5f5; color: #6a1b9a; }
+
+    .harvest-value {
+      background: linear-gradient(135deg, #1b5e20, #2e7d32);
+      border-radius: 12px; padding: 18px 20px;
+      color: #fff; margin-top: 20px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .harvest-value-label { font-size: 13px; opacity: .85; }
+    .harvest-value-amount { font-size: 26px; font-weight: 700; }
+
+    .top-prices-row { display: flex; flex-direction: column; gap: 2px; }
+    .tp-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 0; border-bottom: 1px solid #f0f0f0;
+    }
+    .tp-item:last-child { border-bottom: none; }
+    .tp-crop { font-size: 14px; font-weight: 600; color: var(--text-dark); }
+    .tp-price { font-size: 14px; font-weight: 700; color: var(--primary-green); }
+    .tp-change { font-size: 12px; font-weight: 600; }
+    .tp-up   { color: #4CAF50; }
+    .tp-down { color: #E74C3C; }
+
+    @media (max-width: 600px) {
+      .stat-row { grid-template-columns: 1fr 1fr; }
+      .price-hero { flex-direction: column; text-align: center; }
+      .price-hero-amount { font-size: 28px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a class="ks-brand" href="../home.html" title="KrishiSetu"><img src="../images/krishisetu-logo.svg" alt="KrishiSetu" class="ks-brand-img" /></a>
+      </div>
+      <div class="sidebar-body">
+        <ul class="nav-menu">
+          <li class="nav-item"><button class="nav-link" data-page="dashboard"><i class="fas fa-home"></i><span class="nav-label">Dashboard</span></button></li>
+          <li class="nav-item"><button class="nav-link" data-page="crop"><i class="fas fa-leaf"></i><span class="nav-label">Crop Recommendation</span></button></li>
+          <li class="nav-item"><button class="nav-link" data-page="disease"><i class="fas fa-virus"></i><span class="nav-label">Disease Detection</span></button></li>
+          <li class="nav-item"><button class="nav-link" data-page="pest"><i class="fas fa-bug"></i><span class="nav-label">Pest Detection</span></button></li>
+          <li class="nav-item"><button class="nav-link" data-page="fertilizer"><i class="fas fa-droplet"></i><span class="nav-label">Fertilizer</span></button></li>
+          <li class="nav-item"><button class="nav-link active" data-page="market"><i class="fas fa-chart-line"></i><span class="nav-label">Market</span></button></li>
+          <li class="nav-item"><button class="nav-link" data-page="equipment"><i class="fas fa-tools"></i><span class="nav-label">Equipment</span></button></li>
+          <li class="nav-item"><button class="nav-link" data-page="schemes"><i class="fas fa-file-contract"></i><span class="nav-label">Schemes</span></button></li>
+          <li class="nav-item"><button class="nav-link" data-page="soil"><i class="fas fa-earth-americas"></i><span class="nav-label">Soil Analysis</span></button></li>
+          <li class="nav-item"><button class="nav-link" data-page="weather"><i class="fas fa-cloud"></i><span class="nav-label">Weather</span></button></li>
+          <li class="nav-item"><button class="nav-link" data-page="expert-queries"><i class="fas fa-comments"></i><span class="nav-label">Expert Queries</span></button></li>
+        </ul>
+      </div>
+      <div class="sidebar-footer">
+        <button class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+      </div>
+    </aside>
+
+    <div class="main-wrapper">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="hamburger"><i class="fas fa-bars"></i></button>
+          <div class="topbar-title">Market Intelligence</div>
+        </div>
+        <div class="topbar-right">
+          <div class="notification-icon">
+            <i class="fas fa-bell"></i>
+            <div class="notification-badge">3</div>
+          </div>
+          <div class="profile-icon"><i class="fas fa-user-circle"></i></div>
+        </div>
+      </header>
+
+      <main class="content-area">
+
+        <!-- ── Search form ──────────────────────────────────────────────── -->
+        <div class="card">
+          <div class="card-title">
+            <i class="fas fa-chart-line"></i> Market Price Intelligence
+          </div>
+          <p style="color: var(--text-light); margin-bottom: 25px;">
+            Get current prices, 7-day trends, and selling advice for your crop
+          </p>
+
+          <form id="marketForm">
+            <div class="grid grid-3">
+              <div class="form-group">
+                <label class="form-label" for="crop">Crop</label>
+                <select id="crop" name="crop" class="form-select" required>
+                  <option value="">Select Crop</option>
+                  <option value="rice">Rice</option>
+                  <option value="wheat">Wheat</option>
+                  <option value="maize">Maize</option>
+                  <option value="soybean">Soybean</option>
+                  <option value="groundnut">Groundnut</option>
+                  <option value="cotton">Cotton</option>
+                  <option value="sugarcane">Sugarcane</option>
+                  <option value="tomato">Tomato</option>
+                  <option value="onion">Onion</option>
+                  <option value="potato">Potato</option>
+                  <option value="coconut">Coconut</option>
+                  <option value="arecanut">Arecanut</option>
+                  <option value="coffee">Coffee</option>
+                  <option value="pepper">Pepper</option>
+                  <option value="turmeric">Turmeric</option>
+                  <option value="ginger">Ginger</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="location">State / Region</label>
+                <select id="location" name="location" class="form-select" required>
+                  <option value="">Select State</option>
+                  <option value="karnataka">Karnataka</option>
+                  <option value="maharashtra">Maharashtra</option>
+                  <option value="punjab">Punjab</option>
+                  <option value="haryana">Haryana</option>
+                  <option value="madhya-pradesh">Madhya Pradesh</option>
+                  <option value="uttar-pradesh">Uttar Pradesh</option>
+                  <option value="gujarat">Gujarat</option>
+                  <option value="andhra-pradesh">Andhra Pradesh</option>
+                  <option value="telangana">Telangana</option>
+                  <option value="tamil-nadu">Tamil Nadu</option>
+                  <option value="kerala">Kerala</option>
+                  <option value="west-bengal">West Bengal</option>
+                  <option value="rajasthan">Rajasthan</option>
+                  <option value="bihar">Bihar</option>
+                  <option value="odisha">Odisha</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="quantity">Quantity (Quintal)</label>
+                <input type="number" id="quantity" name="quantity" class="form-input"
+                       placeholder="50" min="1" step="1" value="50">
+              </div>
+            </div>
+
+            <div id="formAlert"></div>
+
+            <button type="submit" class="btn btn-primary" id="submitBtn">
+              <i class="fas fa-search"></i> Check Prices
+            </button>
+          </form>
+        </div>
+
+        <!-- ── Result panel ─────────────────────────────────────────────── -->
+        <div id="resultContainer"></div>
+
+        <!-- ── Bottom grid: snapshot + chart ───────────────────────────── -->
+        <div class="grid grid-2" style="margin-top: 24px;">
+          <div class="card">
+            <div class="card-title">
+              <i class="fas fa-arrow-trend-up"></i> Today's Snapshot
+            </div>
+            <div id="topPrices" class="top-prices-row">
+              <div style="padding: 16px 0; text-align:center; color:var(--text-light);">
+                <i class="fas fa-circle-notch fa-spin"></i> Loading…
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">
+              <i class="fas fa-chart-area"></i> 7-Day Price Trend
+              <span id="trendSourceChip"></span>
+            </div>
+            <div id="trendPlaceholder"
+                 style="padding: 40px 20px; text-align:center; color:var(--text-light);">
+              <i class="fas fa-chart-line" style="font-size:36px; margin-bottom:10px; display:block; opacity:.3;"></i>
+              Select a crop and click Check Prices
+            </div>
+            <div class="chart-wrap" id="chartWrap" style="display:none;">
+              <canvas id="trendChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="../js/app.js"></script>
+  <script>
+    /* ── Init ────────────────────────────────────────────────────────────── */
+    document.addEventListener('DOMContentLoaded', () => {
+      setActiveNav('market');
+      attachNavigation();
+      attachHamburger();
+      attachLogout();
+      app.attachNotification();
+      app.attachProfileIcon();
+      loadSnapshot();
+    });
+
+    /* ── Chart instance (kept for destroy/rebuild) ───────────────────────── */
+    let _trendChart = null;
+
+    /* ── Snapshot (static realistic values) ─────────────────────────────── */
+    function loadSnapshot() {
+      const snapshot = [
+        { crop: 'Rice',      price: '₹2,200', change: '+1.4%', up: true  },
+        { crop: 'Wheat',     price: '₹2,150', change: '+0.9%', up: true  },
+        { crop: 'Cotton',    price: '₹6,800', change: '-0.6%', up: false },
+        { crop: 'Arecanut',  price: '₹42,000',change: '+2.1%', up: true  },
+        { crop: 'Coffee',    price: '₹8,500', change: '+0.3%', up: true  },
+        { crop: 'Tomato',    price: '₹1,400', change: '-1.2%', up: false },
+      ];
+
+      document.getElementById('topPrices').innerHTML = snapshot.map(s => `
+        <div class="tp-item">
+          <div>
+            <div class="tp-crop">${s.crop}</div>
+            <div style="font-size:11px;color:var(--text-light);">per Quintal</div>
+          </div>
+          <div style="text-align:right;">
+            <div class="tp-price">${s.price}</div>
+            <div class="tp-change ${s.up ? 'tp-up' : 'tp-down'}">
+              <i class="fas fa-arrow-${s.up ? 'up' : 'down'}"></i> ${s.change}
+            </div>
+          </div>
+        </div>`).join('');
+    }
+
+    /* ── Form submit ─────────────────────────────────────────────────────── */
+    document.getElementById('marketForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const crop     = document.getElementById('crop').value;
+      const location = document.getElementById('location').value;
+      const qty      = parseInt(document.getElementById('quantity').value) || 50;
+      const alertBox = document.getElementById('formAlert');
+      const submitBtn = document.getElementById('submitBtn');
+      const resultContainer = document.getElementById('resultContainer');
+
+      if (!crop || !location) {
+        app.showAlert(alertBox, 'Please select both crop and state.', 'danger');
+        return;
+      }
+      app.showAlert(alertBox, '', '');   // clear
+
+      setButtonLoading(submitBtn, true);
+      app.showLoading(resultContainer);
+
+      try {
+        const res = await fetch(
+          `http://127.0.0.1:5000/market/intelligence?crop=${encodeURIComponent(crop)}&location=${encodeURIComponent(location)}`,
+          { credentials: 'include' }
+        );
+        const json = await res.json();
+
+        if (!res.ok || !json.success) {
+          throw new Error(json.message || `Server error ${res.status}`);
+        }
+
+        renderResult(json.data, qty);
+        renderChart(json.data);
+      } catch (err) {
+        resultContainer.innerHTML = '';
+        app.showAlert(alertBox, `Failed to fetch prices: ${err.message}`, 'danger');
+      } finally {
+        setButtonLoading(submitBtn, false);
+      }
+    });
+
+    /* ── Render main result ──────────────────────────────────────────────── */
+    function renderResult(d, qty) {
+      const totalVal = d.current_price * qty;
+      const upDown   = d.trend_dir === 'up' ? 'up' : (d.trend_dir === 'down' ? 'down' : 'right');
+      const badgeCls = `badge-${d.trend_dir}`;
+      const trendIcon= d.trend_dir === 'up' ? 'fa-arrow-trend-up' : (d.trend_dir === 'down' ? 'fa-arrow-trend-down' : 'fa-minus');
+      const sourceChip = d.source === 'api'
+        ? '<span class="source-chip">Live API</span>'
+        : '<span class="source-chip sim">Simulated</span>';
+
+      document.getElementById('resultContainer').innerHTML = `
+        <div class="result-section" style="margin-top:24px;">
+
+          <!-- Price hero -->
+          <div class="price-hero">
+            <div class="price-hero-icon"><i class="fas fa-sack-dollar"></i></div>
+            <div class="price-hero-main">
+              <div style="font-size:13px;color:var(--text-light);margin-bottom:4px;">
+                ${d.crop} · ${d.best_market} ${sourceChip}
+              </div>
+              <div class="price-hero-amount">₹${d.current_price.toLocaleString('en-IN')}</div>
+              <div class="price-hero-unit">per ${d.unit}</div>
+            </div>
+            <div>
+              <div class="price-hero-badge ${badgeCls}">
+                <i class="fas ${trendIcon}"></i>
+                ${d.trend_pct > 0 ? '+' : ''}${d.trend_pct}% (7 days)
+              </div>
+            </div>
+          </div>
+
+          <!-- Stat boxes -->
+          <div class="stat-row">
+            <div class="stat-box">
+              <div class="stat-box-label">7-Day Low</div>
+              <div class="stat-box-value">₹${d.min_price.toLocaleString('en-IN')}</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-box-label">Weekly Avg</div>
+              <div class="stat-box-value">₹${d.weekly_avg.toLocaleString('en-IN')}</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-box-label">7-Day High</div>
+              <div class="stat-box-value">₹${d.max_price.toLocaleString('en-IN')}</div>
+            </div>
+          </div>
+
+          <!-- Harvest value calculator -->
+          <div class="harvest-value">
+            <div>
+              <div class="harvest-value-label">
+                <i class="fas fa-calculator"></i>
+                Estimated harvest value for ${qty} quintal
+              </div>
+              <div class="harvest-value-amount">₹${totalVal.toLocaleString('en-IN')}</div>
+            </div>
+            <i class="fas fa-seedling" style="font-size:40px;opacity:.3;"></i>
+          </div>
+
+          <!-- Selling advice -->
+          <div class="advice-box" style="margin-top:20px;">
+            <i class="fas fa-lightbulb"></i>
+            <strong>Selling Advice:</strong> ${d.advice}
+          </div>
+
+          <!-- Action buttons -->
+          <div style="display:flex;gap:12px;margin-top:20px;">
+            <button class="btn btn-secondary" style="flex:1;justify-content:center;"
+              onclick="window.location.href='expert-queries.html'">
+              <i class="fas fa-comments"></i> Ask Expert
+            </button>
+          </div>
+
+        </div>`;
+    }
+
+    /* ── Render Chart.js trend ───────────────────────────────────────────── */
+    function renderChart(d) {
+      document.getElementById('trendPlaceholder').style.display = 'none';
+      document.getElementById('chartWrap').style.display = '';
+
+      const chip = document.getElementById('trendSourceChip');
+      chip.innerHTML = d.source === 'api'
+        ? '<span class="source-chip">Live API</span>'
+        : '<span class="source-chip sim">Simulated</span>';
+
+      if (_trendChart) { _trendChart.destroy(); _trendChart = null; }
+
+      const ctx   = document.getElementById('trendChart').getContext('2d');
+      const trend = d.trend;
+      const clr   = d.trend_dir === 'up' ? '#4CAF50' : (d.trend_dir === 'down' ? '#E74C3C' : '#FF9800');
+
+      _trendChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: d.trend_labels,
+          datasets: [{
+            label: `${d.crop} (₹/Quintal)`,
+            data: trend,
+            borderColor: clr,
+            backgroundColor: clr + '22',
+            pointBackgroundColor: clr,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            borderWidth: 2.5,
+            tension: 0.35,
+            fill: true,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: ctx => `  ₹${ctx.parsed.y.toLocaleString('en-IN')} / Quintal`
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: '#f0f0f0' },
+              ticks: { font: { size: 11 } }
+            },
+            y: {
+              grid: { color: '#f0f0f0' },
+              ticks: {
+                font: { size: 11 },
+                callback: v => '₹' + v.toLocaleString('en-IN')
+              }
+            }
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>

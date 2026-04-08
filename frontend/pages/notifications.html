@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notifications — KrishiSetu</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* ── Page tokens ──────────────────────────────────────────── */
+    :root {
+      --n-green:      #2e7d32;
+      --n-green-lt:   #f0fdf4;
+      --n-green-bd:   #bbf7d0;
+      --n-red-lt:     #fef2f2;
+      --n-red-bd:     #fecaca;
+      --n-red-txt:    #b91c1c;
+      --n-blue-lt:    #eff6ff;
+      --n-blue-bd:    #bfdbfe;
+      --n-blue-txt:   #1e40af;
+      --n-amber-lt:   #fffbeb;
+      --n-amber-bd:   #fde68a;
+      --n-amber-txt:  #92400e;
+      --n-muted:      #6b7280;
+      --n-border:     #e5e7eb;
+    }
+
+    /* ── Summary bar ──────────────────────────────────────────── */
+    .notif-summary {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    @media (max-width: 700px) {
+      .notif-summary { grid-template-columns: repeat(2, 1fr); }
+    }
+    .summary-card {
+      border-radius: 12px;
+      padding: 16px 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border: 1px solid var(--n-border);
+      background: #fff;
+    }
+    .summary-icon {
+      width: 38px; height: 38px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; flex-shrink: 0;
+    }
+    .summary-icon.total   { background: #f3f4f6; color: var(--n-muted); }
+    .summary-icon.unread  { background: var(--n-green-lt); color: var(--n-green); }
+    .summary-icon.disease { background: var(--n-red-lt);   color: var(--n-red-txt); }
+    .summary-icon.expert  { background: var(--n-blue-lt);  color: var(--n-blue-txt); }
+    .summary-label { font-size: 11.5px; color: var(--n-muted); font-weight: 600; text-transform: uppercase; letter-spacing: .4px; }
+    .summary-value { font-size: 24px; font-weight: 800; color: #111827; line-height: 1.1; }
+
+    /* ── Filter bar ───────────────────────────────────────────── */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      border-bottom: 2px solid var(--n-border);
+      margin-bottom: 0;
+    }
+    .filter-tab {
+      padding: 11px 18px;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--n-muted);
+      border: none;
+      background: none;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      transition: color .15s, border-color .15s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .filter-tab .tab-count {
+      font-size: 11px;
+      background: #f3f4f6;
+      color: var(--n-muted);
+      padding: 1px 7px;
+      border-radius: 10px;
+      font-weight: 700;
+    }
+    .filter-tab.active { color: var(--n-green); border-bottom-color: var(--n-green); }
+    .filter-tab.active .tab-count { background: var(--n-green-lt); color: var(--n-green); }
+    .filter-tab:hover:not(.active) { color: #374151; }
+
+    .filter-actions {
+      margin-left: auto;
+      display: flex;
+      gap: 8px;
+      padding-bottom: 4px;
+    }
+    .btn-mark-all {
+      font-size: 12.5px;
+      font-weight: 600;
+      padding: 7px 14px;
+      border-radius: 8px;
+      background: var(--n-green-lt);
+      color: var(--n-green);
+      border: 1px solid var(--n-green-bd);
+      cursor: pointer;
+      transition: background .15s;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .btn-mark-all:hover { background: #dcfce7; }
+    .btn-refresh {
+      font-size: 12.5px;
+      font-weight: 600;
+      padding: 7px 12px;
+      border-radius: 8px;
+      background: #f9fafb;
+      color: var(--n-muted);
+      border: 1px solid var(--n-border);
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .btn-refresh:hover { background: #f3f4f6; }
+
+    /* ── Notification list ────────────────────────────────────── */
+    #notification-list { padding-top: 2px; }
+
+    .notif-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 16px 20px;
+      border-bottom: 1px solid #f3f4f6;
+      cursor: pointer;
+      transition: background .12s;
+      position: relative;
+    }
+    .notif-item:last-child { border-bottom: none; }
+    .notif-item:hover  { background: #fafafa; }
+    .notif-item.unread { background: var(--n-green-lt); }
+    .notif-item.unread:hover { background: #dcfce7; }
+
+    /* Left accent stripe for unread */
+    .notif-item.unread::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 4px;
+      background: var(--n-green);
+      border-radius: 0 2px 2px 0;
+    }
+
+    .notif-type-icon {
+      width: 42px; height: 42px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; flex-shrink: 0; margin-top: 1px;
+    }
+    .notif-type-icon.disease { background: var(--n-red-lt);  color: var(--n-red-txt); }
+    .notif-type-icon.expert  { background: var(--n-blue-lt); color: var(--n-blue-txt); }
+    .notif-type-icon.info    { background: #f3f4f6;          color: var(--n-muted); }
+
+    .notif-content { flex: 1; min-width: 0; }
+
+    .notif-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 4px;
+    }
+    .notif-message {
+      font-size: 14px;
+      color: #111827;
+      font-weight: 500;
+      line-height: 1.45;
+    }
+    .notif-item.read .notif-message { font-weight: 400; color: #374151; }
+
+    .notif-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 5px;
+      flex-wrap: wrap;
+    }
+    .notif-time-label {
+      font-size: 12px;
+      color: var(--n-muted);
+      display: flex; align-items: center; gap: 4px;
+    }
+    .type-pill {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 9px;
+      border-radius: 12px;
+      text-transform: uppercase;
+      letter-spacing: .3px;
+    }
+    .type-pill.disease { background: var(--n-red-lt);  color: var(--n-red-txt); border: 1px solid var(--n-red-bd); }
+    .type-pill.expert  { background: var(--n-blue-lt); color: var(--n-blue-txt); border: 1px solid var(--n-blue-bd); }
+    .type-pill.info    { background: #f3f4f6; color: var(--n-muted); border: 1px solid #e5e7eb; }
+
+    .notif-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .unread-dot {
+      width: 9px; height: 9px;
+      border-radius: 50%;
+      background: var(--n-green);
+    }
+    .mark-read-btn {
+      font-size: 11px;
+      color: var(--n-green);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      padding: 2px 0;
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity .15s;
+    }
+    .notif-item:hover .mark-read-btn { opacity: 1; }
+    .mark-read-btn:hover { text-decoration: underline; }
+
+    /* ── States ───────────────────────────────────────────────── */
+    .state-box {
+      padding: 56px 20px;
+      text-align: center;
+      color: var(--n-muted);
+    }
+    .state-box i { font-size: 40px; display: block; margin-bottom: 14px; opacity: .5; }
+    .state-box h3 { font-size: 16px; color: #374151; margin-bottom: 6px; }
+    .state-box p { font-size: 13px; margin: 0; }
+
+    .loading-row {
+      display: flex; align-items: center; justify-content: center;
+      gap: 10px; padding: 40px 20px;
+      color: var(--n-muted); font-size: 14px;
+    }
+    .spin { animation: _spin .7s linear infinite; display: inline-block; }
+    @keyframes _spin { to { transform: rotate(360deg); } }
+
+    /* ── Top action bar ───────────────────────────────────────── */
+    .page-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .page-actions h2 {
+      font-size: 18px;
+      font-weight: 700;
+      color: #111827;
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    /* ── Toast ────────────────────────────────────────────────── */
+    #notif-toast {
+      position: fixed;
+      bottom: 24px; right: 24px;
+      background: #111827;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 10px 18px;
+      border-radius: 10px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.25);
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity .2s, transform .2s;
+      pointer-events: none;
+      z-index: 9999;
+      display: flex; align-items: center; gap: 8px;
+    }
+    #notif-toast.show { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 480px) {
+      .notif-item { padding: 13px 14px; }
+      .filter-tab { padding: 9px 12px; font-size: 12.5px; }
+      .notif-summary { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="app-container">
+
+  <!-- ── Sidebar ──────────────────────────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <a class="ks-brand" href="../home.html" title="KrishiSetu"><img src="../images/krishisetu-logo.svg" alt="KrishiSetu" class="ks-brand-img" /></a>
+    </div>
+    <div class="sidebar-body">
+      <ul class="nav-menu">
+        <li class="nav-item"><button class="nav-link" data-page="dashboard"><i class="fas fa-home"></i><span class="nav-label">Dashboard</span></button></li>
+        <li class="nav-item"><button class="nav-link" data-page="crop"><i class="fas fa-leaf"></i><span class="nav-label">Crop Recommendation</span></button></li>
+        <li class="nav-item"><button class="nav-link" data-page="disease"><i class="fas fa-virus"></i><span class="nav-label">Disease Detection</span></button></li>
+        <li class="nav-item"><button class="nav-link" data-page="pest"><i class="fas fa-bug"></i><span class="nav-label">Pest Detection</span></button></li>
+        <li class="nav-item"><button class="nav-link" data-page="fertilizer"><i class="fas fa-droplet"></i><span class="nav-label">Fertilizer</span></button></li>
+        <li class="nav-item"><button class="nav-link" data-page="market"><i class="fas fa-chart-line"></i><span class="nav-label">Market</span></button></li>
+        <li class="nav-item"><button class="nav-link" data-page="yield"><i class="fas fa-wheat-awn"></i><span class="nav-label">Yield Prediction</span></button></li>
+        <li class="nav-item"><button class="nav-link" data-page="schemes"><i class="fas fa-file-contract"></i><span class="nav-label">Schemes &amp; Profit</span></button></li>
+        <li class="nav-item"><button class="nav-link" data-page="soil"><i class="fas fa-earth-americas"></i><span class="nav-label">Soil Analysis</span></button></li>
+        <li class="nav-item"><button class="nav-link" data-page="weather"><i class="fas fa-cloud"></i><span class="nav-label">Weather</span></button></li>
+        <li class="nav-item"><button class="nav-link" data-page="expert-queries"><i class="fas fa-comments"></i><span class="nav-label">Expert Queries</span></button></li>
+        <li class="nav-item"><button class="nav-link active" data-page="notifications"><i class="fas fa-bell"></i><span class="nav-label">Notifications</span></button></li>
+      </ul>
+    </div>
+    <div class="sidebar-footer">
+      <button class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+    </div>
+  </aside>
+
+  <!-- ── Main wrapper ──────────────────────────────────────────────── -->
+  <div class="main-wrapper">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="hamburger"><i class="fas fa-bars"></i></button>
+        <div class="topbar-title">Notifications</div>
+      </div>
+      <div class="topbar-right">
+        <div class="notification-icon" title="Notifications">
+          <i class="fas fa-bell"></i>
+        </div>
+        <div class="profile-icon"><i class="fas fa-user-circle"></i></div>
+      </div>
+    </header>
+
+    <main class="content-area">
+
+      <!-- Summary bar -->
+      <div class="notif-summary">
+        <div class="summary-card">
+          <div class="summary-icon total"><i class="fas fa-bell"></i></div>
+          <div>
+            <div class="summary-label">Total</div>
+            <div class="summary-value" id="s-total">—</div>
+          </div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-icon unread"><i class="fas fa-circle-dot"></i></div>
+          <div>
+            <div class="summary-label">Unread</div>
+            <div class="summary-value" id="s-unread">—</div>
+          </div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-icon disease"><i class="fas fa-virus"></i></div>
+          <div>
+            <div class="summary-label">Disease</div>
+            <div class="summary-value" id="s-disease">—</div>
+          </div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-icon expert"><i class="fas fa-user-tie"></i></div>
+          <div>
+            <div class="summary-label">Expert</div>
+            <div class="summary-value" id="s-expert">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notifications card -->
+      <div class="card" style="padding:0; overflow:hidden;">
+
+        <!-- Filter tabs + action buttons -->
+        <div style="padding: 0 20px;">
+          <div class="filter-bar">
+            <button class="filter-tab active" data-filter="all">
+              All <span class="tab-count" id="tc-all">0</span>
+            </button>
+            <button class="filter-tab" data-filter="unread">
+              Unread <span class="tab-count" id="tc-unread">0</span>
+            </button>
+            <button class="filter-tab" data-filter="disease">
+              <i class="fas fa-virus" style="font-size:11px;"></i> Disease
+              <span class="tab-count" id="tc-disease">0</span>
+            </button>
+            <button class="filter-tab" data-filter="expert">
+              <i class="fas fa-user-tie" style="font-size:11px;"></i> Expert
+              <span class="tab-count" id="tc-expert">0</span>
+            </button>
+
+            <div class="filter-actions">
+              <button class="btn-mark-all" id="markAllBtn" onclick="markAllRead()">
+                <i class="fas fa-check-double"></i> Mark all read
+              </button>
+              <button class="btn-refresh" onclick="loadNotifications(true)" title="Refresh">
+                <i class="fas fa-sync-alt" id="refreshIcon"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notification list -->
+        <div id="notification-list">
+          <div class="loading-row">
+            <span class="spin"><i class="fas fa-circle-notch"></i></span>
+            Loading notifications…
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="notif-toast"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   Notifications page — KrishiSetu
+═══════════════════════════════════════════════════════════ */
+
+const API      = 'http://127.0.0.1:5000';
+let _allNotifs = [];       // full cached list from server
+let _activeFilter = 'all'; // current tab
+let _pollTimer = null;
+
+// ── Icon + style maps ──────────────────────────────────────────────────────
+const ICON_MAP  = { disease: 'fas fa-virus', expert: 'fas fa-user-tie', info: 'fas fa-info-circle' };
+const TYPE_LABEL = { disease: 'Disease Alert', expert: 'Expert Reply', info: 'Info' };
+
+// ── Escape helper ──────────────────────────────────────────────────────────
+function esc(s) {
+  return String(s || '')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Toast ──────────────────────────────────────────────────────────────────
+function showToast(msg, icon = 'fas fa-check-circle') {
+  const el = document.getElementById('notif-toast');
+  el.innerHTML = `<i class="${icon}"></i> ${esc(msg)}`;
+  el.classList.add('show');
+  clearTimeout(el._timer);
+  el._timer = setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+// ── Load notifications ─────────────────────────────────────────────────────
+async function loadNotifications(manual = false) {
+  if (manual) {
+    const icon = document.getElementById('refreshIcon');
+    if (icon) { icon.classList.add('fa-spin'); }
+    setTimeout(() => { if (icon) icon.classList.remove('fa-spin'); }, 800);
+  }
+
+  try {
+    const res  = await fetch(`${API}/notifications/`, { credentials: 'include' });
+    if (!res.ok) {
+      if (res.status === 401) { showError('sessionExpired'); return; }
+      throw new Error(`HTTP ${res.status}`);
+    }
+    const data = await res.json();
+    if (!data.success) throw new Error(data.message || 'API error');
+
+    _allNotifs = data.notifications || [];
+    updateSummary(_allNotifs, data.unread_count || 0);
+    updateTabCounts(_allNotifs);
+    renderList(_activeFilter);
+
+  } catch (err) {
+    console.error('[Notifications]', err);
+    showError('network');
+  }
+}
+
+// ── Summary bar ────────────────────────────────────────────────────────────
+function updateSummary(notifs, unreadCount) {
+  document.getElementById('s-total').textContent   = notifs.length;
+  document.getElementById('s-unread').textContent  = unreadCount;
+  document.getElementById('s-disease').textContent = notifs.filter(n => n.type === 'disease').length;
+  document.getElementById('s-expert').textContent  = notifs.filter(n => n.type === 'expert').length;
+}
+
+// ── Tab counts ─────────────────────────────────────────────────────────────
+function updateTabCounts(notifs) {
+  const unread  = notifs.filter(n => !n.read).length;
+  const disease = notifs.filter(n => n.type === 'disease').length;
+  const expert  = notifs.filter(n => n.type === 'expert').length;
+
+  document.getElementById('tc-all').textContent     = notifs.length;
+  document.getElementById('tc-unread').textContent  = unread;
+  document.getElementById('tc-disease').textContent = disease;
+  document.getElementById('tc-expert').textContent  = expert;
+}
+
+// ── Render list ────────────────────────────────────────────────────────────
+function renderList(filter) {
+  _activeFilter = filter;
+
+  let items = _allNotifs;
+  if (filter === 'unread')  items = _allNotifs.filter(n => !n.read);
+  if (filter === 'disease') items = _allNotifs.filter(n => n.type === 'disease');
+  if (filter === 'expert')  items = _allNotifs.filter(n => n.type === 'expert');
+
+  const container = document.getElementById('notification-list');
+
+  if (items.length === 0) {
+    const msgs = {
+      all:     ['fa-bell-slash',    'No notifications yet',           'Disease alerts and expert replies will appear here.'],
+      unread:  ['fa-check-circle',  'All caught up!',                 'You have no unread notifications.'],
+      disease: ['fa-leaf',          'No disease alerts',              'Disease detections will show up here.'],
+      expert:  ['fa-user-tie',      'No expert replies yet',          'Replied queries from experts will appear here.'],
+    };
+    const [icon, title, sub] = msgs[filter] || msgs.all;
+    container.innerHTML = `
+      <div class="state-box">
+        <i class="fas ${icon}"></i>
+        <h3>${title}</h3>
+        <p>${sub}</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = items.map(n => {
+    const ico     = ICON_MAP[n.type]  || ICON_MAP.info;
+    const typeCls = n.type || 'info';
+    const label   = TYPE_LABEL[n.type] || 'Notification';
+    const readCls = n.read ? 'read' : 'unread';
+
+    // Full ISO timestamp as tooltip, relative label as display
+    const timeDisplay = esc(n.time_label || n.time || '');
+    const timeTitle   = esc(n.time || '');
+
+    return `
+      <div class="notif-item ${readCls}" id="ni-${esc(n.id)}"
+           onclick="onItemClick('${esc(n.id)}', this)">
+
+        <div class="notif-type-icon ${typeCls}">
+          <i class="${ico}"></i>
+        </div>
+
+        <div class="notif-content">
+          <div class="notif-top">
+            <div class="notif-message">${esc(n.message)}</div>
+          </div>
+          <div class="notif-meta">
+            <span class="type-pill ${typeCls}">${label}</span>
+            <span class="notif-time-label" title="${timeTitle}">
+              <i class="fas fa-clock" style="font-size:10px;"></i>
+              ${timeDisplay}
+            </span>
+          </div>
+        </div>
+
+        <div class="notif-right">
+          ${!n.read ? '<div class="unread-dot"></div>' : ''}
+          ${!n.read ? `<button class="mark-read-btn" onclick="event.stopPropagation(); markOneRead('${esc(n.id)}')">Mark read</button>` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ── Item click — mark read + visual update ────────────────────────────────
+async function onItemClick(id, el) {
+  if (!id) return;
+  if (el.classList.contains('read')) return;   // already read
+
+  // Instant UI
+  el.classList.remove('unread');
+  el.classList.add('read');
+  const dot = el.querySelector('.unread-dot');
+  if (dot) dot.remove();
+  const btn = el.querySelector('.mark-read-btn');
+  if (btn) btn.remove();
+  const msgEl = el.querySelector('.notif-message');
+  if (msgEl) msgEl.style.fontWeight = '400';
+
+  // Patch cache
+  const cached = _allNotifs.find(n => n.id === id);
+  if (cached) cached.read = true;
+
+  // Recount badge + tabs
+  const unreadCount = _allNotifs.filter(n => !n.read).length;
+  document.getElementById('tc-unread').textContent = unreadCount;
+  document.getElementById('s-unread').textContent  = unreadCount;
+
+  // POST to server
+  await postMarkRead([id]);
+}
+
+async function markOneRead(id) {
+  const el = document.getElementById(`ni-${id}`);
+  if (el) await onItemClick(id, el);
+}
+
+// ── Mark all read ──────────────────────────────────────────────────────────
+async function markAllRead() {
+  const ids = _allNotifs.map(n => n.id).filter(Boolean);
+  if (!ids.length) { showToast('Nothing to mark', 'fas fa-info-circle'); return; }
+
+  const unread = _allNotifs.filter(n => !n.read);
+  if (!unread.length) { showToast('All notifications already read', 'fas fa-check-circle'); return; }
+
+  // Instant UI — patch every item in the DOM
+  document.querySelectorAll('.notif-item.unread').forEach(el => {
+    el.classList.remove('unread');
+    el.classList.add('read');
+    el.querySelector('.unread-dot')?.remove();
+    el.querySelector('.mark-read-btn')?.remove();
+    const msgEl = el.querySelector('.notif-message');
+    if (msgEl) msgEl.style.fontWeight = '400';
+  });
+
+  // Zero summary counters immediately
+  document.getElementById('s-unread').textContent  = '0';
+  document.getElementById('tc-unread').textContent = '0';
+
+  // Patch cache
+  _allNotifs = _allNotifs.map(n => ({ ...n, read: true }));
+
+  // Button feedback
+  const btn = document.getElementById('markAllBtn');
+  if (btn) { btn.innerHTML = '<i class="fas fa-check"></i> All read'; btn.disabled = true; }
+
+  showToast(`${unread.length} notification${unread.length > 1 ? 's' : ''} marked as read`);
+
+  // POST all IDs
+  await postMarkRead(ids);
+
+  // Restore button after delay
+  setTimeout(() => {
+    if (btn) {
+      btn.innerHTML = '<i class="fas fa-check-double"></i> Mark all read';
+      btn.disabled  = false;
+    }
+  }, 2500);
+
+  // Non-blocking server refresh to sync state
+  loadNotifications();
+}
+
+// ── POST helper ───────────────────────────────────────────────────────────
+async function postMarkRead(ids) {
+  try {
+    const res = await fetch(`${API}/notifications/read`, {
+      method:      'POST',
+      headers:     { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body:        JSON.stringify({ ids }),
+    });
+    if (!res.ok) console.warn('[Notifications] mark-read HTTP', res.status);
+  } catch (e) {
+    console.warn('[Notifications] mark-read error', e);
+  }
+}
+
+// ── Filter tabs ───────────────────────────────────────────────────────────
+document.querySelectorAll('.filter-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    renderList(tab.dataset.filter);
+  });
+});
+
+// ── Error states ──────────────────────────────────────────────────────────
+function showError(type) {
+  const container = document.getElementById('notification-list');
+  if (type === 'sessionExpired') {
+    container.innerHTML = `
+      <div class="state-box">
+        <i class="fas fa-lock"></i>
+        <h3>Session Expired</h3>
+        <p>Please <a href="login.html" style="color:var(--n-green);font-weight:600;">log in again</a> to view notifications.</p>
+      </div>`;
+  } else {
+    container.innerHTML = `
+      <div class="state-box">
+        <i class="fas fa-wifi"></i>
+        <h3>Could not load notifications</h3>
+        <p>Check your connection and <button onclick="loadNotifications(true)" style="background:none;border:none;color:var(--n-green);font-weight:600;cursor:pointer;font-size:inherit;">try again</button>.</p>
+      </div>`;
+  }
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  setActiveNav('notifications');
+  attachNavigation();
+  attachHamburger();
+  attachLogout();
+  if (typeof app !== 'undefined') {
+    app.attachNotification();
+    app.attachProfileIcon();
+  }
+  loadNotifications();
+
+  // Poll every 10 seconds
+  _pollTimer = setInterval(() => loadNotifications(), 10000);
+});
+</script>
+<script src="../js/app.js"></script>
+</body>
+</html>

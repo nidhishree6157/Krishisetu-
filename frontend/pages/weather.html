@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weather - KrishiSetu</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div class="app-container">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a class="ks-brand" href="../home.html" title="KrishiSetu"><img src="../images/krishisetu-logo.svg" alt="KrishiSetu" class="ks-brand-img" /></a>
+      </div>
+
+      <div class="sidebar-body">
+        <ul class="nav-menu">
+          <li class="nav-item">
+            <button class="nav-link" data-page="dashboard">
+              <i class="fas fa-home"></i>
+              <span class="nav-label">Dashboard</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="crop">
+              <i class="fas fa-leaf"></i>
+              <span class="nav-label">Crop Recommendation</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="disease">
+              <i class="fas fa-virus"></i>
+              <span class="nav-label">Disease Detection</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="pest">
+              <i class="fas fa-bug"></i>
+              <span class="nav-label">Pest Detection</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="fertilizer">
+              <i class="fas fa-droplet"></i>
+              <span class="nav-label">Fertilizer</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="market">
+              <i class="fas fa-chart-line"></i>
+              <span class="nav-label">Market</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="equipment">
+              <i class="fas fa-tools"></i>
+              <span class="nav-label">Equipment</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="schemes">
+              <i class="fas fa-file-contract"></i>
+              <span class="nav-label">Schemes</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="soil">
+              <i class="fas fa-earth-americas"></i>
+              <span class="nav-label">Soil Analysis</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link active" data-page="weather">
+              <i class="fas fa-cloud"></i>
+              <span class="nav-label">Weather</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="expert-queries">
+              <i class="fas fa-comments"></i>
+              <span class="nav-label">Expert Queries</span>
+            </button>
+          </li>
+        </ul>
+      </div>
+
+      <div class="sidebar-footer">
+        <button class="logout-btn">
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </button>
+      </div>
+    </aside>
+
+    <div class="main-wrapper">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="hamburger">
+            <i class="fas fa-bars"></i>
+          </button>
+          <div class="topbar-title">Weather Forecast</div>
+        </div>
+        <div class="topbar-right">
+          <div class="notification-icon">
+            <i class="fas fa-bell"></i>
+            <div class="notification-badge">3</div>
+          </div>
+          <div class="profile-icon">
+            <i class="fas fa-user-circle"></i>
+          </div>
+        </div>
+      </header>
+
+      <main class="content-area">
+        <div class="card" style="margin-bottom: 30px;">
+          <div class="card-title">
+            <i class="fas fa-cloud"></i> Weather & Climate Data
+          </div>
+          <p style="color: var(--text-light); margin-bottom: 25px;">Get 7-day forecast and climate alerts for your region</p>
+
+          <form id="weatherForm">
+            <div class="grid grid-2">
+              <div class="form-group">
+                <label class="form-label" for="location">Location</label>
+                <input type="text" id="location" name="location" class="form-input" placeholder="District, State" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="crop">Crop Type</label>
+                <select id="crop" name="crop" class="form-select" required>
+                  <option value="">Select Crop</option>
+                  <option value="wheat">Wheat</option>
+                  <option value="rice">Rice</option>
+                  <option value="corn">Corn</option>
+                  <option value="sugarcane">Sugarcane</option>
+                  <option value="cotton">Cotton</option>
+                </select>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-search"></i> Get Forecast
+            </button>
+          </form>
+        </div>
+
+        <div id="resultContainer" class="grid grid-2" style="gap: 25px; margin-bottom: 30px;">
+          <div class="card">
+            <div class="card-title">
+              <i class="fas fa-cloud-sun"></i> Current Weather
+            </div>
+            <div class="dashboard-grid" style="gap: 15px;">
+              <div class="stat-card" style="margin: 0;">
+                <div class="stat-label">Temperature</div>
+                <div class="stat-value">28°C</div>
+              </div>
+              <div class="stat-card" style="margin: 0;">
+                <div class="stat-label">Humidity</div>
+                <div class="stat-value">65%</div>
+              </div>
+              <div class="stat-card" style="margin: 0;">
+                <div class="stat-label">Wind Speed</div>
+                <div class="stat-value">12 km/h</div>
+              </div>
+              <div class="stat-card" style="margin: 0;">
+                <div class="stat-label">Rainfall</div>
+                <div class="stat-value">0 mm</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">
+              <i class="fas fa-triangle-exclamation"></i> Alerts
+            </div>
+            <div id="alertsList" style="color: var(--text-light); padding: 20px; text-align: center;">
+              No active weather alerts
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <i class="fas fa-calendar"></i> 7-Day Forecast
+          </div>
+          <div id="forecastContainer" class="grid grid-4" style="gap: 20px;">
+            <div style="grid-column: 1/-1; padding: 30px; text-align: center; color: var(--text-light);">
+              <i class="fas fa-calendar-alt"></i> Select location to view forecast
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top: 30px;">
+          <div class="card-title">
+            <i class="fas fa-lightbulb"></i> Farm Advisory
+          </div>
+          <div id="advisoryContainer">
+            <div class="result-item">
+              <div class="result-label">Irrigation Advisory</div>
+              <div style="color: var(--text-dark); margin-top: 8px;">Based on current humidity and rainfall forecast, irrigation is recommended every 2-3 days.</div>
+            </div>
+            <div class="result-item">
+              <div class="result-label">Best Time for Operations</div>
+              <div style="color: var(--text-dark); margin-top: 8px;">Next 3 days are optimal for pesticide spraying and fertilizer application.</div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      setActiveNav('weather');
+      attachNavigation();
+      attachHamburger();
+      attachLogout();
+      app.attachNotification();
+      app.attachProfileIcon();
+    });
+
+    document.getElementById('weatherForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const location = document.getElementById('location').value;
+      const crop = document.getElementById('crop').value;
+
+      const forecastContainer = document.getElementById('forecastContainer');
+      
+      try {
+        const response = await app.apiCall(`/weather?city=${location}`, 'GET');
+        
+        const weatherData = response?.data || response || {};
+        const temperature = weatherData?.temperature || 'N/A';
+        const humidity = weatherData?.humidity || 'N/A';
+        const condition = weatherData?.condition || 'No data';
+        
+        // Display current weather if forecast not available
+        if (response?.data && !response?.forecast) {
+          const currentWeatherHTML = `
+            <div class="card" style="margin: 0; padding: 20px;">
+              <div style="text-align: center;">
+                <div style="font-weight: 600; color: var(--text-dark); margin-bottom: 10px;">Current Weather in ${location}</div>
+                <div style="font-size: 48px; margin: 15px 0;">${temperature}°C</div>
+                <div style="font-size: 16px; color: var(--text-light); margin-bottom: 15px; text-transform: capitalize;">${condition}</div>
+                <div style="display: flex; justify-content: space-around; padding-top: 15px; border-top: 1px solid var(--border-light);">
+                  <div>
+                    <div style="font-size: 12px; color: var(--text-light);">Humidity</div>
+                    <div style="font-weight: 600;">${humidity}%</div>
+                  </div>
+                  <div>
+                    <div style="font-size: 12px; color: var(--text-light);">Temp</div>
+                    <div style="font-weight: 600;">${temperature}°C</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+          forecastContainer.innerHTML = currentWeatherHTML;
+          app.showAlert(forecastContainer, 'Current weather loaded!', 'success');
+          return;
+        }
+        
+        const forecast = response?.forecast || generateMockForecast();
+        
+        forecastContainer.innerHTML = forecast.map((day, idx) => `
+          <div class="card" style="margin: 0; padding: 20px;">
+            <div style="text-align: center;">
+              <div style="font-weight: 600; color: var(--text-dark); margin-bottom: 10px;">${getDayName(idx)}</div>
+              <div style="font-size: 32px; margin: 15px 0;">${day.icon}</div>
+              <div style="font-size: 14px; color: var(--text-light); margin-bottom: 15px;">${day.condition}</div>
+              <div style="display: flex; justify-content: space-between; padding-top: 15px; border-top: 1px solid var(--border-light);">
+                <div>
+                  <div style="font-size: 12px; color: var(--text-light);">High</div>
+                  <div style="font-weight: 600;">${day.high}°</div>
+                </div>
+                <div>
+                  <div style="font-size: 12px; color: var(--text-light);">Low</div>
+                  <div style="font-weight: 600;">${day.low}°</div>
+                </div>
+                <div>
+                  <div style="font-size: 12px; color: var(--text-light);">Rain</div>
+                  <div style="font-weight: 600;">${day.rain}%</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `).join('');
+
+        app.showAlert(document.querySelector('.card'), 'Weather data loaded!', 'success');
+      } catch (error) {
+        const mockForecast = generateMockForecast();
+        forecastContainer.innerHTML = mockForecast.map((day, idx) => `
+          <div class="card" style="margin: 0; padding: 20px;">
+            <div style="text-align: center;">
+              <div style="font-weight: 600; color: var(--text-dark); margin-bottom: 10px;">${getDayName(idx)}</div>
+              <div style="font-size: 32px; margin: 15px 0;">${day.icon}</div>
+              <div style="font-size: 14px; color: var(--text-light); margin-bottom: 15px;">${day.condition}</div>
+              <div style="display: flex; justify-content: space-between; padding-top: 15px; border-top: 1px solid var(--border-light);">
+                <div>
+                  <div style="font-size: 12px; color: var(--text-light);">High</div>
+                  <div style="font-weight: 600;">${day.high}°</div>
+                </div>
+                <div>
+                  <div style="font-size: 12px; color: var(--text-light);">Low</div>
+                  <div style="font-weight: 600;">${day.low}°</div>
+                </div>
+                <div>
+                  <div style="font-size: 12px; color: var(--text-light);">Rain</div>
+                  <div style="font-weight: 600;">${day.rain}%</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      }
+    });
+
+    function generateMockForecast() {
+      const forecast = [
+        { condition: 'Sunny', high: 32, low: 20, rain: 0, icon: '☀️' },
+        { condition: 'Partly Cloudy', high: 30, low: 19, rain: 10, icon: '⛅' },
+        { condition: 'Rainy', high: 25, low: 18, rain: 70, icon: '🌧️' },
+        { condition: 'Cloudy', high: 28, low: 17, rain: 20, icon: '☁️' },
+        { condition: 'Sunny', high: 33, low: 21, rain: 5, icon: '☀️' },
+        { condition: 'Partly Cloudy', high: 31, low: 20, rain: 15, icon: '⛅' },
+        { condition: 'Sunny', high: 34, low: 22, rain: 0, icon: '☀️' }
+      ];
+      return forecast;
+    }
+
+    function getDayName(index) {
+      const days = ['Today', 'Tomorrow', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      return days[index] || 'Day ' + (index + 1);
+    }
+  </script>
+  <script src="../js/app.js"></script>
+</body>
+</html>

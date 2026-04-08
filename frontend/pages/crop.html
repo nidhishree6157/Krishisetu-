@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crop & Seed Recommendation — KrishiSetu</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    /* ── Auto-filled weather fields ───────────────────────────── */
+    .auto-field[readonly], .auto-field {
+      background: #e8f5e9 !important;
+      color: #1b5e20 !important;
+      cursor: default;
+      border-color: rgba(46,125,50,0.35) !important;
+    }
+    .auto-badge {
+      display: inline-flex; align-items: center; gap: 3px;
+      font-size: 9px; font-weight: 700; letter-spacing: .8px;
+      text-transform: uppercase; color: #fff;
+      background: var(--primary-green, #2e7d32);
+      padding: 2px 7px; border-radius: 20px;
+      margin-left: 6px; vertical-align: middle;
+    }
+
+    /* ── Result card ──────────────────────────────────────────── */
+    .rec-wrapper {
+      margin-top: 28px;
+      display: none;
+    }
+
+    /* Hero */
+    .crop-hero {
+      background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 50%, #43a047 100%);
+      border-radius: 14px;
+      padding: 28px 28px 22px;
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    .crop-hero::after {
+      content: '';
+      position: absolute; top: -40px; right: -40px;
+      width: 180px; height: 180px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.07);
+    }
+    .ch-label {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .8px; opacity: .75; margin-bottom: 6px;
+    }
+    .ch-crop {
+      font-size: clamp(28px, 5vw, 38px);
+      font-weight: 800;
+      letter-spacing: -.5px;
+      line-height: 1.1;
+    }
+    .ch-meta {
+      display: flex; gap: 10px; flex-wrap: wrap;
+      margin-top: 14px;
+    }
+    .ch-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: rgba(255,255,255,.18);
+      border: 1px solid rgba(255,255,255,.3);
+      padding: 4px 12px; border-radius: 20px;
+      font-size: 12px; font-weight: 600;
+    }
+
+    /* Alternatives row */
+    .alt-label {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .5px; color: #64748b;
+      margin-bottom: 8px;
+    }
+    .alt-pills {
+      display: flex; gap: 8px; flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .alt-pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 14px; border-radius: 20px;
+      font-size: 12.5px; font-weight: 600;
+      background: #f1f5f9;
+      border: 1.5px solid #e2e8f0;
+      color: #475569;
+    }
+    .alt-pill .ap-conf {
+      font-size: 11px; color: #94a3b8;
+    }
+
+    /* ── Seed section ─────────────────────────────────────────── */
+    .seeds-section {
+      background: #fff;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 20px 22px;
+      margin-bottom: 18px;
+    }
+    .ss-header {
+      display: flex; align-items: center; gap: 9px;
+      margin-bottom: 16px;
+    }
+    .ss-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: #e8f5e9; border: 1.5px solid #c8e6c9;
+      display: flex; align-items: center; justify-content: center;
+      color: #2e7d32; font-size: 15px; flex-shrink: 0;
+    }
+    .ss-title {
+      font-size: 15px; font-weight: 700; color: #0f172a;
+    }
+    .ss-subtitle {
+      font-size: 12px; color: #64748b; margin-top: 1px;
+    }
+
+    .seed-cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    @media (max-width: 600px) {
+      .seed-cards { grid-template-columns: 1fr; }
+    }
+    .seed-card {
+      border: 1.5px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 14px 16px;
+      background: #f8fafc;
+      position: relative;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .seed-card:hover {
+      border-color: #a5d6a7;
+      box-shadow: 0 2px 12px rgba(46,125,50,.12);
+    }
+    .seed-rank {
+      position: absolute; top: 10px; right: 12px;
+      font-size: 10px; font-weight: 800; text-transform: uppercase;
+      letter-spacing: .5px;
+      color: #2e7d32; background: #e8f5e9;
+      border: 1px solid #c8e6c9;
+      padding: 1px 7px; border-radius: 10px;
+    }
+    .seed-name {
+      font-size: 14.5px; font-weight: 700; color: #0f172a;
+      margin-bottom: 5px; padding-right: 52px;
+    }
+    .seed-reason {
+      font-size: 12px; color: #64748b; line-height: 1.5;
+    }
+    .seed-reason .reason-why {
+      display: inline-block;
+      margin-top: 5px;
+      font-size: 11px; font-weight: 600;
+      color: #1b5e20;
+      background: #e8f5e9; border: 1px solid #c8e6c9;
+      padding: 1px 8px; border-radius: 8px;
+    }
+
+    /* ── Extra info strip ─────────────────────────────────────── */
+    .info-strip {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    @media (max-width: 600px) {
+      .info-strip { grid-template-columns: 1fr; }
+    }
+    .info-tile {
+      background: #fff;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 14px 16px;
+    }
+    .it-label {
+      font-size: 10.5px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .5px; color: #94a3b8; margin-bottom: 5px;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .it-label i { color: #2e7d32; }
+    .it-value {
+      font-size: 14px; font-weight: 600; color: #0f172a; line-height: 1.45;
+    }
+    .it-value.fert {
+      font-size: 12.5px; font-weight: 500; color: #334155;
+    }
+
+    /* Weather pill inside info tile */
+    .wx-pills {
+      display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px;
+    }
+    .wx-pill {
+      font-size: 11px; font-weight: 600;
+      padding: 2px 9px; border-radius: 10px;
+      background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af;
+    }
+
+    /* ── Action row ─────────────────────────────────────────────── */
+    .rec-actions {
+      display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px;
+    }
+    .ra-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 18px; border-radius: 9px;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      border: 1.5px solid; transition: opacity .15s, transform .12s;
+    }
+    .ra-btn:hover { opacity: .87; transform: translateY(-1px); }
+    .ra-btn.primary {
+      background: #2e7d32; border-color: #1b5e20; color: #fff;
+    }
+    .ra-btn.outline {
+      background: #fff; border-color: #e2e8f0; color: #475569;
+    }
+
+    /* ── Explanation panel ──────────────────────────────────────── */
+    .exp-panel {
+      background: linear-gradient(135deg, #fffbeb 0%, #fff9f0 100%);
+      border: 1px solid #fde68a;
+      border-left: 4px solid #f59e0b;
+      border-radius: 12px;
+      padding: 16px 18px;
+      margin-bottom: 18px;
+    }
+    .exp-label {
+      font-size: 11px; font-weight: 800; text-transform: uppercase;
+      letter-spacing: .6px; color: #92400e; margin-bottom: 10px;
+      display: flex; align-items: center; gap: 7px;
+    }
+    .exp-label i { font-size: 13px; color: #d97706; }
+    .exp-paragraphs { display: flex; flex-direction: column; gap: 8px; }
+    .exp-para {
+      font-size: 13px; color: #451a03; line-height: 1.72;
+    }
+    .exp-para strong { color: #92400e; }
+    .exp-para.headline {
+      font-size: 13.5px; font-weight: 600; color: #1c1917;
+    }
+    .exp-tags {
+      display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px;
+    }
+    .exp-tag {
+      font-size: 11.5px; font-weight: 600; padding: 3px 10px;
+      border-radius: 10px; display: inline-flex; align-items: center; gap: 4px;
+    }
+    .exp-tag.green  { background: #dcfce7; color: #166534; }
+    .exp-tag.amber  { background: #fef9c3; color: #854d0e; }
+    .exp-tag.blue   { background: #dbeafe; color: #1e40af; }
+    .exp-tag.slate  { background: #f1f5f9; color: #475569; }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a class="ks-brand" href="../home.html" title="KrishiSetu"><img src="../images/krishisetu-logo.svg" alt="KrishiSetu" class="ks-brand-img" /></a>
+      </div>
+
+      <div class="sidebar-body">
+        <ul class="nav-menu">
+          <li class="nav-item">
+            <button class="nav-link" data-page="dashboard">
+              <i class="fas fa-home"></i>
+              <span class="nav-label">Dashboard</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link active" data-page="crop">
+              <i class="fas fa-leaf"></i>
+              <span class="nav-label">Crop Recommendation</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="disease">
+              <i class="fas fa-virus"></i>
+              <span class="nav-label">Disease Detection</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="pest">
+              <i class="fas fa-bug"></i>
+              <span class="nav-label">Pest Detection</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="fertilizer">
+              <i class="fas fa-droplet"></i>
+              <span class="nav-label">Fertilizer</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="market">
+              <i class="fas fa-chart-line"></i>
+              <span class="nav-label">Market</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="schemes">
+              <i class="fas fa-file-contract"></i>
+              <span class="nav-label">Schemes</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="weather">
+              <i class="fas fa-cloud"></i>
+              <span class="nav-label">Weather</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="expert-queries">
+              <i class="fas fa-comments"></i>
+              <span class="nav-label">Expert Queries</span>
+            </button>
+          </li>
+        </ul>
+      </div>
+
+      <div class="sidebar-footer">
+        <button class="logout-btn">
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </button>
+      </div>
+    </aside>
+
+    <div class="main-wrapper">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="hamburger"><i class="fas fa-bars"></i></button>
+          <div class="topbar-title">Crop &amp; Seed Recommendation</div>
+        </div>
+        <div class="topbar-right">
+          <div class="notification-icon">
+            <i class="fas fa-bell"></i>
+            <div class="notification-badge">3</div>
+          </div>
+          <div class="profile-icon">
+            <i class="fas fa-user-circle"></i>
+          </div>
+        </div>
+      </header>
+
+      <main class="content-area">
+
+        <!-- ══════════════════════════════════════════════════════
+             INPUT FORM
+        ══════════════════════════════════════════════════════════ -->
+        <div class="card">
+          <div class="card-title">
+            <i class="fas fa-wand-magic-sparkles"></i> Smart Crop &amp; Seed Planner
+          </div>
+          <p style="color:var(--text-light);margin-bottom:24px;">
+            Enter your soil data and location — we'll recommend the best crop
+            <strong>and</strong> the top seed varieties in one step.
+          </p>
+
+          <form id="cropForm">
+            <div class="grid grid-2">
+
+              <!-- Soil inputs -->
+              <div class="form-group">
+                <label class="form-label" for="nitrogen">Nitrogen (N) — mg/kg</label>
+                <input type="number" id="nitrogen" name="nitrogen" class="form-input"
+                       placeholder="e.g. 90" min="0" step="0.1" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="phosphorus">Phosphorus (P) — mg/kg</label>
+                <input type="number" id="phosphorus" name="phosphorus" class="form-input"
+                       placeholder="e.g. 40" min="0" step="0.1" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="potassium">Potassium (K) — mg/kg</label>
+                <input type="number" id="potassium" name="potassium" class="form-input"
+                       placeholder="e.g. 40" min="0" step="0.1" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="ph">pH Value (0–14)</label>
+                <input type="number" id="ph" name="ph" class="form-input"
+                       placeholder="e.g. 6.5" min="0" max="14" step="0.1" required>
+              </div>
+
+              <!-- Weather (auto-filled) -->
+              <div class="form-group">
+                <label class="form-label" for="temperature">
+                  Temperature (°C)
+                  <span class="auto-badge" id="weatherBadge" style="display:none">
+                    <i class="fas fa-cloud-sun"></i> Auto
+                  </span>
+                </label>
+                <input type="number" id="temperature" name="temperature"
+                       class="form-input auto-field"
+                       placeholder="Auto-fetched from location…"
+                       min="-50" max="60" step="0.1" readonly>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="humidity">Humidity (%)</label>
+                <input type="number" id="humidity" name="humidity"
+                       class="form-input auto-field"
+                       placeholder="Auto-fetched from location…"
+                       min="0" max="100" step="0.1" readonly>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="rainfall">Rainfall (mm/month, est.)</label>
+                <input type="number" id="rainfall" name="rainfall"
+                       class="form-input auto-field"
+                       placeholder="Auto-fetched from location…"
+                       min="0" step="0.1" readonly>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="season">
+                  Season
+                  <span class="auto-badge"><i class="fas fa-calendar-alt"></i> Auto</span>
+                </label>
+                <select id="season" name="season" class="form-select auto-field" required>
+                  <option value="kharif">Kharif (Monsoon)</option>
+                  <option value="rabi">Rabi (Winter)</option>
+                  <option value="zaid">Zaid (Summer)</option>
+                </select>
+              </div>
+
+              <!-- Location -->
+              <div class="form-group" style="grid-column: 1 / -1;">
+                <label class="form-label" for="location">
+                  Location
+                  <span style="font-weight:400;color:var(--text-light);font-size:11px">
+                    — be precise for best weather match
+                  </span>
+                </label>
+                <div style="position:relative">
+                  <input type="text" id="location" name="location" class="form-input"
+                         placeholder="e.g. Mysore, Karnataka   or   Ludhiana, Punjab"
+                         required style="padding-right:38px">
+                  <span id="weatherSpinner" style="
+                    display:none;position:absolute;right:12px;top:50%;
+                    transform:translateY(-50%);color:var(--primary-green);font-size:14px
+                  "><i class="fas fa-spinner fa-spin"></i></span>
+                </div>
+                <p id="locationHint"
+                   style="font-size:11px;color:#94a3b8;margin-top:3px">
+                  Format: <em>City, State</em> — e.g. "Bangalore, Karnataka" or "Patna, Bihar"
+                </p>
+                <p id="weatherStatus"
+                   style="font-size:11px;color:var(--text-light);margin-top:2px"></p>
+              </div>
+
+            </div><!-- /grid -->
+
+            <div id="alertContainer"></div>
+
+            <div style="display:flex;gap:12px;margin-top:22px;flex-wrap:wrap;">
+              <button type="submit" class="btn btn-primary" id="submitBtn">
+                <i class="fas fa-wand-magic-sparkles"></i> Get Recommendation
+              </button>
+              <button type="reset" class="btn btn-outline" onclick="resetResult()">
+                <i class="fas fa-redo"></i> Reset
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- ══════════════════════════════════════════════════════
+             RESULT  (hidden until API responds)
+        ══════════════════════════════════════════════════════════ -->
+        <div class="rec-wrapper" id="recWrapper">
+
+          <!-- ── Crop hero ── -->
+          <div class="crop-hero" id="recHero">
+            <div class="ch-label"><i class="fas fa-leaf" style="margin-right:5px;"></i>Recommended Crop</div>
+            <div class="ch-crop" id="recCropName">—</div>
+            <div class="ch-meta" id="recMeta"></div>
+          </div>
+
+          <!-- ── Why this crop? (explanation panel) ── -->
+          <div class="exp-panel" id="expPanel" style="display:none;">
+            <div class="exp-label">
+              <i class="fas fa-lightbulb"></i> Why this crop?
+            </div>
+            <div class="exp-paragraphs" id="expBody"></div>
+          </div>
+
+          <!-- ── Alternatives ── -->
+          <div id="altSection" style="margin-bottom:16px;display:none;">
+            <div class="alt-label"><i class="fas fa-list-ol" style="margin-right:4px;"></i>Alternative crops</div>
+            <div class="alt-pills" id="altPills"></div>
+          </div>
+
+          <!-- ── Seeds (top 2) ── -->
+          <div class="seeds-section" id="seedsSection">
+            <div class="ss-header">
+              <div class="ss-icon"><i class="fas fa-seedling"></i></div>
+              <div>
+                <div class="ss-title">Recommended Seeds</div>
+                <div class="ss-subtitle" id="seedsSubtitle">Best varieties for the recommended crop</div>
+              </div>
+            </div>
+            <div class="seed-cards" id="seedCards"></div>
+          </div>
+
+          <!-- ── Info strip: fertilizer + weather ── -->
+          <div class="info-strip">
+            <div class="info-tile">
+              <div class="it-label"><i class="fas fa-flask"></i>Fertilizer advice</div>
+              <div class="it-value fert" id="recFertilizer">—</div>
+            </div>
+            <div class="info-tile">
+              <div class="it-label"><i class="fas fa-cloud-sun"></i>Weather used</div>
+              <div class="wx-pills" id="recWeather"></div>
+            </div>
+          </div>
+
+          <!-- ── Actions ── -->
+          <div class="rec-actions">
+            <button class="ra-btn primary" id="askAIBtn">
+              <i class="fas fa-robot"></i> Ask AI for more advice
+            </button>
+            <button class="ra-btn outline" onclick="resetResult()">
+              <i class="fas fa-redo"></i> Try different inputs
+            </button>
+          </div>
+
+        </div><!-- /rec-wrapper -->
+
+        <!-- Plain result target used by app.js displayRecommendation -->
+        <div id="result" style="display:none;"></div>
+
+      </main>
+    </div><!-- /main-wrapper -->
+  </div><!-- /app-container -->
+
+  <script>
+    const API_BASE = 'http://127.0.0.1:5000';
+
+    // ══════════════════════════════════════════════════════════════
+    // SEASON AUTO-DETECT
+    // ══════════════════════════════════════════════════════════════
+    function detectSeason() {
+      const m = new Date().getMonth();
+      if (m >= 5 && m <= 8)  return 'kharif';
+      if (m >= 9 || m <= 1)  return 'rabi';
+      return 'zaid';
+    }
+    function applySeasonAuto() {
+      const sel = document.getElementById('season');
+      if (sel) sel.value = detectSeason();
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // WEATHER AUTO-FETCH
+    // ══════════════════════════════════════════════════════════════
+    function applyWeatherValues(data) {
+      const set = (id, val) => {
+        const el = document.getElementById(id);
+        if (el && val != null) el.value = Number(val).toFixed(1);
+      };
+      set('temperature', data.temperature);
+      set('humidity',    data.humidity);
+      set('rainfall',    data.rainfall);
+      const badge = document.getElementById('weatherBadge');
+      if (badge) badge.style.display = 'inline-flex';
+      const status = document.getElementById('weatherStatus');
+      if (status) {
+        const src = data.source === 'api' ? 'Live' : 'Default';
+        status.innerHTML = `<i class="fas fa-circle-check" style="color:var(--primary-green)"></i>
+          Weather: ${data.condition || 'N/A'} — ${src} data`;
+      }
+    }
+
+    function applyWeatherDefaults() {
+      const m = new Date().getMonth();
+      let rain = 60;
+      if (m >= 5 && m <= 8)      rain = 180;
+      else if (m >= 9 || m <= 0) rain = 35;
+      applyWeatherValues({ temperature: 25, humidity: 60, rainfall: rain,
+                           condition: 'Default', source: 'default' });
+      const status = document.getElementById('weatherStatus');
+      if (status)
+        status.innerHTML = `<i class="fas fa-triangle-exclamation" style="color:#f59e0b"></i>
+          Could not reach weather service — using seasonal defaults`;
+    }
+
+    let _weatherAbort = null;
+    async function autoFetchWeather(location) {
+      if (!location || !location.trim()) { applyWeatherDefaults(); return; }
+      if (_weatherAbort) _weatherAbort.abort();
+      _weatherAbort = new AbortController();
+      const spinner = document.getElementById('weatherSpinner');
+      const status  = document.getElementById('weatherStatus');
+      if (spinner) spinner.style.display = 'inline';
+      if (status)  status.textContent = 'Fetching weather…';
+      try {
+        const res  = await fetch(`${API_BASE}/weather?location=${encodeURIComponent(location.trim())}`,
+                                  { credentials: 'include', signal: _weatherAbort.signal });
+        const json = await res.json();
+        json.success && json.data ? applyWeatherValues(json.data) : applyWeatherDefaults();
+      } catch (e) {
+        if (e.name !== 'AbortError') applyWeatherDefaults();
+      } finally {
+        if (spinner) spinner.style.display = 'none';
+      }
+    }
+
+    function debounce(fn, ms) {
+      let t;
+      return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
+    }
+    const debouncedWeatherFetch = debounce(autoFetchWeather, 800);
+
+    // ══════════════════════════════════════════════════════════════
+    // SOIL AUTO-FILL FROM PROFILE
+    // ══════════════════════════════════════════════════════════════
+    async function prefillSoilFromProfile() {
+      try {
+        const cached = localStorage.getItem('soilData');
+        if (cached) {
+          const soil = JSON.parse(cached);
+          if (soil && soil.nitrogen != null) {
+            _applySoilValues(soil);
+            showPrefillBanner('Soil values pre-filled from your last uploaded report.');
+            return;
+          }
+        }
+        const res = await fetch(`${API_BASE}/farmer/profile`, { credentials: 'include' });
+        if (!res.ok) return;
+        const json = await res.json();
+        if (!json.success) return;
+        const p = (json.data && json.data.profile) ? json.data.profile : {};
+        if (p.has_soil_data && p.nitrogen != null) {
+          _applySoilValues(p);
+          if (p.location && !document.getElementById('location').value)
+            document.getElementById('location').value = p.location;
+          showPrefillBanner('Soil values pre-filled from your profile. Adjust if needed.');
+          localStorage.setItem('soilData', JSON.stringify({
+            nitrogen: p.nitrogen, phosphorus: p.phosphorus,
+            potassium: p.potassium, ph: p.ph,
+          }));
+        }
+      } catch (e) { console.debug('[AutoFill]', e.message); }
+    }
+
+    function _applySoilValues(soil) {
+      const set = (id, val) => {
+        const el = document.getElementById(id);
+        if (el && val != null) el.value = Number(val).toFixed(1);
+      };
+      set('nitrogen',   soil.nitrogen);
+      set('phosphorus', soil.phosphorus);
+      set('potassium',  soil.potassium);
+      set('ph',         soil.ph);
+    }
+
+    function showPrefillBanner(msg) {
+      const ac = document.getElementById('alertContainer');
+      if (!ac) return;
+      ac.innerHTML = `
+        <div class="alert alert-info" style="display:flex;align-items:center;gap:8px;">
+          <span class="alert-icon">ℹ</span>
+          ${msg}
+          <a href="profile.html" style="margin-left:auto;font-size:12px;white-space:nowrap;">
+            Update report
+          </a>
+        </div>`;
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // RESULT RENDERING
+    // ══════════════════════════════════════════════════════════════
+    function esc(s) {
+      return String(s || '')
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function renderResult(result) {
+      const topCrop     = result.crop || 'Unknown';
+      const top3        = result.recommended_crops || [{ name: topCrop, confidence: 80 }];
+      const seedRecs    = result.seed_recommendations || [];
+      const fertilizer  = result.fertilizer || 'No specific fertilizer required';
+      const weather     = result.weather    || {};
+      const season      = document.getElementById('season').value;
+      const explanation = result.explanation || '';
+
+      // Hero
+      document.getElementById('recCropName').textContent = topCrop;
+      const metaEl = document.getElementById('recMeta');
+      const top1Conf = top3[0]?.confidence ?? 80;
+      metaEl.innerHTML = `
+        <span class="ch-badge"><i class="fas fa-chart-pie"></i> ${top1Conf}% confidence</span>
+        <span class="ch-badge"><i class="fas fa-calendar-alt"></i> ${esc(season)} season</span>
+        ${weather.condition ? `<span class="ch-badge"><i class="fas fa-cloud-sun"></i> ${esc(weather.condition)}</span>` : ''}
+      `;
+
+      // Explanation panel
+      const expPanel = document.getElementById('expPanel');
+      const expBody  = document.getElementById('expBody');
+      if (explanation && expPanel && expBody) {
+        const paragraphs = explanation.split('\n\n').filter(p => p.trim());
+        expBody.innerHTML = paragraphs.map((p, i) => {
+          const txt = esc(p.trim());
+          if (i === 0) {
+            // Headline paragraph — bold crop name
+            return `<p class="exp-para headline">${txt.replace(esc(topCrop), `<strong>${esc(topCrop)}</strong>`)}</p>`;
+          }
+          // For climate/soil lines, highlight the numeric values
+          const formatted = txt.replace(
+            /(\d+\.?\d*\s*(?:°C|mm|%|pH\s*[\d.]+))/g,
+            '<strong>$1</strong>'
+          );
+          return `<p class="exp-para">${formatted}</p>`;
+        }).join('');
+
+        // Add quick context tags for key values
+        const tags = [];
+        if (weather.temperature != null) tags.push(`<span class="exp-tag amber"><i class="fas fa-thermometer-half"></i> ${weather.temperature}°C</span>`);
+        if (weather.rainfall    != null) tags.push(`<span class="exp-tag blue"><i class="fas fa-cloud-rain"></i> ${Math.round(weather.rainfall)} mm rain</span>`);
+        if (weather.humidity    != null) tags.push(`<span class="exp-tag green"><i class="fas fa-droplet"></i> ${weather.humidity}% humidity</span>`);
+        if (tags.length > 0) {
+          expBody.insertAdjacentHTML('beforeend', `<div class="exp-tags">${tags.join('')}</div>`);
+        }
+        expPanel.style.display = '';
+      } else if (expPanel) {
+        expPanel.style.display = 'none';
+      }
+
+      // Alternatives (top3 minus the first)
+      const alternatives = top3.slice(1);
+      const altSec  = document.getElementById('altSection');
+      const altPills = document.getElementById('altPills');
+      if (alternatives.length > 0) {
+        altPills.innerHTML = alternatives.map(c => `
+          <span class="alt-pill">
+            <i class="fas fa-leaf" style="color:#2e7d32;font-size:11px;"></i>
+            ${esc(c.name)}
+            <span class="ap-conf">${c.confidence}%</span>
+          </span>`).join('');
+        altSec.style.display = '';
+      } else {
+        altSec.style.display = 'none';
+      }
+
+      // Seeds — show top 2 only
+      const seeds = seedRecs.slice(0, 2);
+      const seedCards = document.getElementById('seedCards');
+      document.getElementById('seedsSubtitle').textContent =
+        `Best varieties for ${topCrop} — matched to your weather`;
+
+      if (seeds.length === 0) {
+        seedCards.innerHTML = `
+          <div style="grid-column:1/-1; padding:14px; background:#fffbeb;
+               border:1px solid #fde68a; border-radius:9px;
+               font-size:13px; color:#92400e;">
+            <i class="fas fa-info-circle" style="margin-right:6px;"></i>
+            No specific seed data for ${esc(topCrop)}. Consult your local KVK for varieties.
+          </div>`;
+      } else {
+        seedCards.innerHTML = seeds.map((s, i) => {
+          // Split reason at " — " to separate description from recommendation note
+          const parts = (s.reason || '').split(' — ');
+          const desc  = parts[0] || s.reason || '';
+          const why   = parts.slice(1).join(' — ');
+          return `
+            <div class="seed-card">
+              <div class="seed-rank">${i === 0 ? '🌟 Top pick' : '2nd choice'}</div>
+              <div class="seed-name">${esc(s.name)}</div>
+              <div class="seed-reason">
+                ${esc(desc)}
+                ${why ? `<span class="reason-why"><i class="fas fa-bolt" style="font-size:9px;margin-right:3px;"></i>${esc(why)}</span>` : ''}
+              </div>
+            </div>`;
+        }).join('');
+      }
+
+      // Fertilizer
+      document.getElementById('recFertilizer').textContent = fertilizer;
+
+      // Weather pills
+      const wxEl = document.getElementById('recWeather');
+      const wxParts = [];
+      if (weather.temperature != null) wxParts.push(`${weather.temperature}°C`);
+      if (weather.humidity    != null) wxParts.push(`${weather.humidity}% humidity`);
+      if (weather.rainfall    != null) wxParts.push(`${Math.round(weather.rainfall)} mm rain`);
+      if (wxParts.length === 0) wxParts.push('Default values used');
+      wxEl.innerHTML = wxParts.map(p => `<span class="wx-pill">${esc(p)}</span>`).join('');
+
+      // Ask-AI button
+      document.getElementById('askAIBtn').onclick = () => {
+        const parts = [`crop: ${topCrop}`];
+        if (seeds[0]) parts.push(`top seed: ${seeds[0].name}`);
+        const q = `I'm planning to grow ${topCrop}${seeds[0] ? ` using ${seeds[0].name} seeds` : ''}. What are the most important care steps to maximise yield?`;
+        localStorage.setItem('ks_last_crop', topCrop);
+        window.open(`../smart_assistant.html?q=${encodeURIComponent(q)}`, '_blank');
+      };
+
+      // Persist to localStorage for dashboard / chatbot context
+      localStorage.setItem('ks_last_crop', topCrop);
+
+      // Show the result wrapper (must be 'block', not '' — CSS default is display:none)
+      document.getElementById('recWrapper').style.display = 'block';
+      document.getElementById('recWrapper').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function resetResult() {
+      document.getElementById('recWrapper').style.display = 'none';
+      document.getElementById('alertContainer').innerHTML = '';
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // FORM SUBMIT
+    // ══════════════════════════════════════════════════════════════
+    document.getElementById('cropForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const alertContainer = document.getElementById('alertContainer');
+      const submitBtn = document.getElementById('submitBtn');
+
+      if (!validateForm(e.target)) return;
+
+      setButtonLoading(submitBtn, true);
+      resetResult();
+
+      const fv = (id, def) => {
+        const v = parseFloat(document.getElementById(id)?.value);
+        return isNaN(v) ? def : v;
+      };
+
+      const payload = {
+        mode:        'new',
+        location:    document.getElementById('location').value.trim(),
+        nitrogen:    fv('nitrogen',    90),
+        phosphorus:  fv('phosphorus',  40),
+        potassium:   fv('potassium',   40),
+        ph:          fv('ph',         6.5),
+        temperature: fv('temperature', 25),
+        humidity:    fv('humidity',    60),
+        rainfall:    fv('rainfall',   100),
+      };
+
+      try {
+        const response = await app.apiCall('/api/recommend', 'POST', payload);
+        console.log('Recommendation API response:', response);
+
+        if (!response?.success) {
+          throw new Error(response?.message || 'Recommendation failed');
+        }
+        const result = response;
+
+        if (!result.crop) throw new Error('No crop result from server');
+
+        renderResult(result);
+
+        // Plain fallback display so #result (used by app.js displayRecommendation) also reflects data
+        const plainResult = document.getElementById('result');
+        if (plainResult) {
+          plainResult.innerHTML = `
+            <h3>Recommended Crop</h3>
+            <p>${esc(result.crop)}</p>
+            ${result.explanation ? `<h3>Why this crop?</h3><p>${esc(result.explanation)}</p>` : ''}
+            <h3>Best Seeds</h3>
+            <ul>${(result.seeds || []).map(s => `<li>${esc(typeof s === 'string' ? s : (s?.name || ''))}</li>`).join('')}</ul>
+          `;
+        }
+
+        app.showAlert(alertContainer, '✅ Recommendation ready — scroll down to view.', 'success');
+
+      } catch (error) {
+        app.showAlert(alertContainer, 'Failed to get recommendation. Check your inputs and try again.', 'danger');
+      } finally {
+        setButtonLoading(submitBtn, false);
+      }
+    });
+
+    // ══════════════════════════════════════════════════════════════
+    // INIT
+    // ══════════════════════════════════════════════════════════════
+    document.addEventListener('DOMContentLoaded', () => {
+      setActiveNav('crop');
+      attachNavigation();
+      attachHamburger();
+      attachLogout();
+      app.attachNotification();
+      app.attachProfileIcon();
+
+      applySeasonAuto();
+
+      const locInput = document.getElementById('location');
+      if (locInput) {
+        locInput.addEventListener('input', () => {
+          const hint = document.getElementById('locationHint');
+          if (hint) hint.style.display = 'none';
+          debouncedWeatherFetch(locInput.value);
+        });
+        if (locInput.value.trim()) autoFetchWeather(locInput.value);
+      }
+
+      prefillSoilFromProfile().then(() => {
+        const loc = locInput && locInput.value.trim();
+        if (loc) autoFetchWeather(loc);
+        else     applyWeatherDefaults();
+      });
+    });
+  </script>
+  <script src="../js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Soil Analysis - KrishiSetu</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div class="app-container">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a class="ks-brand" href="../home.html" title="KrishiSetu"><img src="../images/krishisetu-logo.svg" alt="KrishiSetu" class="ks-brand-img" /></a>
+      </div>
+
+      <div class="sidebar-body">
+        <ul class="nav-menu">
+          <li class="nav-item">
+            <button class="nav-link" data-page="dashboard">
+              <i class="fas fa-home"></i>
+              <span class="nav-label">Dashboard</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="crop">
+              <i class="fas fa-leaf"></i>
+              <span class="nav-label">Crop Recommendation</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="disease">
+              <i class="fas fa-virus"></i>
+              <span class="nav-label">Disease Detection</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="pest">
+              <i class="fas fa-bug"></i>
+              <span class="nav-label">Pest Detection</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="fertilizer">
+              <i class="fas fa-droplet"></i>
+              <span class="nav-label">Fertilizer</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="market">
+              <i class="fas fa-chart-line"></i>
+              <span class="nav-label">Market</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="equipment">
+              <i class="fas fa-tools"></i>
+              <span class="nav-label">Equipment</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="schemes">
+              <i class="fas fa-file-contract"></i>
+              <span class="nav-label">Schemes</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link active" data-page="soil">
+              <i class="fas fa-earth-americas"></i>
+              <span class="nav-label">Soil Analysis</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="weather">
+              <i class="fas fa-cloud"></i>
+              <span class="nav-label">Weather</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="expert-queries">
+              <i class="fas fa-comments"></i>
+              <span class="nav-label">Expert Queries</span>
+            </button>
+          </li>
+        </ul>
+      </div>
+
+      <div class="sidebar-footer">
+        <button class="logout-btn">
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </button>
+      </div>
+    </aside>
+
+    <div class="main-wrapper">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="hamburger">
+            <i class="fas fa-bars"></i>
+          </button>
+          <div class="topbar-title">Soil Analysis</div>
+        </div>
+        <div class="topbar-right">
+          <div class="notification-icon">
+            <i class="fas fa-bell"></i>
+            <div class="notification-badge">3</div>
+          </div>
+          <div class="profile-icon">
+            <i class="fas fa-user-circle"></i>
+          </div>
+        </div>
+      </header>
+
+      <main class="content-area">
+        <div class="card">
+          <div class="card-title">
+            <i class="fas fa-earth-americas"></i> Soil Health Card Analysis
+          </div>
+          <p style="color: var(--text-light); margin-bottom: 25px;">Analyze soil properties and get detailed health assessment</p>
+
+          <form id="soilForm">
+            <div class="grid grid-2">
+              <div class="form-group">
+                <label class="form-label" for="nitrogen">Nitrogen (mg/kg)</label>
+                <input type="number" id="nitrogen" name="nitrogen" class="form-input" placeholder="0-500" min="0" step="1" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="phosphorus">Phosphorus (mg/kg)</label>
+                <input type="number" id="phosphorus" name="phosphorus" class="form-input" placeholder="0-500" min="0" step="1" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="potassium">Potassium (mg/kg)</label>
+                <input type="number" id="potassium" name="potassium" class="form-input" placeholder="0-500" min="0" step="1" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="ph">pH Value</label>
+                <input type="number" id="ph" name="ph" class="form-input" placeholder="0-14" min="0" max="14" step="0.1" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="organic">Organic Matter (%)</label>
+                <input type="number" id="organic" name="organic" class="form-input" placeholder="0-10" min="0" max="10" step="0.1" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="ec">Electrical Conductivity</label>
+                <input type="number" id="ec" name="ec" class="form-input" placeholder="0-50" min="0" step="0.1" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="soil_type">Soil Type</label>
+                <select id="soil_type" name="soil_type" class="form-select" required>
+                  <option value="">Select Type</option>
+                  <option value="loamy">Loamy</option>
+                  <option value="clay">Clay</option>
+                  <option value="sandy">Sandy</option>
+                  <option value="silt">Silt</option>
+                  <option value="red">Red Soil</option>
+                  <option value="black">Black Soil</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="location">Location</label>
+                <input type="text" id="location" name="location" class="form-input" placeholder="District, State" required>
+              </div>
+            </div>
+
+            <div id="alertContainer"></div>
+
+            <div style="display: flex; gap: 15px; margin-top: 25px;">
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-flask"></i> Analyze Soil
+              </button>
+              <button type="reset" class="btn btn-outline">
+                <i class="fas fa-redo"></i> Reset
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div id="resultContainer"></div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      setActiveNav('soil');
+      attachNavigation();
+      attachHamburger();
+      attachLogout();
+      app.attachNotification();
+      app.attachProfileIcon();
+    });
+
+    document.getElementById('soilForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const alertContainer = document.getElementById('alertContainer');
+      const submitBtn = e.target.querySelector('button[type="submit"]');
+      const resultContainer = document.getElementById('resultContainer');
+
+      if (!validateForm(e.target)) return;
+
+      setButtonLoading(submitBtn, true);
+      app.showLoading(resultContainer);
+
+      const formData = {
+        nitrogen: parseFloat(document.getElementById('nitrogen').value),
+        phosphorus: parseFloat(document.getElementById('phosphorus').value),
+        potassium: parseFloat(document.getElementById('potassium').value),
+        ph: parseFloat(document.getElementById('ph').value),
+        organic_matter: parseFloat(document.getElementById('organic').value),
+        ec: parseFloat(document.getElementById('ec').value),
+        soil_type: document.getElementById('soil_type').value,
+        location: document.getElementById('location').value
+      };
+
+      try {
+        const response = await app.apiCall('/soil/data', 'POST', formData);
+
+        const getHealthStatus = (score) => {
+          if (score >= 80) return { status: 'Excellent', color: '#4CAF50' };
+          if (score >= 60) return { status: 'Good', color: '#8BC34A' };
+          if (score >= 40) return { status: 'Fair', color: '#FFC107' };
+          return { status: 'Poor', color: '#F44336' };
+        };
+
+        const health = getHealthStatus(response.health_score || 65);
+
+        const resultHTML = `
+          <div class="result-section">
+            <div style="display: flex; align-items: center; margin-bottom: 20px; padding: 20px; background: ${health.color}15; border-radius: 12px;">
+              <i class="fas fa-leaf" style="font-size: 32px; color: ${health.color}; margin-right: 15px;"></i>
+              <div>
+                <div class="result-label">Overall Soil Health</div>
+                <div style="font-size: 24px; font-weight: 700; color: ${health.color};">${health.status} (${response.health_score || 65}%)</div>
+              </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+              <div class="result-item">
+                <div class="result-label">Nitrogen Level</div>
+                <div class="result-value">${parseFloat(document.getElementById('nitrogen').value)} mg/kg</div>
+                <div class="result-confidence">${getStatus(parseFloat(document.getElementById('nitrogen').value), 50, 150)}</div>
+              </div>
+
+              <div class="result-item">
+                <div class="result-label">Phosphorus Level</div>
+                <div class="result-value">${parseFloat(document.getElementById('phosphorus').value)} mg/kg</div>
+                <div class="result-confidence">${getStatus(parseFloat(document.getElementById('phosphorus').value), 30, 80)}</div>
+              </div>
+
+              <div class="result-item">
+                <div class="result-label">Potassium Level</div>
+                <div class="result-value">${parseFloat(document.getElementById('potassium').value)} mg/kg</div>
+                <div class="result-confidence">${getStatus(parseFloat(document.getElementById('potassium').value), 100, 300)}</div>
+              </div>
+
+              <div class="result-item">
+                <div class="result-label">pH Value</div>
+                <div class="result-value">${parseFloat(document.getElementById('ph').value)}</div>
+                <div class="result-confidence">${getStatus(parseFloat(document.getElementById('ph').value), 6.5, 7.5)}</div>
+              </div>
+
+              <div class="result-item">
+                <div class="result-label">Organic Matter</div>
+                <div class="result-value">${parseFloat(document.getElementById('organic').value)}%</div>
+                <div class="result-confidence">${parseFloat(document.getElementById('organic').value) > 2.5 ? 'Good' : 'Needs improvement'}</div>
+              </div>
+
+              <div class="result-item">
+                <div class="result-label">Electrical Conductivity</div>
+                <div class="result-value">${parseFloat(document.getElementById('ec').value)}</div>
+                <div class="result-confidence">${parseFloat(document.getElementById('ec').value) < 2 ? 'Normal' : 'High salinity'}</div>
+              </div>
+            </div>
+
+            <div class="result-item">
+              <div class="result-label">Recommendations</div>
+              <ul style="list-style: none; padding: 0; margin-top: 10px; color: var(--text-dark); font-size: 14px; line-height: 2;">
+                ${response.recommendations ? response.recommendations.map(r => `<li><i class="fas fa-check-circle" style="color: var(--primary-green); margin-right: 8px;"></i>${r}</li>`).join('') : '<li><i class="fas fa-check-circle" style="color: var(--primary-green); margin-right: 8px;"></i>Balanced fertilizer application recommended</li><li><i class="fas fa-check-circle" style="color: var(--primary-green); margin-right: 8px;"></i>Increase organic matter through compost</li>'}
+              </ul>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+              <button class="btn btn-secondary" style="flex: 1; justify-content: center;">
+                <i class="fas fa-download"></i> Download Report
+              </button>
+              <button class="btn btn-primary" style="flex: 1; justify-content: center;">
+                <i class="fas fa-comments"></i> Ask Expert
+              </button>
+            </div>
+          </div>
+        `;
+
+        resultContainer.innerHTML = resultHTML;
+        app.showAlert(alertContainer, 'Soil analysis complete!', 'success');
+      } catch (error) {
+        resultContainer.innerHTML = '';
+        app.showAlert(alertContainer, 'Failed to analyze soil', 'danger');
+      } finally {
+        setButtonLoading(submitBtn, false);
+      }
+    });
+
+    function getStatus(value, min, max) {
+      if (value >= min && value <= max) return '✓ Optimal';
+      if (value < min) return '✗ Low - Needs increase';
+      return '✗ High - Needs reduction';
+    }
+  </script>
+  <script src="../js/app.js"></script>
+</body>
+</html>
