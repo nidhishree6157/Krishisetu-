@@ -620,6 +620,20 @@ def full_recommendation(data: dict) -> dict:
         # ── EXISTING MODE ──────────────────────────────────────
         if mode == "existing":
             crop = str(crop or "rice")
+
+            def _ef(key: str, default: float) -> float:
+                v = data.get(key)
+                try:
+                    return float(v) if v is not None else default
+                except (TypeError, ValueError):
+                    return default
+
+            ex_n = _ef("nitrogen", 0.0)
+            ex_p = _ef("phosphorus", 0.0)
+            ex_k = _ef("potassium", 0.0)
+            raw_ex_ph = _ef("ph", _ef("soil_ph", 7.0))
+            ex_ph = raw_ex_ph if 3.0 <= raw_ex_ph <= 10.0 else 7.0
+
             fertilizer = get_fertilizer_recommendation(crop)
             weather_info = _get_weather_for_location(location)
             temperature = _safe_val(weather_info["temperature"], 25.0, lo=1.0, hi=55.0)
@@ -641,7 +655,7 @@ def full_recommendation(data: dict) -> dict:
             seeds = [s["name"] for s in seed_recs]
             explanation = _build_explanation(
                 crop=crop, mode=mode,
-                nitrogen=0.0, phosphorus=0.0, potassium=0.0, ph=7.0,
+                nitrogen=ex_n, phosphorus=ex_p, potassium=ex_k, ph=ex_ph,
                 temperature=temperature, humidity=humidity, rainfall=rainfall,
                 location=location, confidence=100, alternatives=None,
             )

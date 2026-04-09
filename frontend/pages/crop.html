@@ -269,21 +269,21 @@
             </button>
           </li>
           <li class="nav-item">
+            <button class="nav-link" data-page="profile">
+              <i class="fas fa-user"></i>
+              <span class="nav-label">My Profile</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="soil">
+              <i class="fas fa-earth-americas"></i>
+              <span class="nav-label">Soil Analysis</span>
+            </button>
+          </li>
+          <li class="nav-item">
             <button class="nav-link active" data-page="crop">
               <i class="fas fa-leaf"></i>
               <span class="nav-label">Crop Recommendation</span>
-            </button>
-          </li>
-          <li class="nav-item">
-            <button class="nav-link" data-page="disease">
-              <i class="fas fa-virus"></i>
-              <span class="nav-label">Disease Detection</span>
-            </button>
-          </li>
-          <li class="nav-item">
-            <button class="nav-link" data-page="pest">
-              <i class="fas fa-bug"></i>
-              <span class="nav-label">Pest Detection</span>
             </button>
           </li>
           <li class="nav-item">
@@ -299,15 +299,9 @@
             </button>
           </li>
           <li class="nav-item">
-            <button class="nav-link" data-page="schemes">
-              <i class="fas fa-file-contract"></i>
-              <span class="nav-label">Schemes</span>
-            </button>
-          </li>
-          <li class="nav-item">
-            <button class="nav-link" data-page="weather">
-              <i class="fas fa-cloud"></i>
-              <span class="nav-label">Weather</span>
+            <button class="nav-link" data-page="ai-assistant">
+              <i class="fas fa-robot"></i>
+              <span class="nav-label">AI Assistant</span>
             </button>
           </li>
           <li class="nav-item">
@@ -622,11 +616,11 @@
             return;
           }
         }
-        const res = await fetch(`${API_BASE}/farmer/profile`, { credentials: 'include' });
+        // Use /api/profile — no auth required, falls back to farmer_id=1
+        const res = await fetch(`${API_BASE}/api/profile`, { credentials: 'include' });
         if (!res.ok) return;
-        const json = await res.json();
-        if (!json.success) return;
-        const p = (json.data && json.data.profile) ? json.data.profile : {};
+        const p = await res.json();
+        if (!p.success) return;
         if (p.has_soil_data && p.nitrogen != null) {
           _applySoilValues(p);
           if (p.location && !document.getElementById('location').value)

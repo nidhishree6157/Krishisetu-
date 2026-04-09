@@ -344,6 +344,10 @@ class KrishiSetu {
 
   navigate(page) {
     if (!page) return;
+    if (page === 'ai-assistant') {
+      window.location.href = '../smart_assistant.html';
+      return;
+    }
     window.location.href = `${page}.html`;
   }
 

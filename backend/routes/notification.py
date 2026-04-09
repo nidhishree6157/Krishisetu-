@@ -233,4 +233,10 @@ def mark_read():
         except Exception as exc:
             print(f"[Notifications] mark_read error for {ref!r}: {exc}")
 
+    # Commit once after all inserts — was missing, causing read-state to never persist
+    try:
+        conn.commit()
+    except Exception as exc:
+        print(f"[Notifications] commit failed: {exc}")
+
     return jsonify({"success": True, "marked": marked}), 200

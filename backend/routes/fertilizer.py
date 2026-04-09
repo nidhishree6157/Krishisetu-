@@ -4,6 +4,15 @@ import pymysql
 from flask import Blueprint, jsonify, request, session
 
 from db import DBConnectionError, get_db_connection
+from services.farm_context_service import (
+    SOIL_MESSAGE,
+    fetch_farmer_row,
+    fetch_soil_row,
+    merge_farmer_profile_into_payload,
+    merge_soil_into_payload,
+    payload_has_soil_values,
+    resolve_farmer_id,
+)
 from services.fertilizer_service import get_fertilizer_plan
 from utils.helpers import login_required, role_required
 
@@ -11,53 +20,6 @@ from utils.helpers import login_required, role_required
 fertilizer_bp = Blueprint("fertilizer", __name__)
 
 _FALLBACK_FARMER_ID = 1   # used when session lookup fails (temporary)
-
-
-def _resolve_farmer_id(conn) -> int:
-    """
-    Return farmer_id for the current session user.
-    Falls back to _FALLBACK_FARMER_ID when session is absent or DB lookup fails.
-    """
-    try:
-        username = session.get("username")
-        if username:
-            with conn.cursor() as cur:
-                cur.execute(
-                    "SELECT farmer_id FROM farmers WHERE username=%s LIMIT 1",
-                    (username,),
-                )
-                row = cur.fetchone()
-                if row and row.get("farmer_id"):
-                    return int(row["farmer_id"])
-    except Exception:
-        pass
-    return _FALLBACK_FARMER_ID
-
-
-def _fetch_soil_row(conn, farmer_id: int) -> dict | None:
-    """
-    Fetch stored soil data for *farmer_id*.
-    Returns the DB row dict (keys: nitrogen, phosphorus, potassium, soil_ph,
-    organic_carbon) or None if no record exists or on any error.
-
-    Note: soil_data uses farmer_id as PRIMARY KEY (one row per farmer, no
-    history), so ORDER BY / LIMIT 1 are not needed but added defensively.
-    """
-    try:
-        with conn.cursor() as cur:
-            cur.execute(
-                """
-                SELECT nitrogen, phosphorus, potassium, soil_ph, organic_carbon
-                FROM   soil_data
-                WHERE  farmer_id = %s
-                LIMIT  1
-                """,
-                (farmer_id,),
-            )
-            return cur.fetchone() or None
-    except Exception as exc:
-        print(f"[Fertilizer] Soil data lookup failed for farmer_id={farmer_id}: {exc}")
-        return None
 
 
 def farmer_required(fn):
@@ -162,19 +124,27 @@ def fertilizer_plan():
       "soil_source_note"– (present only when source == "soil_report")
     """
     data = request.get_json(silent=True) or {}
+
+    soil_row = None
+    farmer_id = _FALLBACK_FARMER_ID
+    try:
+        conn = get_db_connection()
+        farmer_id = resolve_farmer_id(conn)
+        farmer_row = fetch_farmer_row(conn, farmer_id)
+        soil_row = fetch_soil_row(conn, farmer_id)
+        merge_farmer_profile_into_payload(data, farmer_row)
+        merge_soil_into_payload(data, soil_row)
+    except DBConnectionError as exc:
+        print(f"[Fertilizer] DB connection failed: {exc}")
+    except Exception as exc:
+        print(f"[Fertilizer] Profile/soil preload skipped: {exc}")
+
     crop = str(data.get("crop") or "").strip()
     if not crop:
         return jsonify({"success": False, "message": "crop is required"}), 400
 
-    # ── 1. Attempt DB soil-data lookup (best-effort; never blocks the response) ─
-    soil_row  = None
-    farmer_id = _FALLBACK_FARMER_ID
-    try:
-        conn      = get_db_connection()
-        farmer_id = _resolve_farmer_id(conn)
-        soil_row  = _fetch_soil_row(conn, farmer_id)
-    except Exception as exc:
-        print(f"[Fertilizer] DB connection skipped: {exc}")
+    if not payload_has_soil_values(data):
+        return jsonify({"success": False, "message": SOIL_MESSAGE}), 400
 
     # ── 2. Resolve each soil value: manual request → DB → 0 ──────────────────
     def _resolve(req_key: str, db_key: str) -> tuple[float, bool]:

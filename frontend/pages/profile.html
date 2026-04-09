@@ -118,15 +118,12 @@
     <div class="sidebar-body">
       <ul class="nav-menu">
         <li class="nav-item"><button class="nav-link" data-page="dashboard"><i class="fas fa-home"></i><span class="nav-label">Dashboard</span></button></li>
+        <li class="nav-item"><button class="nav-link active" data-page="profile"><i class="fas fa-user"></i><span class="nav-label">My Profile</span></button></li>
+        <li class="nav-item"><button class="nav-link" data-page="soil"><i class="fas fa-earth-americas"></i><span class="nav-label">Soil Analysis</span></button></li>
         <li class="nav-item"><button class="nav-link" data-page="crop"><i class="fas fa-leaf"></i><span class="nav-label">Crop Recommendation</span></button></li>
-        <li class="nav-item"><button class="nav-link" data-page="disease"><i class="fas fa-virus"></i><span class="nav-label">Disease Detection</span></button></li>
-        <li class="nav-item"><button class="nav-link" data-page="pest"><i class="fas fa-bug"></i><span class="nav-label">Pest Detection</span></button></li>
         <li class="nav-item"><button class="nav-link" data-page="fertilizer"><i class="fas fa-droplet"></i><span class="nav-label">Fertilizer</span></button></li>
         <li class="nav-item"><button class="nav-link" data-page="market"><i class="fas fa-chart-line"></i><span class="nav-label">Market</span></button></li>
-        <li class="nav-item"><button class="nav-link" data-page="equipment"><i class="fas fa-tools"></i><span class="nav-label">Equipment</span></button></li>
-        <li class="nav-item"><button class="nav-link" data-page="schemes"><i class="fas fa-file-contract"></i><span class="nav-label">Schemes</span></button></li>
-        <li class="nav-item"><button class="nav-link" data-page="soil"><i class="fas fa-earth-americas"></i><span class="nav-label">Soil Analysis</span></button></li>
-        <li class="nav-item"><button class="nav-link" data-page="weather"><i class="fas fa-cloud"></i><span class="nav-label">Weather</span></button></li>
+        <li class="nav-item"><button class="nav-link" data-page="ai-assistant"><i class="fas fa-robot"></i><span class="nav-label">AI Assistant</span></button></li>
         <li class="nav-item"><button class="nav-link" data-page="expert-queries"><i class="fas fa-comments"></i><span class="nav-label">Expert Queries</span></button></li>
       </ul>
     </div>
@@ -202,7 +199,7 @@
           <div class="grid grid-2">
             <div class="form-group">
               <label class="form-label">Mobile Number <span style="color:red">*</span></label>
-              <input id="mobile_number" class="form-input" placeholder="10-digit mobile" maxlength="15" required>
+              <input id="mobile" class="form-input" placeholder="10-digit mobile" maxlength="15" required>
             </div>
             <div class="form-group">
               <label class="form-label">Survey Number</label>
@@ -210,7 +207,7 @@
             </div>
             <div class="form-group">
               <label class="form-label">Crop Type <span style="color:red">*</span></label>
-              <input id="crop_type" class="form-input" placeholder="e.g. Rice, Wheat" required>
+              <input id="cropType" class="form-input" placeholder="e.g. Rice, Wheat" required>
             </div>
             <div class="form-group">
               <label class="form-label">Location <span style="color:red">*</span></label>
@@ -218,7 +215,7 @@
             </div>
             <div class="form-group">
               <label class="form-label">Land Size (acres) <span style="color:red">*</span></label>
-              <input type="number" id="land_size" class="form-input" placeholder="e.g. 2.5" step="any" min="0" required>
+              <input type="number" id="landSize" class="form-input" placeholder="e.g. 2.5" step="any" min="0" required>
             </div>
             <div class="form-group">
               <label class="form-label">Irrigation Type</label>
@@ -341,12 +338,12 @@ function showNPK(soil) {
 // ── load profile on page open ──────────────────────────────────────────────
 async function loadProfile() {
   try {
-    var res  = await fetch(API + "/api/profile", { credentials: "include" });
-    var p    = await res.json();
+    console.log("Fetching profile...");
+    var res = await fetch("http://127.0.0.1:5000/profile", { credentials: "include" });
+    var p   = await res.json();
+    console.log(p);
 
     if (!p.success) {
-      // Only redirect on auth errors from authenticated routes; this endpoint
-      // should always succeed (falls back to farmer_id = 1).
       console.warn("Profile load failed:", p.message);
       return;
     }
@@ -363,11 +360,11 @@ async function loadProfile() {
     document.getElementById("aadhaar_number").value = p.aadhaar       || "";
 
     // Editable farm fields
-    document.getElementById("mobile_number").value   = p.mobile        || "";
+    document.getElementById("mobile").value          = p.mobile        || "";
     document.getElementById("survey_number").value   = p.survey_number || "";
-    document.getElementById("crop_type").value       = p.crop_type     || "";
+    document.getElementById("cropType").value        = p.crop_type     || "";
     document.getElementById("location").value        = p.location      || "";
-    document.getElementById("land_size").value       = p.land_size != null ? p.land_size : "";
+    document.getElementById("landSize").value        = p.land_size != null ? p.land_size : "";
     document.getElementById("irrigation_type").value = p.irrigation    || "";
 
     // Soil data card
@@ -376,11 +373,9 @@ async function loadProfile() {
                 potassium: p.potassium, ph: p.ph });
     }
 
-    // Cache username for other pages
     if (p.username) localStorage.setItem("userName", p.username);
-
   } catch (e) {
-    console.warn("Profile load error:", e);
+    console.error("Profile load failed", e);
   }
 }
 
@@ -388,10 +383,10 @@ async function loadProfile() {
 document.getElementById("profileForm").addEventListener("submit", async function(e) {
   e.preventDefault();
 
-  var mobile    = document.getElementById("mobile_number").value.trim();
-  var cropType  = document.getElementById("crop_type").value.trim();
+  var mobile    = document.getElementById("mobile").value.trim();
+  var cropType  = document.getElementById("cropType").value.trim();
   var location  = document.getElementById("location").value.trim();
-  var landSize  = parseFloat(document.getElementById("land_size").value);
+  var landSize  = parseFloat(document.getElementById("landSize").value);
 
   if (!mobile || !cropType || !location || isNaN(landSize)) {
     showAlert("profileAlert", "Please fill all required fields (mobile, crop, location, land size).", "danger");
@@ -489,13 +484,13 @@ document.getElementById("uploadBtn").addEventListener("click", async function() 
 });
 
 // ── boot ──────────────────────────────────────────────────────────────────
-document.addEventListener("DOMContentLoaded", function() {
-  setActiveNav("profile");   // no sidebar item for profile — safe no-op
+window.onload = function() {
+  setActiveNav("profile");
   attachNavigation();
   attachHamburger();
   attachLogout();
   loadProfile();
-});
+};
 </script>
 <script src="../js/app.js"></script>
 </body>

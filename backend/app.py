@@ -25,15 +25,10 @@ def create_app():
     app.secret_key = "super-secret-key"
     CORS(app, supports_credentials=True)
 
-    # Register blueprints
+    # Register blueprints — all registrations live in routes/__init__.py
     register_blueprints(app)
     if "auth" not in app.blueprints:
         app.register_blueprint(auth_bp, url_prefix="/auth")
-
-    from routes.notification import notif_bp
-
-    if "notifications" not in app.blueprints:
-        app.register_blueprint(notif_bp, url_prefix="/notifications")
 
     # =========================
     # CHATBOT API — Smart Agriculture AI Assistant
@@ -331,6 +326,11 @@ def create_app():
             })
         except Exception as exc:
             return jsonify({"success": False, "message": str(exc)}), 500
+
+    @app.route("/profile", methods=["GET"])
+    def get_profile():
+        """GET /profile — same payload as GET /api/profile; always JSON."""
+        return api_get_profile()
 
     @app.route("/api/profile/save", methods=["POST"])
     def api_save_profile():

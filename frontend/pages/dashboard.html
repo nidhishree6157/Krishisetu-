@@ -30,25 +30,154 @@
     }
 
     body { background: var(--dbg); font-family: 'Poppins', sans-serif; }
-    .content-area { padding: 24px 28px; max-width: 1280px; }
+    .content-area { padding: 24px 28px; max-width: 1200px; }
     @media (max-width: 768px) { .content-area { padding: 16px; } }
 
     /* ═══════════════════════════════════════════
-       Welcome header
+       Top row: welcome + weather
     ═══════════════════════════════════════════ */
+    .dash-top-row {
+      display: grid;
+      grid-template-columns: 1fr minmax(280px, 340px);
+      gap: 20px;
+      align-items: stretch;
+      margin-bottom: 18px;
+    }
+    @media (max-width: 960px) {
+      .dash-top-row { grid-template-columns: 1fr; }
+    }
+    .dash-welcome-stack { min-width: 0; }
     .dash-welcome {
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      margin-bottom: 22px;
+      align-items: flex-start;
       flex-wrap: wrap;
       gap: 10px;
+      margin-bottom: 8px;
     }
     .dash-welcome-text h1 {
       font-size: 22px; font-weight: 700;
       color: var(--ds); margin-bottom: 3px;
     }
     .dash-welcome-text p { font-size: 13px; color: var(--dm); }
+    .dash-quick-insight {
+      margin: 0 0 12px 0;
+      font-size: 14px;
+      line-height: 1.5;
+      color: #334155;
+      font-weight: 500;
+      padding: 10px 14px;
+      background: #f8fafc;
+      border-radius: 10px;
+      border-left: 3px solid var(--dg);
+    }
+
+    .weather-card {
+      border-radius: var(--dradius);
+      box-shadow: var(--dshadow-lg);
+      background: linear-gradient(135deg, #2563eb 0%, #0ea5e9 45%, #16a34a 100%);
+      color: #fff;
+      padding: 22px 22px 20px;
+      position: relative;
+      overflow: hidden;
+      min-height: 168px;
+    }
+    .weather-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 100% 0%, rgba(255,255,255,.2) 0%, transparent 55%);
+      pointer-events: none;
+    }
+    .weather-card-inner { position: relative; z-index: 1; height: 100%; }
+    .weather-emoji {
+      position: absolute;
+      top: 14px;
+      right: 16px;
+      font-size: 52px;
+      line-height: 1;
+      opacity: 0.92;
+      filter: drop-shadow(0 2px 8px rgba(0,0,0,.12));
+    }
+    .weather-temp {
+      font-size: 46px;
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -1px;
+      text-shadow: 0 2px 12px rgba(0,0,0,.15);
+    }
+    .weather-condition {
+      font-size: 16px;
+      font-weight: 600;
+      margin-top: 8px;
+      opacity: 0.96;
+    }
+    .weather-location {
+      font-size: 13px;
+      margin-top: 14px;
+      opacity: 0.9;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .weather-humidity {
+      font-size: 12px;
+      margin-top: 10px;
+      opacity: 0.85;
+    }
+    .weather-card.weather-card--error {
+      background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+    }
+    .weather-card.weather-card--error .weather-temp { font-size: 28px; }
+
+    /* ── Quick access module cards ── */
+    .quick-access-section { margin: 24px 0 8px; }
+    .quick-access-heading {
+      font-size: 14px; font-weight: 700; color: var(--ds);
+      margin-bottom: 14px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .quick-access-heading i { color: var(--dg); }
+    .quick-access-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 14px;
+    }
+    .qa-access-card {
+      display: block;
+      text-decoration: none;
+      color: inherit;
+      background: var(--dcard);
+      border: 1px solid var(--dborder);
+      border-radius: var(--dradius);
+      padding: 18px 16px;
+      box-shadow: var(--dshadow);
+      transition: box-shadow var(--dtrans), transform var(--dtrans), border-color var(--dtrans);
+    }
+    .qa-access-card:hover {
+      box-shadow: var(--dshadow-lg);
+      transform: translateY(-3px);
+      border-color: var(--dg-bd);
+    }
+    .qa-access-icon {
+      width: 46px; height: 46px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      background: var(--dg-lt);
+      color: var(--dg);
+    }
+    .qa-access-title {
+      font-size: 15px; font-weight: 700;
+      color: var(--ds);
+      margin-top: 12px;
+    }
+    .qa-access-desc {
+      font-size: 12px;
+      color: var(--dm);
+      margin-top: 6px;
+      line-height: 1.45;
+    }
+
     .dash-date {
       font-size: 13px; color: var(--dm);
       background: var(--dcard);
@@ -58,17 +187,77 @@
       display: flex; align-items: center; gap: 6px;
     }
 
-    /* ═══════════════════════════════════════════
-       Summary cards strip
-    ═══════════════════════════════════════════ */
-    .kpi-strip {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 14px;
-      margin-bottom: 22px;
+    .dash-summary-inline {
+      display: flex; flex-wrap: wrap; gap: 10px 22px;
+      align-items: center; margin-bottom: 18px;
+      padding: 12px 18px;
+      background: var(--dcard);
+      border: 1px solid var(--dborder);
+      border-radius: var(--dradius);
+      box-shadow: var(--dshadow);
+      font-size: 13px; color: var(--ds);
     }
-    @media (max-width: 1100px) { .kpi-strip { grid-template-columns: repeat(3, 1fr); } }
-    @media (max-width: 680px)  { .kpi-strip { grid-template-columns: repeat(2, 1fr); } }
+    .dash-summary-inline strong { color: var(--ds); font-weight: 700; }
+    .dash-summary-inline a {
+      color: var(--dg); font-weight: 600; text-decoration: none;
+    }
+    .dash-summary-inline a:hover { text-decoration: underline; }
+
+    .insight-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+    @media (max-width: 700px) { .insight-grid { grid-template-columns: 1fr; } }
+
+    .insight-card .d-card-body { padding: 18px 20px; }
+    .insight-label {
+      font-size: 11px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: .5px; color: var(--dm); margin-bottom: 8px;
+    }
+    .insight-value {
+      font-size: 22px; font-weight: 800; color: var(--ds);
+      line-height: 1.2;
+    }
+    .insight-hint {
+      font-size: 12px; color: var(--dm); margin-top: 10px;
+      line-height: 1.45;
+    }
+    .insight-value.health-ok { color: #166534; }
+    .insight-value.health-warn { color: #b91c1c; }
+    .insight-value.health-neu { color: var(--dm); }
+
+    .ai-insight-card {
+      margin-bottom: 18px;
+      max-width: 100%;
+    }
+    .ai-insight-body {
+      display: flex; gap: 14px; align-items: flex-start;
+      background: linear-gradient(135deg, #fffbeb 0%, #fff 100%);
+      border-left: 4px solid #ca8a04;
+    }
+    .ai-insight-body > i {
+      font-size: 20px; color: #ca8a04; margin-top: 2px; flex-shrink: 0;
+    }
+    .ai-insight-body p {
+      margin: 0; font-size: 14px; line-height: 1.55; color: #422006;
+      font-weight: 500;
+    }
+
+    .guidance-banner {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--dg-lt); border: 1px solid var(--dg-bd);
+      border-radius: var(--dradius); padding: 12px 18px;
+      margin-bottom: 18px; font-size: 13.5px; color: var(--dg2);
+    }
+    .guidance-banner i { color: var(--dg); font-size: 16px; }
+    .journey-status {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 14px; margin-bottom: 22px;
+    }
+    @media (max-width: 680px) { .journey-status { grid-template-columns: 1fr; } }
+    .status-emoji { font-size: 22px; font-weight: 800; line-height: 1; }
 
     .kpi-card {
       background: var(--dcard);
@@ -122,10 +311,10 @@
     ═══════════════════════════════════════════ */
     .dash-grid {
       display: grid;
-      grid-template-columns: 1fr 340px;
+      grid-template-columns: 1fr;
       gap: 20px;
+      max-width: 100%;
     }
-    @media (max-width: 1000px) { .dash-grid { grid-template-columns: 1fr; } }
 
     /* ── Shared card base ── */
     .d-card {
@@ -151,98 +340,6 @@
     }
     .d-card-link:hover { text-decoration: underline; }
     .d-card-body { padding: 18px 20px; }
-
-    /* ═══════════════════════════════════════════
-       AI Insight panel
-    ═══════════════════════════════════════════ */
-    .ai-panel { display: flex; flex-direction: column; }
-
-    .ai-context-row {
-      display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px;
-    }
-    .ctx-chip {
-      font-size: 11.5px; font-weight: 600; padding: 4px 10px;
-      border-radius: 12px; background: var(--dg-lt);
-      border: 1px solid var(--dg-bd); color: var(--dg2);
-      display: flex; align-items: center; gap: 4px;
-    }
-    .ctx-chip.empty {
-      background: #f1f5f9; border-color: var(--dborder); color: var(--dm);
-    }
-
-    .ai-question-row { display: flex; gap: 8px; margin-bottom: 16px; }
-    .ai-input {
-      flex: 1; padding: 10px 14px;
-      border: 1.5px solid var(--dborder); border-radius: 10px;
-      font-size: 13.5px; font-family: 'Poppins', sans-serif;
-      outline: none; background: #fafafa;
-    }
-    .ai-input:focus {
-      border-color: var(--dg); background: #fff;
-      box-shadow: 0 0 0 3px rgba(22,163,74,.1);
-    }
-    .ai-ask-btn {
-      padding: 10px 18px; background: var(--dg); color: #fff;
-      border: none; border-radius: 10px;
-      font-size: 13px; font-weight: 700; cursor: pointer;
-      transition: opacity .15s; white-space: nowrap;
-      display: flex; align-items: center; gap: 6px;
-    }
-    .ai-ask-btn:hover:not(:disabled) { opacity: .87; }
-    .ai-ask-btn:disabled { opacity: .55; cursor: not-allowed; }
-
-    .ai-response-area { min-height: 110px; }
-    .ai-placeholder {
-      display: flex; flex-direction: column; align-items: center;
-      justify-content: center; padding: 28px 20px;
-      border: 2px dashed var(--dg-bd); border-radius: 12px;
-      gap: 8px; color: var(--dm);
-    }
-    .ai-placeholder i { font-size: 28px; color: var(--dg); opacity: .5; }
-    .ai-placeholder p { font-size: 13px; text-align: center; }
-
-    .ai-reply-card {
-      border-radius: 12px; padding: 16px 18px;
-      background: linear-gradient(135deg, var(--dg-lt), #fff);
-      border: 1px solid var(--dg-bd);
-    }
-    .ai-reply-text {
-      font-size: 13.5px; color: #1e3a2f; line-height: 1.65; margin-bottom: 10px;
-    }
-    .ai-insight-chip {
-      display: inline-flex; align-items: center; gap: 5px;
-      font-size: 12px; font-weight: 600; padding: 4px 12px;
-      border-radius: 12px; background: #fffbeb;
-      border: 1px solid #fde68a; color: #92400e; margin-bottom: 10px;
-    }
-    .ai-conf {
-      font-size: 11px; font-weight: 700;
-      display: inline-flex; align-items: center; gap: 4px;
-      padding: 2px 8px; border-radius: 8px; margin-top: 4px;
-    }
-    .ai-conf.high   { background: #dcfce7; color: #166534; }
-    .ai-conf.medium { background: #fffbeb; color: #92400e; }
-    .ai-conf.low    { background: #fee2e2; color: #991b1b; }
-
-    .ai-quick-chips {
-      display: flex; gap: 6px; flex-wrap: wrap;
-      margin-top: 14px; padding-top: 14px;
-      border-top: 1px solid #f1f5f9;
-    }
-    .ai-qchip {
-      font-size: 12px; font-weight: 600; padding: 5px 12px;
-      border-radius: 14px; background: #f1f5f9;
-      border: 1px solid var(--dborder); color: var(--dm);
-      cursor: pointer; transition: background .12s, color .12s;
-    }
-    .ai-qchip:hover { background: var(--dg-lt); color: var(--dg); border-color: var(--dg-bd); }
-
-    .ai-typing {
-      display: flex; align-items: center; gap: 10px;
-      padding: 18px; color: var(--dm); font-size: 13px;
-    }
-    .ai-spin { animation: _aispin .7s linear infinite; display: inline-block; }
-    @keyframes _aispin { to { transform: rotate(360deg); } }
 
     /* ═══════════════════════════════════════════
        Right column
@@ -277,9 +374,14 @@
       font-size: 11px; font-weight: 700;
     }
 
-    /* ── Quick Actions ── */
+    /* ── Quick Actions (6-up, balanced 3×2) ── */
     .qa-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    @media (max-width: 520px) {
+      .qa-grid { grid-template-columns: repeat(2, 1fr); }
     }
     .qa-btn {
       display: flex; flex-direction: column; align-items: center;
@@ -324,18 +426,18 @@
           </button>
         </li>
         <li class="nav-item">
+          <button class="nav-link" data-page="profile">
+            <i class="fas fa-user"></i><span class="nav-label">My Profile</span>
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-page="soil">
+            <i class="fas fa-earth-americas"></i><span class="nav-label">Soil Analysis</span>
+          </button>
+        </li>
+        <li class="nav-item">
           <button class="nav-link" data-page="crop">
             <i class="fas fa-leaf"></i><span class="nav-label">Crop Recommendation</span>
-          </button>
-        </li>
-        <li class="nav-item">
-          <button class="nav-link" data-page="disease">
-            <i class="fas fa-virus"></i><span class="nav-label">Disease Detection</span>
-          </button>
-        </li>
-        <li class="nav-item">
-          <button class="nav-link" data-page="pest">
-            <i class="fas fa-bug"></i><span class="nav-label">Pest Detection</span>
           </button>
         </li>
         <li class="nav-item">
@@ -349,23 +451,23 @@
           </button>
         </li>
         <li class="nav-item">
-          <button class="nav-link" data-page="yield">
-            <i class="fas fa-wheat-awn"></i><span class="nav-label">Yield Prediction</span>
+          <button class="nav-link" data-page="equipment">
+            <i class="fas fa-tools"></i><span class="nav-label">Equipment</span>
           </button>
         </li>
         <li class="nav-item">
-          <button class="nav-link" data-page="weather">
-            <i class="fas fa-cloud-sun"></i><span class="nav-label">Weather</span>
+          <button class="nav-link" data-page="schemes">
+            <i class="fas fa-file-contract"></i><span class="nav-label">Government Schemes</span>
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-page="ai-assistant">
+            <i class="fas fa-robot"></i><span class="nav-label">AI Assistant</span>
           </button>
         </li>
         <li class="nav-item">
           <button class="nav-link" data-page="expert-queries">
             <i class="fas fa-comments"></i><span class="nav-label">Expert Queries</span>
-          </button>
-        </li>
-        <li class="nav-item">
-          <button class="nav-link" data-page="notifications">
-            <i class="fas fa-bell"></i><span class="nav-label">Notifications</span>
           </button>
         </li>
       </ul>
@@ -395,141 +497,139 @@
 
     <main class="content-area">
 
-      <!-- ── Welcome ─────────────────────────────────────── -->
-      <div class="dash-welcome">
-        <div class="dash-welcome-text">
-          <h1>Good <span id="greeting">morning</span>, <span id="userName">Farmer</span> 👋</h1>
-          <p>Here's your farm intelligence summary for today.</p>
-        </div>
-        <div class="dash-date">
-          <i class="fas fa-calendar-day" style="color:var(--dg);"></i>
-          <span id="todayDate">—</span>
-        </div>
-      </div>
-
-      <!-- ── Summary Cards ───────────────────────────────── -->
-      <div class="kpi-strip">
-
-        <!-- Notifications -->
-        <div class="kpi-card clickable"
-             style="--kpi-color:#2e7d32; --kpi-icon-bg:#e8f5e9;"
-             onclick="location.href='notifications.html'">
-          <div class="kpi-icon"><i class="fas fa-bell"></i></div>
-          <div class="kpi-body">
-            <div class="kpi-label">Notifications</div>
-            <div class="kpi-value" id="kpi-notif">—</div>
-            <div class="kpi-sub">unread alerts</div>
-          </div>
-        </div>
-
-        <!-- Current Crop -->
-        <div class="kpi-card clickable"
-             style="--kpi-color:#2563eb; --kpi-icon-bg:#eff6ff;"
-             onclick="location.href='crop.html'">
-          <div class="kpi-icon"><i class="fas fa-seedling"></i></div>
-          <div class="kpi-body">
-            <div class="kpi-label">Current Crop</div>
-            <div class="kpi-value" id="kpi-crop">—</div>
-            <div class="kpi-sub">active season</div>
-          </div>
-        </div>
-
-        <!-- Yield Estimate -->
-        <div class="kpi-card clickable"
-             style="--kpi-color:#7c3aed; --kpi-icon-bg:#f5f3ff;"
-             onclick="location.href='yield.html'">
-          <div class="kpi-icon"><i class="fas fa-chart-bar"></i></div>
-          <div class="kpi-body">
-            <div class="kpi-label">Yield Estimate</div>
-            <div class="kpi-value" id="kpi-yield">—</div>
-            <div class="kpi-sub">kg projected</div>
-          </div>
-        </div>
-
-        <!-- Market Price -->
-        <div class="kpi-card clickable"
-             style="--kpi-color:#d97706; --kpi-icon-bg:#fffbeb;"
-             onclick="location.href='market.html'">
-          <div class="kpi-icon"><i class="fas fa-indian-rupee-sign"></i></div>
-          <div class="kpi-body">
-            <div class="kpi-label">Market Price</div>
-            <div class="kpi-value" id="kpi-price">—</div>
-            <div class="kpi-sub" id="kpi-price-sub">₹ / quintal</div>
-          </div>
-          <div id="kpi-trend" style="display:none;"></div>
-        </div>
-
-        <!-- Health Status -->
-        <div class="kpi-card clickable"
-             style="--kpi-color:#059669; --kpi-icon-bg:#ecfdf5;"
-             onclick="location.href='disease.html'">
-          <div class="kpi-icon"><i class="fas fa-heart-pulse"></i></div>
-          <div class="kpi-body">
-            <div class="kpi-label">Health Status</div>
-            <div class="kpi-value" id="kpi-health">—</div>
-            <div id="kpi-health-sub" class="kpi-sub">disease &amp; pest</div>
-          </div>
-          <div id="kpi-health-badge" style="display:none;"></div>
-        </div>
-
-      </div>
-
-      <!-- ── Main grid: AI panel + Right column ──────────── -->
-      <div class="dash-grid">
-
-        <!-- LEFT — AI Insight panel -->
-        <div class="d-card ai-panel">
-          <div class="d-card-header">
-            <div class="d-card-title">
-              <i class="fas fa-robot"></i> AI Farm Advisor
+      <div class="dash-top-row">
+        <div class="dash-welcome-stack">
+          <div class="dash-welcome">
+            <div class="dash-welcome-text">
+              <h1>Good <span id="greeting">morning</span>, <span id="userName">Farmer</span> 👋</h1>
+              <p>Here's your farm intelligence summary for today.</p>
             </div>
-            <a href="../smart_assistant.html" class="d-card-link">Open full chat →</a>
+            <div class="dash-date">
+              <i class="fas fa-calendar-day" style="color:var(--dg);"></i>
+              <span id="todayDate">—</span>
+            </div>
           </div>
+          <p class="dash-quick-insight" id="quickInsightLine">Loading your quick insight…</p>
+        </div>
+        <div class="weather-card" id="weatherCard" aria-live="polite">
+          <div class="weather-card-inner">
+            <div class="weather-emoji" aria-hidden="true"><i class="fas fa-cloud-sun" id="weatherIconFa"></i></div>
+            <div class="weather-temp" id="weatherTemp">—</div>
+            <div class="weather-condition" id="weatherCondition">Loading weather…</div>
+            <div class="weather-location" id="weatherLocationRow">
+              <i class="fas fa-location-dot"></i>
+              <span id="weatherLocationText">—</span>
+            </div>
+            <div class="weather-humidity" id="weatherHumidity"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="guidance-banner" role="note">
+        <i class="fas fa-route"></i>
+        <span>Start by completing your profile and soil analysis</span>
+      </div>
+
+      <!-- ── Journey status ─────────────────────────────── -->
+      <div class="journey-status">
+        <div class="kpi-card" style="--kpi-color:#2e7d32; --kpi-icon-bg:#e8f5e9;">
+          <div class="kpi-icon"><i class="fas fa-user-check"></i></div>
+          <div class="kpi-body">
+            <div class="kpi-label">Profile completed</div>
+            <div class="kpi-value status-emoji" id="status-profile">—</div>
+            <div class="kpi-sub">mobile, location, crop &amp; land</div>
+          </div>
+        </div>
+        <div class="kpi-card" style="--kpi-color:#0d9488; --kpi-icon-bg:#ccfbf1;">
+          <div class="kpi-icon"><i class="fas fa-flask"></i></div>
+          <div class="kpi-body">
+            <div class="kpi-label">Soil data available</div>
+            <div class="kpi-value status-emoji" id="status-soil">—</div>
+            <div class="kpi-sub">NPK / report on file</div>
+          </div>
+        </div>
+        <div class="kpi-card" style="--kpi-color:#7c3aed; --kpi-icon-bg:#f5f3ff;">
+          <div class="kpi-icon"><i class="fas fa-leaf"></i></div>
+          <div class="kpi-body">
+            <div class="kpi-label">Recommendation ready</div>
+            <div class="kpi-value status-emoji" id="status-rec">—</div>
+            <div class="kpi-sub">from Crop Recommendation</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dash-summary-inline" id="dashSummaryBar">
+        <span>Crop: <strong id="sum-crop">—</strong></span>
+        <span>Soil: <strong id="sum-soil">—</strong></span>
+        <span>Alerts: <a href="notifications.html" id="sum-notif">0 unread</a></span>
+      </div>
+
+      <div class="insight-grid">
+        <div class="d-card insight-card">
           <div class="d-card-body">
-
-            <!-- Context chips (auto-built from localStorage) -->
-            <div class="ai-context-row" id="aiContextChips">
-              <span class="ctx-chip empty">
-                <i class="fas fa-info-circle"></i> No context loaded yet
-              </span>
-            </div>
-
-            <!-- Ask input -->
-            <div class="ai-question-row">
-              <input class="ai-input" id="aiInput"
-                     placeholder="Ask about your crop, disease, profit, market…"
-                     onkeydown="if(event.key==='Enter') askAI()" />
-              <button class="ai-ask-btn" id="aiAskBtn" onclick="askAI()">
-                <i class="fas fa-paper-plane"></i> Ask
-              </button>
-            </div>
-
-            <!-- Response area -->
-            <div class="ai-response-area" id="aiResponseArea">
-              <div class="ai-placeholder">
-                <i class="fas fa-robot"></i>
-                <p>Ask a question above — the AI uses your farm context to give specific advice.</p>
-              </div>
-            </div>
-
-            <!-- Quick question chips -->
-            <div class="ai-quick-chips">
-              <span style="font-size:11px; color:var(--dm); font-weight:600; align-self:center;">
-                Quick ask:
-              </span>
-              <button class="ai-qchip" onclick="setAIQuestion('Will I make a profit this season?')">Profit outlook</button>
-              <button class="ai-qchip" onclick="setAIQuestion('What is the best crop for my conditions?')">Best crop</button>
-              <button class="ai-qchip" onclick="setAIQuestion('How do I treat the detected disease?')">Treat disease</button>
-              <button class="ai-qchip" onclick="setAIQuestion('When should I harvest for maximum price?')">Harvest timing</button>
-            </div>
-
+            <div class="insight-label"><i class="fas fa-indian-rupee-sign" style="color:#d97706;margin-right:6px;"></i>Expected profit</div>
+            <div class="insight-value" id="insight-profit">—</div>
+            <div class="insight-hint" id="insight-profit-hint">Uses yield, market price, and cost from your saved summaries.</div>
           </div>
         </div>
+        <div class="d-card insight-card">
+          <div class="d-card-body">
+            <div class="insight-label"><i class="fas fa-heart-pulse" style="color:#059669;margin-right:6px;"></i>Crop health status</div>
+            <div class="insight-value health-neu" id="insight-health">—</div>
+            <div class="insight-hint" id="insight-health-hint">Based on last disease and pest checks.</div>
+          </div>
+        </div>
+      </div>
 
-        <!-- RIGHT column -->
+      <div class="d-card ai-insight-card">
+        <div class="d-card-body ai-insight-body">
+          <i class="fas fa-lightbulb"></i>
+          <p id="aiInsightLine">Loading insight…</p>
+        </div>
+      </div>
+
+      <section class="quick-access-section" aria-label="Quick access">
+        <div class="quick-access-heading">
+          <i class="fas fa-compass"></i> Quick access
+        </div>
+        <div class="quick-access-grid">
+          <a href="crop.html" class="qa-access-card">
+            <div class="qa-access-icon"><i class="fas fa-leaf"></i></div>
+            <div class="qa-access-title">Crop recommendation</div>
+            <div class="qa-access-desc">Get crop ideas tailored to your soil and weather.</div>
+          </a>
+          <a href="fertilizer.html" class="qa-access-card">
+            <div class="qa-access-icon"><i class="fas fa-droplet"></i></div>
+            <div class="qa-access-title">Fertilizer</div>
+            <div class="qa-access-desc">Plan NPK doses using your soil test and crop.</div>
+          </a>
+          <a href="disease.html" class="qa-access-card">
+            <div class="qa-access-icon"><i class="fas fa-virus"></i></div>
+            <div class="qa-access-title">Disease detection</div>
+            <div class="qa-access-desc">Upload leaf images to spot common crop diseases.</div>
+          </a>
+          <a href="pest.html" class="qa-access-card">
+            <div class="qa-access-icon"><i class="fas fa-bug"></i></div>
+            <div class="qa-access-title">Pest detection</div>
+            <div class="qa-access-desc">Identify pests early from photos of affected plants.</div>
+          </a>
+          <a href="equipment.html" class="qa-access-card">
+            <div class="qa-access-icon"><i class="fas fa-tools"></i></div>
+            <div class="qa-access-title">Equipment</div>
+            <div class="qa-access-desc">Browse tools and machinery for your farm tasks.</div>
+          </a>
+          <a href="schemes.html" class="qa-access-card">
+            <div class="qa-access-icon"><i class="fas fa-file-contract"></i></div>
+            <div class="qa-access-title">Government schemes</div>
+            <div class="qa-access-desc">Explore subsidies and support programmes.</div>
+          </a>
+        </div>
+      </section>
+
+      <!-- ── Notifications preview + quick actions ─────────── -->
+      <div class="dash-grid">
         <div class="right-col">
 
-          <!-- Notification Preview -->
           <div class="d-card">
             <div class="d-card-header">
               <div class="d-card-title">
@@ -548,38 +648,37 @@
             </div>
           </div>
 
-          <!-- Quick Actions -->
           <div class="d-card">
             <div class="d-card-header">
               <div class="d-card-title">
-                <i class="fas fa-bolt"></i> Quick Actions
+                <i class="fas fa-bolt"></i> Quick actions
               </div>
             </div>
             <div class="d-card-body">
               <div class="qa-grid">
-                <a href="disease.html" class="qa-btn">
-                  <i class="fas fa-virus"></i>
-                  <span>Detect<br>Disease</span>
-                </a>
-                <a href="pest.html" class="qa-btn">
-                  <i class="fas fa-bug"></i>
-                  <span>Detect<br>Pest</span>
+                <a href="crop.html" class="qa-btn">
+                  <i class="fas fa-leaf"></i>
+                  <span>Crop<br>recommendation</span>
                 </a>
                 <a href="fertilizer.html" class="qa-btn">
                   <i class="fas fa-droplet"></i>
-                  <span>Fertilizer<br>Advice</span>
+                  <span>Fertilizer</span>
                 </a>
-                <a href="market.html" class="qa-btn">
-                  <i class="fas fa-chart-line"></i>
-                  <span>Market<br>Prices</span>
+                <a href="disease.html" class="qa-btn">
+                  <i class="fas fa-virus"></i>
+                  <span>Disease<br>detection</span>
                 </a>
-                <a href="yield.html" class="qa-btn">
-                  <i class="fas fa-wheat-awn"></i>
-                  <span>Predict<br>Yield</span>
+                <a href="pest.html" class="qa-btn">
+                  <i class="fas fa-bug"></i>
+                  <span>Pest<br>detection</span>
                 </a>
-                <a href="../smart_assistant.html" class="qa-btn">
-                  <i class="fas fa-robot"></i>
-                  <span>AI<br>Chatbot</span>
+                <a href="equipment.html" class="qa-btn">
+                  <i class="fas fa-tools"></i>
+                  <span>Equipment</span>
+                </a>
+                <a href="schemes.html" class="qa-btn">
+                  <i class="fas fa-file-contract"></i>
+                  <span>Government<br>schemes</span>
                 </a>
               </div>
             </div>
@@ -601,11 +700,11 @@ const API = 'http://127.0.0.1:5000';
 
 const LS = {
   CROP:    'ks_last_crop',
-  DISEASE: 'ks_last_disease',
-  PEST:    'ks_last_pest',
   YIELD:   'ks_last_yield',
   PRICE:   'ks_last_price',
   COST:    'ks_last_cost',
+  DISEASE: 'ks_last_disease',
+  PEST:    'ks_last_pest',
 };
 
 function esc(s) {
@@ -635,93 +734,260 @@ function initHeader() {
   document.getElementById('todayDate').textContent = todayStr();
 }
 
-// ── Summary cards (KPIs) ────────────────────────────────────────────────────
-async function loadKPIs() {
-  // 1. Notifications unread count
+function _healthyLabel(v) {
+  const s = String(v || '').trim().toLowerCase();
+  return !s || s === 'healthy' || s === 'none';
+}
+
+function formatINR(n) {
   try {
-    const r = await fetch(`${API}/notifications/`, { credentials: 'include' });
-    if (r.ok) {
-      const d   = await r.json();
-      const cnt = d.unread_count || 0;
-      const el  = document.getElementById('kpi-notif');
-      el.textContent = cnt;
-      el.style.color = cnt > 0 ? '#b91c1c' : 'var(--ds)';
-    }
-  } catch {}
+    return '₹' + Math.round(Number(n)).toLocaleString('en-IN');
+  } catch {
+    return '—';
+  }
+}
 
-  // 2. Current crop
-  const crop = ls(LS.CROP);
-  document.getElementById('kpi-crop').textContent = crop || 'Not set';
+function buildAiInsightLine(p, weather) {
+  const disease = ls(LS.DISEASE);
+  const pest    = ls(LS.PEST);
+  if (disease && !_healthyLabel(disease)) {
+    return 'Disease signs were last noted for your crop — review treatment options and re-scan leaves if symptoms persist.';
+  }
+  if (pest && !_healthyLabel(pest)) {
+    return 'Pest pressure was flagged earlier — monitor the field and consider timely control to limit yield loss.';
+  }
+  if (weather && typeof weather.rainfall === 'number' && weather.rainfall < 90) {
+    return 'Your yield may drop due to low rainfall — plan irrigation or water conservation for the next weeks.';
+  }
+  if (weather && typeof weather.temperature === 'number' && weather.temperature > 38) {
+    return 'High temperatures can stress the crop — prefer early irrigation and mulching where possible.';
+  }
+  if (weather && typeof weather.humidity === 'number' && weather.humidity < 42) {
+    return 'Low humidity increases evaporation — check soil moisture more often until conditions ease.';
+  }
+  const crop =
+    (p && p.success && String(p.crop_type || '').trim()) || ls(LS.CROP) || '';
+  if (crop) {
+    return 'Conditions look manageable — keep following soil and market updates for ' + crop + ' this season.';
+  }
+  return 'Complete your profile and soil analysis, then run crop recommendation for tailored guidance.';
+}
 
-  // 3. Yield
-  const yld = ls(LS.YIELD);
-  document.getElementById('kpi-yield').textContent =
-    yld ? Number(yld).toLocaleString('en-IN') : '—';
+async function fetchWeatherForInsight(location) {
+  const loc = String(location || '').trim();
+  if (!loc) return null;
+  try {
+    const r = await fetch(
+      `${API}/weather?location=${encodeURIComponent(loc)}`,
+      { credentials: 'include' },
+    );
+    if (!r.ok) return null;
+    const d = await r.json();
+    return d.data || null;
+  } catch {
+    return null;
+  }
+}
 
-  // 4. Market price — use cache, then live fetch
-  const cachedPrice = ls(LS.PRICE);
-  if (cachedPrice) {
-    document.getElementById('kpi-price').textContent =
-      '₹' + Number(cachedPrice).toLocaleString('en-IN');
-  } else if (crop) {
-    try {
-      const r = await fetch(
-        `${API}/market/intelligence?crop=${encodeURIComponent(crop)}&location=karnataka`,
-        { credentials: 'include' },
-      );
-      if (r.ok) {
-        const d = await r.json();
-        const p = d.current_price || d.data?.current_price;
-        if (p) {
-          document.getElementById('kpi-price').textContent =
-            '₹' + Number(p).toLocaleString('en-IN');
-          localStorage.setItem(LS.PRICE, String(p));
-          const trend   = d.trend_direction || d.data?.trend_direction || '';
-          const trendEl = document.getElementById('kpi-trend');
-          if (trend && trendEl) {
-            trendEl.style.display = '';
-            trendEl.className =
-              `kpi-badge ${trend === 'rising' ? 'up' : trend === 'falling' ? 'down' : 'neu'}`;
-            trendEl.textContent =
-              trend === 'rising' ? '↑ Rising' : trend === 'falling' ? '↓ Falling' : '→ Stable';
-          }
-        }
-      }
-    } catch {}
+function pickWeatherIconClass(condition) {
+  const c = String(condition || '').toLowerCase();
+  if (/rain|drizzle|shower|precip/.test(c)) return 'fas fa-cloud-rain';
+  if (/snow|hail/.test(c)) return 'fas fa-snowflake';
+  if (/thunder|storm|lightning/.test(c)) return 'fas fa-bolt';
+  if (/mist|fog|haze/.test(c)) return 'fas fa-smog';
+  if (/cloud/.test(c)) return 'fas fa-cloud';
+  if (/sun|clear|fair/.test(c)) return 'fas fa-sun';
+  return 'fas fa-cloud-sun';
+}
+
+/**
+ * Fills the weather card. On failure or missing profile location, shows
+ * "Weather data unavailable" (or prompts to add location).
+ */
+function updateWeatherWidget(weather, locationLabel, opts) {
+  opts = opts || {};
+  const card = document.getElementById('weatherCard');
+  const tempEl = document.getElementById('weatherTemp');
+  const condEl = document.getElementById('weatherCondition');
+  const locText = document.getElementById('weatherLocationText');
+  const humEl = document.getElementById('weatherHumidity');
+  const iconFa = document.getElementById('weatherIconFa');
+
+  const isError = !!(opts.error || opts.noLocation);
+  card.classList.toggle('weather-card--error', isError);
+
+  if (opts.noLocation) {
+    tempEl.textContent = '—';
+    condEl.textContent = 'Weather data unavailable';
+    locText.textContent = 'Add location in My Profile';
+    humEl.textContent = '';
+    iconFa.className = 'fas fa-map-location-dot';
+    return;
+  }
+  if (opts.error || !weather) {
+    tempEl.textContent = '';
+    condEl.textContent = 'Weather data unavailable';
+    locText.textContent = locationLabel || '—';
+    humEl.textContent = '';
+    iconFa.className = 'fas fa-cloud';
+    return;
   }
 
-  // 5. Health status — combine disease + pest from localStorage
-  const disease  = ls(LS.DISEASE);
-  const pest     = ls(LS.PEST);
-  const healthEl = document.getElementById('kpi-health');
-  const healthBadge = document.getElementById('kpi-health-badge');
-  const healthSub   = document.getElementById('kpi-health-sub');
+  card.classList.remove('weather-card--error');
+  const t = weather.temperature;
+  tempEl.textContent =
+    t != null && !Number.isNaN(Number(t)) ? Math.round(Number(t)) + '°C' : '—';
+  condEl.textContent = String(weather.condition || '—').trim() || '—';
+  locText.textContent = locationLabel || '—';
+  if (weather.humidity != null && !Number.isNaN(Number(weather.humidity))) {
+    humEl.textContent =
+      'Humidity: ' + Math.round(Number(weather.humidity)) + '%';
+  } else {
+    humEl.textContent = '';
+  }
+  iconFa.className = pickWeatherIconClass(weather.condition);
+}
 
-  const diseaseOk = !disease || disease.toLowerCase() === 'healthy';
-  const pestOk    = !pest    || pest.toLowerCase()    === 'healthy';
+// ── Journey status + summary bar + insight cards + AI line ─────────────────
+async function loadKPIs() {
+  let p = null;
+  let notifCnt = null;
 
+  await Promise.all([
+    (async () => {
+      try {
+        const r = await fetch(`${API}/profile`, { credentials: 'include' });
+        if (r.ok) p = await r.json();
+      } catch {}
+    })(),
+    (async () => {
+      try {
+        const r = await fetch(`${API}/notifications/`, { credentials: 'include' });
+        if (r.ok) {
+          const d = await r.json();
+          notifCnt = d.unread_count || 0;
+        }
+      } catch {}
+    })(),
+  ]);
+
+  const mobileOk =
+    p && p.success && String(p.mobile || '').replace(/\D/g, '').length >= 10;
+  const locOk = p && p.success && String(p.location || '').trim().length > 0;
+  const cropFieldOk = p && p.success && String(p.crop_type || '').trim().length > 0;
+  const landOk =
+    p &&
+    p.success &&
+    p.land_size != null &&
+    String(p.land_size).trim() !== '' &&
+    !Number.isNaN(Number(p.land_size));
+  const profileComplete = !!(mobileOk && locOk && cropFieldOk && landOk);
+
+  const soilFromApi = p && p.success && p.has_soil_data;
+  const soilFromLs = !!localStorage.getItem('soilData');
+  const soilOk = soilFromApi || soilFromLs;
+
+  const recOk = !!localStorage.getItem('ks_last_crop');
+
+  document.getElementById('status-profile').textContent = profileComplete
+    ? '✔'
+    : '❌';
+  document.getElementById('status-soil').textContent = soilOk ? '✔' : '❌';
+  document.getElementById('status-rec').textContent = recOk ? '✔' : '❌';
+
+  const savedCrop = ls(LS.CROP);
+  const displayCrop =
+    p && p.success && String(p.crop_type || '').trim()
+      ? p.crop_type
+      : savedCrop || 'Not set';
+
+  document.getElementById('sum-crop').textContent = displayCrop;
+  document.getElementById('sum-soil').textContent = soilOk ? 'OK — on file' : 'Needs analysis';
+  const notifEl = document.getElementById('sum-notif');
+  if (notifCnt !== null) {
+    notifEl.textContent =
+      notifCnt === 0 ? 'None unread' : notifCnt + ' unread';
+    notifEl.style.color = notifCnt > 0 ? '#b91c1c' : '';
+  } else {
+    notifEl.textContent = '—';
+    notifEl.style.color = '';
+  }
+
+  const yldRaw = ls(LS.YIELD);
+  const yldNum = yldRaw ? Number(yldRaw) : NaN;
+
+  const priceRaw = ls(LS.PRICE);
+  const costRaw  = ls(LS.COST);
+  const priceNum = priceRaw ? Number(priceRaw) : NaN;
+  const costNum  = costRaw ? Number(costRaw) : NaN;
+  const insightP = document.getElementById('insight-profit');
+  const insightPH = document.getElementById('insight-profit-hint');
+  if (yldRaw && !Number.isNaN(yldNum) && priceRaw && !Number.isNaN(priceNum)) {
+    const revenue = (yldNum / 100) * priceNum;
+    if (!Number.isNaN(costNum) && costNum >= 0) {
+      const profit = revenue - costNum;
+      insightP.textContent = formatINR(profit);
+      insightPH.textContent =
+        'Approx. revenue ' +
+        formatINR(revenue) +
+        ' minus saved cost. Refresh yield in Smart Assistant and price from Market.';
+    } else {
+      insightP.textContent = formatINR(revenue);
+      insightPH.textContent =
+        'Estimated revenue (₹/quintal × yield). Add cost in Smart Assistant context for net profit.';
+    }
+  } else {
+    insightP.textContent = '—';
+    insightPH.textContent =
+      'Use Smart Assistant for yield estimates and Market for price — values appear here when saved.';
+  }
+
+  const disease = ls(LS.DISEASE);
+  const pest    = ls(LS.PEST);
+  const hEl = document.getElementById('insight-health');
+  const hHint = document.getElementById('insight-health-hint');
+  hEl.classList.remove('health-ok', 'health-warn', 'health-neu');
   if (!disease && !pest) {
-    healthEl.textContent    = 'Not scanned';
-    healthSub.textContent   = 'run disease / pest check';
-  } else if (diseaseOk && pestOk) {
-    healthEl.textContent    = 'Healthy';
-    healthEl.style.color    = '#166534';
-    healthBadge.style.display = '';
-    healthBadge.className   = 'kpi-badge ok';
-    healthBadge.textContent = '✓ All clear';
-    healthSub.textContent   = 'no issues detected';
+    hEl.textContent = 'Not scanned';
+    hEl.classList.add('health-neu');
+    hHint.textContent =
+      'Run disease and pest detection to track crop health here.';
+  } else if (_healthyLabel(disease) && _healthyLabel(pest)) {
+    hEl.textContent = 'Healthy';
+    hEl.classList.add('health-ok');
+    hHint.textContent = 'Last checks did not flag major disease or pest issues.';
   } else {
     const issues = [
-      !diseaseOk && disease,
-      !pestOk    && pest,
+      !_healthyLabel(disease) && disease,
+      !_healthyLabel(pest) && pest,
     ].filter(Boolean);
-    healthEl.textContent    = issues[0];
-    healthEl.style.color    = '#b91c1c';
-    healthBadge.style.display = '';
-    healthBadge.className   = 'kpi-badge warn';
-    healthBadge.textContent = '⚠ Needs attention';
-    healthSub.textContent   = issues.length > 1 ? `+ ${issues.slice(1).join(', ')}` : 'treatment required';
+    hEl.textContent = issues[0] || 'Needs attention';
+    hEl.classList.add('health-warn');
+    hHint.textContent =
+      issues.length > 1
+        ? 'Also watch: ' + issues.slice(1).join(', ') + '.'
+        : 'Follow up with treatment and re-check soon.';
   }
+
+  const loc =
+    (p && p.success && String(p.location || '').trim()) || '';
+  let weather = null;
+  if (loc) {
+    weather = await fetchWeatherForInsight(loc);
+  }
+
+  if (!loc) {
+    updateWeatherWidget(null, '', { noLocation: true });
+  } else if (!weather) {
+    updateWeatherWidget(null, loc, { error: true });
+  } else {
+    updateWeatherWidget(weather, loc, {});
+  }
+
+  const insightText = buildAiInsightLine(p, weather);
+  var qEl = document.getElementById('quickInsightLine');
+  if (qEl) qEl.textContent = insightText;
+  document.getElementById('aiInsightLine').textContent = insightText;
 }
 
 // ── Notification preview ─────────────────────────────────────────────────────
@@ -774,99 +1040,6 @@ function renderEmptyNotifs(container) {
     '<div class="empty-hint"><i class="fas fa-shield-check"></i>All clear — no new notifications</div>';
 }
 
-// ── AI Context chips ──────────────────────────────────────────────────────────
-function buildContextChips() {
-  const crop    = ls(LS.CROP);
-  const disease = ls(LS.DISEASE);
-  const pest    = ls(LS.PEST);
-  const yld     = ls(LS.YIELD);
-  const price   = ls(LS.PRICE);
-
-  const chips = [];
-  if (crop)
-    chips.push(`<span class="ctx-chip"><i class="fas fa-seedling"></i>${esc(crop)}</span>`);
-  if (disease && disease.toLowerCase() !== 'healthy')
-    chips.push(`<span class="ctx-chip"><i class="fas fa-virus"></i>${esc(disease)}</span>`);
-  if (pest && pest.toLowerCase() !== 'healthy')
-    chips.push(`<span class="ctx-chip"><i class="fas fa-bug"></i>${esc(pest)}</span>`);
-  if (yld)
-    chips.push(`<span class="ctx-chip"><i class="fas fa-chart-bar"></i>${Number(yld).toLocaleString('en-IN')} kg</span>`);
-  if (price)
-    chips.push(`<span class="ctx-chip"><i class="fas fa-tag"></i>₹${Number(price).toLocaleString('en-IN')}/q</span>`);
-
-  const container = document.getElementById('aiContextChips');
-  container.innerHTML = chips.length > 0
-    ? chips.join('')
-    : '<span class="ctx-chip empty"><i class="fas fa-info-circle"></i> Use modules to build farm context</span>';
-}
-
-// ── AI ask ────────────────────────────────────────────────────────────────────
-function setAIQuestion(q) {
-  document.getElementById('aiInput').value = q;
-  askAI();
-}
-
-async function askAI() {
-  const input = document.getElementById('aiInput');
-  const btn   = document.getElementById('aiAskBtn');
-  const area  = document.getElementById('aiResponseArea');
-  const msg   = input.value.trim();
-  if (!msg) { input.focus(); return; }
-
-  btn.disabled   = true;
-  area.innerHTML = `<div class="ai-typing">
-    <span class="ai-spin"><i class="fas fa-circle-notch"></i></span>
-    Analysing your farm data…
-  </div>`;
-
-  const ctx = {
-    crop:         ls(LS.CROP),
-    disease:      ls(LS.DISEASE),
-    pest:         ls(LS.PEST),
-    yield_value:  ls(LS.YIELD),
-    market_price: ls(LS.PRICE),
-    cost:         ls(LS.COST),
-  };
-  const hasCtx = Object.values(ctx).some(v => v.length > 0);
-
-  try {
-    const res  = await fetch(`${API}/api/chatbot`, {
-      method:      'POST',
-      headers:     { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body:        JSON.stringify({ message: msg, context: hasCtx ? ctx : undefined }),
-    });
-    const data       = await res.json();
-    const reply      = (data.reply || data.message || 'No response.').replace(/<br>/g, '\n');
-    const insight    = data.insight  || '';
-    const confidence = data.confidence || 'medium';
-    const confClass  = { high: 'high', medium: 'medium', low: 'low' }[confidence] || 'medium';
-
-    area.innerHTML = `
-      <div class="ai-reply-card">
-        ${insight
-          ? `<div class="ai-insight-chip"><i class="fas fa-lightbulb"></i>${esc(insight)}</div>`
-          : ''}
-        <div class="ai-reply-text">${esc(reply)}</div>
-        <span class="ai-conf ${confClass}">
-          <i class="fas fa-circle" style="font-size:7px;"></i>
-          ${confidence.toUpperCase()} confidence
-        </span>
-      </div>`;
-
-  } catch {
-    area.innerHTML = `
-      <div class="ai-reply-card" style="border-color:#fecaca; background:#fef2f2;">
-        <div class="ai-reply-text" style="color:#b91c1c;">
-          <i class="fas fa-triangle-exclamation"></i>
-          Could not reach AI. Please check your connection.
-        </div>
-      </div>`;
-  } finally {
-    btn.disabled = false;
-  }
-}
-
 // ── Init ──────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   setActiveNav('dashboard');
@@ -877,12 +1050,10 @@ document.addEventListener('DOMContentLoaded', () => {
   app.attachProfileIcon();
 
   initHeader();
-  buildContextChips();
 
   loadKPIs();
   loadNotifPreview();
 
-  // Refresh every 30 s
   setInterval(() => {
     loadKPIs();
     loadNotifPreview();

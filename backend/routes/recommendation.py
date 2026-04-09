@@ -6,7 +6,15 @@ import pymysql
 from flask import Blueprint, jsonify, request
 
 from db import DBConnectionError, get_db_connection
-from routes.ai import _FEATURES
+from services.farm_context_service import (
+    SOIL_MESSAGE,
+    fetch_farmer_row,
+    fetch_soil_row,
+    merge_farmer_profile_into_payload,
+    merge_soil_into_payload,
+    payload_has_soil_values,
+    resolve_farmer_id,
+)
 from services.recommendation_service import full_recommendation
 
 recommendation_bp = Blueprint("recommendation", __name__)
@@ -74,10 +82,29 @@ def recommend_route():
         )
 
     mode = str(raw_mode).strip().lower()
-    if mode == "new":
-        missing = [f for f in _FEATURES if f not in payload]
-        if missing:
-            print("Missing ML fields:", missing)
+
+    try:
+        conn_ctx = get_db_connection()
+        _fid = resolve_farmer_id(conn_ctx)
+        _farmer = fetch_farmer_row(conn_ctx, _fid)
+        _soil = fetch_soil_row(conn_ctx, _fid)
+        merge_farmer_profile_into_payload(payload, _farmer)
+        merge_soil_into_payload(payload, _soil)
+    except DBConnectionError:
+        pass
+
+    if mode in ("new", "existing") and not payload_has_soil_values(payload):
+        return (
+            jsonify(
+                {
+                    "success": False,
+                    "crop": "",
+                    "seeds": [],
+                    "message": SOIL_MESSAGE,
+                }
+            ),
+            400,
+        )
 
     data = {**payload, "user_id": user_id, "mode": mode}
 
