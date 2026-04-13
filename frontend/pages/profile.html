@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -113,7 +113,10 @@
   <!-- ── SIDEBAR (matches all other pages) ──────────────────────────── -->
   <aside class="sidebar">
     <div class="sidebar-header">
-      <a class="ks-brand" href="../home.html" title="KrishiSetu"><img src="../images/krishisetu-logo.svg" alt="KrishiSetu" class="ks-brand-img" /></a>
+      <a class="ks-brand" href="../home.html" title="KrishiSetu">
+        <img id="sidebarLogo" class="app-logo logo-sidebar" alt="KrishiSetu">
+        <span class="logo-text">KrishiSetu</span>
+      </a>
     </div>
     <div class="sidebar-body">
       <ul class="nav-menu">
@@ -123,6 +126,9 @@
         <li class="nav-item"><button class="nav-link" data-page="crop"><i class="fas fa-leaf"></i><span class="nav-label">Crop Recommendation</span></button></li>
         <li class="nav-item"><button class="nav-link" data-page="fertilizer"><i class="fas fa-droplet"></i><span class="nav-label">Fertilizer</span></button></li>
         <li class="nav-item"><button class="nav-link" data-page="market"><i class="fas fa-chart-line"></i><span class="nav-label">Market</span></button></li>
+        <li class="nav-item"><button class="nav-link" data-page="equipment"><i class="fas fa-tools"></i><span class="nav-label">Equipment</span></button></li>
+        <li class="nav-item"><button class="nav-link" data-page="schemes"><i class="fas fa-file-contract"></i><span class="nav-label">Government Schemes</span></button></li>
+        <li class="nav-item"><button class="nav-link" data-page="weather"><i class="fas fa-cloud-sun"></i><span class="nav-label">Weather</span></button></li>
         <li class="nav-item"><button class="nav-link" data-page="ai-assistant"><i class="fas fa-robot"></i><span class="nav-label">AI Assistant</span></button></li>
         <li class="nav-item"><button class="nav-link" data-page="expert-queries"><i class="fas fa-comments"></i><span class="nav-label">Expert Queries</span></button></li>
       </ul>
@@ -137,7 +143,12 @@
     <header class="topbar">
       <div class="topbar-left">
         <button class="hamburger"><i class="fas fa-bars"></i></button>
-        <div class="topbar-title">My Profile</div>
+        <div class="topbar-title ks-topbar-brand">
+          <img id="navbarLogo" class="app-logo logo-navbar" alt="KrishiSetu">
+          <span class="logo-text">KrishiSetu</span>
+          <span class="ks-topbar-sep" aria-hidden="true">|</span>
+          <span class="ks-topbar-page">My Profile</span>
+        </div>
       </div>
       <div class="topbar-right">
         <div class="notification-icon">
@@ -151,6 +162,7 @@
     </header>
 
     <main class="content-area">
+      <div class="page-transition">
 
       <!-- ── GLOBAL ALERT AREA ───────────────────────────────────── -->
       <div id="globalAlert" style="margin-bottom:16px"></div>
@@ -162,7 +174,7 @@
         <div class="profile-header">
           <div class="profile-avatar" id="avatarInitial">?</div>
           <div class="profile-header-info">
-            <h2 id="displayName">Loading…</h2>
+            <h2 id="displayName">Farmer</h2>
             <p id="displayEmail" style="color:var(--text-light)"></p>
             <p style="font-size:12px;color:#94a3b8;margin-top:4px">
               <i class="fas fa-shield-halved" style="color:var(--primary-green)"></i>
@@ -303,6 +315,7 @@
         <div id="uploadAlert" style="margin-top:12px"></div>
       </div>
 
+      </div>
     </main>
   </div>
 </div>
@@ -345,6 +358,9 @@ async function loadProfile() {
 
     if (!p.success) {
       console.warn("Profile load failed:", p.message);
+      var fallback = localStorage.getItem("userName") || "Farmer";
+      document.getElementById("displayName").textContent = fallback;
+      document.getElementById("avatarInitial").textContent = fallback.charAt(0).toUpperCase();
       return;
     }
 
@@ -376,6 +392,9 @@ async function loadProfile() {
     if (p.username) localStorage.setItem("userName", p.username);
   } catch (e) {
     console.error("Profile load failed", e);
+    var fallback = localStorage.getItem("userName") || "Farmer";
+    document.getElementById("displayName").textContent = fallback;
+    document.getElementById("avatarInitial").textContent = fallback.charAt(0).toUpperCase();
   }
 }
 
@@ -471,8 +490,15 @@ document.getElementById("uploadBtn").addEventListener("click", async function() 
     if (json.success && json.data && json.data.soil) {
       showNPK(json.data.soil);
       showAlert("uploadAlert", "Soil report analysed! Values saved to your profile.", "success");
-      // Cache for crop page auto-fill
-      localStorage.setItem("soilData", JSON.stringify(json.data.soil));
+      var s = json.data.soil;
+      var phVal = s.ph != null ? s.ph : s.pH;
+      var pack = {
+        nitrogen: s.nitrogen != null && s.nitrogen !== "" ? Number(s.nitrogen) : null,
+        phosphorus: s.phosphorus != null && s.phosphorus !== "" ? Number(s.phosphorus) : null,
+        potassium: s.potassium != null && s.potassium !== "" ? Number(s.potassium) : null,
+        ph: phVal != null && phVal !== "" ? Number(phVal) : null
+      };
+      localStorage.setItem("soilData", JSON.stringify(pack));
     } else {
       showAlert("uploadAlert", json.message || "Upload failed.", "danger");
     }
@@ -493,5 +519,8 @@ window.onload = function() {
 };
 </script>
 <script src="../js/app.js"></script>
+
+<script src="../js/logo.js"></script>
+<script>initializeLogos();</script>
 </body>
 </html>

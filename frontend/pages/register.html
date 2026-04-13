@@ -1,10 +1,11 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Create Account – KrishiSetu</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
 :root{
@@ -170,7 +171,7 @@ body{
 
 <div class="page">
   <div class="brand">
-    <img src="../images/krishisetu-logo.svg" alt="KrishiSetu" class="brand-logo-wide">
+    <img src="/frontend/assets/logo/logo-circle-green.png" alt="KrishiSetu" class="brand-logo-wide">
   </div>
 
   <div class="card-wrap">
@@ -316,5 +317,8 @@ function validateAll(){clearAll();var ok=true;var role=document.getElementById("
 
 document.getElementById("registerForm").addEventListener("submit",async function(e){e.preventDefault();var payload=validateAll();if(!payload)return;var btn=document.getElementById("registerBtn");setLoading(btn,true);try{var fd=new FormData();for(var k in payload)fd.append(k,payload[k]);if(payload.role==="Expert"){var fi=document.getElementById("qualification_file");if(fi.files[0])fd.append("qualification_file",fi.files[0]);}var res=await fetch("http://127.0.0.1:5000/auth/register",{method:"POST",credentials:"include",body:fd});var data=await res.json();if(res.ok){showGlobal("Account created! Redirecting to login…","success");setTimeout(function(){window.location.href="login.html";},1200);}else{showGlobal(data.message||"Registration failed.","error");}}catch(err){console.error(err);showGlobal("Connection error. Is the server running?","error");}finally{setLoading(btn,false);}});
 </script>
+
+<script src="../js/logo.js"></script>
+<script>initializeLogos();</script>
 </body>
 </html>

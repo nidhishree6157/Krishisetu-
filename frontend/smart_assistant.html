@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -56,8 +56,11 @@
       background: var(--card); border-bottom: 1px solid var(--border);
       display: flex; align-items: center; padding: 0 20px; gap: 14px; z-index: 50;
     }
-    .topbar-logo { display: flex; align-items: center; text-decoration: none; line-height: 0; }
-    .topbar-logo img { height: 32px; width: auto; display: block; }
+    .topbar-logo { display: flex; align-items: center; gap: 9px; text-decoration: none; line-height: 0; padding: 3px 6px; border-radius: 8px; transition: background 0.2s; }
+    .topbar-logo:hover { background: rgba(46,125,50,0.07); }
+    .topbar-logo img { display: block; filter: drop-shadow(0 2px 8px rgba(46,125,50,0.18)); }
+    .topbar-logo img:hover { transform: scale(1.08); }
+    .topbar-logo-name { font-size: 15px; font-weight: 700; color: #1f4d2b; letter-spacing: 0.3px; }
     .topbar-sep { width: 1px; height: 24px; background: var(--border); }
     .topbar-title {
       font-size: 13.5px; font-weight: 700; color: var(--text);
@@ -371,6 +374,11 @@
     /* Responsive */
     @media (max-width: 820px) { .main { grid-template-columns: 1fr; } .side-col { display: none; } body { overflow: auto; } }
     @media (max-width: 480px) { .bubble { max-width: 90%; } }
+
+    /* ── Circular Logo ── */
+    .app-logo { width: 48px !important; height: 48px !important; object-fit: contain; flex-shrink: 0; transition: transform 0.3s ease, filter 0.3s ease; }
+    .app-logo:hover { transform: scale(1.08); filter: drop-shadow(0 4px 10px rgba(0,0,0,0.2)); }
+    .logo-navbar { width: 36px !important; height: 36px !important; } .logo-sidebar { width: 52px !important; height: 52px !important; }
   </style>
 </head>
 <body>
@@ -379,7 +387,8 @@
   <!-- ── Top bar ── -->
   <header class="topbar">
     <a class="topbar-logo" href="home.html" title="KrishiSetu">
-      <img src="images/krishisetu-logo.svg" alt="KrishiSetu" width="160" height="32" />
+      <img id="navbarLogo" class="app-logo logo-navbar" alt="KrishiSetu">
+      <span class="topbar-logo-name">KrishiSetu</span>
     </a>
     <div class="topbar-sep"></div>
     <div class="topbar-title">
@@ -1203,5 +1212,7 @@ addSysMsg('Hi! I\'m KrishiSetu Smart Assistant. Use the Context tab to set your 
 loadExpertReplies();
 setInterval(loadExpertReplies, 10000);
 </script>
+<script src="js/logo.js"></script>
+<script>initializeLogos();</script>
 </body>
 </html>

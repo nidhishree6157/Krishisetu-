@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -22,7 +22,7 @@
       --fsh:  0 1px 3px rgba(0,0,0,.07), 0 4px 16px rgba(0,0,0,.05);
       --fr:   12px;
     }
-    body { background: var(--fbg); font-family: 'Poppins', sans-serif; }
+    body { font-family: 'Poppins', sans-serif; }
     .content-area { padding: 24px 28px; max-width: 860px; }
     @media (max-width: 768px) { .content-area { padding: 16px; } }
 
@@ -233,7 +233,8 @@
   <aside class="sidebar">
     <div class="sidebar-header">
       <a class="ks-brand" href="../home.html" title="KrishiSetu">
-        <img src="../images/krishisetu-logo.svg" alt="KrishiSetu" class="ks-brand-img" />
+        <img id="sidebarLogo" class="app-logo logo-sidebar" alt="KrishiSetu">
+        <span class="logo-text">KrishiSetu</span>
       </a>
     </div>
     <div class="sidebar-body">
@@ -257,6 +258,15 @@
           <button class="nav-link" data-page="market"><i class="fas fa-chart-line"></i><span class="nav-label">Market</span></button>
         </li>
         <li class="nav-item">
+          <button class="nav-link" data-page="equipment"><i class="fas fa-tools"></i><span class="nav-label">Equipment</span></button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-page="schemes"><i class="fas fa-file-contract"></i><span class="nav-label">Government Schemes</span></button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-page="weather"><i class="fas fa-cloud-sun"></i><span class="nav-label">Weather</span></button>
+        </li>
+        <li class="nav-item">
           <button class="nav-link" data-page="ai-assistant"><i class="fas fa-robot"></i><span class="nav-label">AI Assistant</span></button>
         </li>
         <li class="nav-item">
@@ -273,7 +283,12 @@
     <header class="topbar">
       <div class="topbar-left">
         <button class="hamburger"><i class="fas fa-bars"></i></button>
-        <div class="topbar-title">Fertilizer Recommendation</div>
+        <div class="topbar-title ks-topbar-brand">
+          <img id="navbarLogo" class="app-logo logo-navbar" alt="KrishiSetu">
+          <span class="logo-text">KrishiSetu</span>
+          <span class="ks-topbar-sep" aria-hidden="true">|</span>
+          <span class="ks-topbar-page">Fertilizer Recommendation</span>
+        </div>
       </div>
       <div class="topbar-right">
         <div class="notification-icon" title="Notifications"><i class="fas fa-bell"></i></div>
@@ -282,6 +297,7 @@
     </header>
 
     <main class="content-area">
+      <div class="page-transition">
 
       <div class="fert-header">
         <h2><i class="fas fa-flask" style="color:var(--fg);margin-right:8px;"></i>Fertilizer Plan</h2>
@@ -423,6 +439,7 @@
 
       </div><!-- /resultPanel -->
 
+      </div>
     </main>
   </div>
 </div>
@@ -434,6 +451,44 @@
 ═══════════════════════════════════════════════════════════════ */
 
 const API = 'http://127.0.0.1:5000';
+
+function normalizeSoilForLS(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+  const n = raw.nitrogen, p = raw.phosphorus, k = raw.potassium;
+  const phVal = raw.ph != null ? raw.ph : raw.pH;
+  const out = {
+    nitrogen: n != null && n !== '' ? Number(n) : null,
+    phosphorus: p != null && p !== '' ? Number(p) : null,
+    potassium: k != null && k !== '' ? Number(k) : null,
+    ph: phVal != null && phVal !== '' ? Number(phVal) : null,
+  };
+  if ([out.nitrogen, out.phosphorus, out.potassium, out.ph].every(v => v == null || v !== v))
+    return null;
+  return out;
+}
+
+function prefillSoilInputsFromLocalStorage() {
+  try {
+    const raw = localStorage.getItem('soilData');
+    if (!raw) return false;
+    const soil = normalizeSoilForLS(JSON.parse(raw));
+    if (!soil) return false;
+    let any = false;
+    function set(id, val) {
+      const el = document.getElementById(id);
+      if (el && val != null && !isNaN(val)) {
+        el.value = String(val);
+        any = true;
+      }
+    }
+    set('nitrogenInput', soil.nitrogen);
+    set('phosphorusInput', soil.phosphorus);
+    set('potassiumInput', soil.potassium);
+    return any;
+  } catch (e) {
+    return false;
+  }
+}
 
 function esc(s) {
   return String(s || '')
@@ -465,10 +520,12 @@ function showResult() {
 
 function showAlert(msg, type = 'danger') {
   const c = document.getElementById('alertContainer');
+  const icon = type === 'success' ? '✓' : type === 'info' ? 'ℹ' : '✕';
   c.innerHTML = `<div class="alert alert-${type}" style="margin-top:10px;">
-    <span class="alert-icon">${type === 'success' ? '✓' : '✕'}</span>${esc(msg)}
+    <span class="alert-icon">${icon}</span>${esc(msg)}
   </div>`;
-  setTimeout(() => { c.innerHTML = ''; }, 5000);
+  const ttl = type === 'info' ? 8000 : 5000;
+  setTimeout(() => { c.innerHTML = ''; }, ttl);
 }
 
 async function getFertilizerPlan() {
@@ -656,6 +713,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  const soilFilled = prefillSoilInputsFromLocalStorage();
+  if (!soilFilled) {
+    showAlert('Please upload soil report or enter data manually.', 'info');
+  }
+
   // Allow Enter key on inputs to submit
   ['nitrogenInput','phosphorusInput','potassiumInput','areaInput','locationInput'].forEach(id => {
     document.getElementById(id)?.addEventListener('keydown', e => {
@@ -665,5 +727,8 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 <script src="../js/app.js"></script>
+
+<script src="../js/logo.js"></script>
+<script>initializeLogos();</script>
 </body>
 </html>

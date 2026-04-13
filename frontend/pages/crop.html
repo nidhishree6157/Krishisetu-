@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -257,7 +257,10 @@
   <div class="app-container">
     <aside class="sidebar">
       <div class="sidebar-header">
-        <a class="ks-brand" href="../home.html" title="KrishiSetu"><img src="../images/krishisetu-logo.svg" alt="KrishiSetu" class="ks-brand-img" /></a>
+        <a class="ks-brand" href="../home.html" title="KrishiSetu">
+          <img id="sidebarLogo" class="app-logo logo-sidebar" alt="KrishiSetu">
+          <span class="logo-text">KrishiSetu</span>
+        </a>
       </div>
 
       <div class="sidebar-body">
@@ -299,6 +302,24 @@
             </button>
           </li>
           <li class="nav-item">
+            <button class="nav-link" data-page="equipment">
+              <i class="fas fa-tools"></i>
+              <span class="nav-label">Equipment</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="schemes">
+              <i class="fas fa-file-contract"></i>
+              <span class="nav-label">Government Schemes</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="weather">
+              <i class="fas fa-cloud-sun"></i>
+              <span class="nav-label">Weather</span>
+            </button>
+          </li>
+          <li class="nav-item">
             <button class="nav-link" data-page="ai-assistant">
               <i class="fas fa-robot"></i>
               <span class="nav-label">AI Assistant</span>
@@ -324,7 +345,12 @@
       <header class="topbar">
         <div class="topbar-left">
           <button class="hamburger"><i class="fas fa-bars"></i></button>
-          <div class="topbar-title">Crop &amp; Seed Recommendation</div>
+          <div class="topbar-title ks-topbar-brand">
+            <img id="navbarLogo" class="app-logo logo-navbar" alt="KrishiSetu">
+            <span class="logo-text">KrishiSetu</span>
+            <span class="ks-topbar-sep" aria-hidden="true">|</span>
+            <span class="ks-topbar-page">Crop &amp; Seed Recommendation</span>
+          </div>
         </div>
         <div class="topbar-right">
           <div class="notification-icon">
@@ -338,6 +364,7 @@
       </header>
 
       <main class="content-area">
+        <div class="page-transition">
 
         <!-- ══════════════════════════════════════════════════════
              INPUT FORM
@@ -520,12 +547,36 @@
         <!-- Plain result target used by app.js displayRecommendation -->
         <div id="result" style="display:none;"></div>
 
+        </div>
       </main>
     </div><!-- /main-wrapper -->
   </div><!-- /app-container -->
 
   <script>
     const API_BASE = 'http://127.0.0.1:5000';
+
+    function normalizeSoilForLS(raw) {
+      if (!raw || typeof raw !== 'object') return null;
+      const n = raw.nitrogen, p = raw.phosphorus, k = raw.potassium;
+      const phVal = raw.ph != null ? raw.ph : raw.pH;
+      const out = {
+        nitrogen: n != null && n !== '' ? Number(n) : null,
+        phosphorus: p != null && p !== '' ? Number(p) : null,
+        potassium: k != null && k !== '' ? Number(k) : null,
+        ph: phVal != null && phVal !== '' ? Number(phVal) : null,
+      };
+      if ([out.nitrogen, out.phosphorus, out.potassium, out.ph].every(v => v == null || v !== v))
+        return null;
+      return out;
+    }
+
+    function soilHasAnyValues(soil) {
+      if (!soil) return false;
+      return ['nitrogen', 'phosphorus', 'potassium', 'ph'].some(k => {
+        const v = soil[k];
+        return v != null && v !== '' && !Number.isNaN(Number(v));
+      });
+    }
 
     // ══════════════════════════════════════════════════════════════
     // SEASON AUTO-DETECT
@@ -606,32 +657,54 @@
     // SOIL AUTO-FILL FROM PROFILE
     // ══════════════════════════════════════════════════════════════
     async function prefillSoilFromProfile() {
+      let filled = false;
       try {
         const cached = localStorage.getItem('soilData');
         if (cached) {
-          const soil = JSON.parse(cached);
-          if (soil && soil.nitrogen != null) {
+          const soil = normalizeSoilForLS(JSON.parse(cached));
+          if (soilHasAnyValues(soil)) {
             _applySoilValues(soil);
-            showPrefillBanner('Soil values pre-filled from your last uploaded report.');
-            return;
+            showPrefillBanner('Soil values pre-filled from your saved soil report (upload or soil analysis).');
+            filled = true;
           }
         }
-        // Use /api/profile — no auth required, falls back to farmer_id=1
+        if (filled) return;
+
         const res = await fetch(`${API_BASE}/api/profile`, { credentials: 'include' });
         if (!res.ok) return;
         const p = await res.json();
         if (!p.success) return;
-        if (p.has_soil_data && p.nitrogen != null) {
+        if (p.has_soil_data && soilHasAnyValues(p)) {
           _applySoilValues(p);
           if (p.location && !document.getElementById('location').value)
             document.getElementById('location').value = p.location;
           showPrefillBanner('Soil values pre-filled from your profile. Adjust if needed.');
-          localStorage.setItem('soilData', JSON.stringify({
-            nitrogen: p.nitrogen, phosphorus: p.phosphorus,
-            potassium: p.potassium, ph: p.ph,
-          }));
+          const normalized = normalizeSoilForLS({
+            nitrogen: p.nitrogen,
+            phosphorus: p.phosphorus,
+            potassium: p.potassium,
+            ph: p.ph,
+          });
+          if (normalized) localStorage.setItem('soilData', JSON.stringify(normalized));
+          filled = true;
         }
-      } catch (e) { console.debug('[AutoFill]', e.message); }
+      } catch (e) {
+        console.debug('[AutoFill]', e.message);
+      }
+      if (!filled) showCropSoilFallbackHint();
+    }
+
+    function showCropSoilFallbackHint() {
+      const ac = document.getElementById('alertContainer');
+      if (!ac) return;
+      ac.innerHTML = `
+        <div class="alert alert-info" style="display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;">
+          <span class="alert-icon">ℹ</span>
+          <span>Please upload soil report or enter data manually.
+            <a href="profile.html" style="font-weight:700;margin-left:6px;">Upload report</a> ·
+            <a href="soil.html" style="font-weight:700;margin-left:4px;">Soil analysis</a>
+          </span>
+        </div>`;
     }
 
     function _applySoilValues(soil) {
@@ -843,6 +916,16 @@
 
         renderResult(result);
 
+        try {
+          const pack = normalizeSoilForLS({
+            nitrogen: document.getElementById('nitrogen').value,
+            phosphorus: document.getElementById('phosphorus').value,
+            potassium: document.getElementById('potassium').value,
+            ph: document.getElementById('ph').value,
+          });
+          if (pack) localStorage.setItem('soilData', JSON.stringify(pack));
+        } catch (_) {}
+
         // Plain fallback display so #result (used by app.js displayRecommendation) also reflects data
         const plainResult = document.getElementById('result');
         if (plainResult) {
@@ -895,5 +978,8 @@
     });
   </script>
   <script src="../js/app.js"></script>
+
+<script src="../js/logo.js"></script>
+<script>initializeLogos();</script>
 </body>
 </html>

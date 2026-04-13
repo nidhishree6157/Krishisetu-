@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -7,7 +7,6 @@
   <link rel="icon" href="../images/krishisetu-mark.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
   <style>
     /* ═══════════════════════════════════════════════
@@ -20,7 +19,7 @@
       --dg-bd:     #c8e6c9;
       --ds:        #0f172a;
       --dm:        #64748b;
-      --dbg:       #faf8f5;
+      --dbg:       #f5f7fa;
       --dcard:     #ffffff;
       --dborder:   #e2e8f0;
       --dshadow:   0 1px 3px rgba(0,0,0,.07), 0 4px 16px rgba(0,0,0,.05);
@@ -29,7 +28,6 @@
       --dtrans:    .2s ease;
     }
 
-    body { background: var(--dbg); font-family: 'Poppins', sans-serif; }
     .content-area { padding: 24px 28px; max-width: 1200px; }
     @media (max-width: 768px) { .content-area { padding: 16px; } }
 
@@ -38,10 +36,10 @@
     ═══════════════════════════════════════════ */
     .dash-top-row {
       display: grid;
-      grid-template-columns: 1fr minmax(280px, 340px);
-      gap: 20px;
+      grid-template-columns: 1fr minmax(300px, 400px);
+      gap: 24px;
       align-items: stretch;
-      margin-bottom: 18px;
+      margin-bottom: 0;
     }
     @media (max-width: 960px) {
       .dash-top-row { grid-template-columns: 1fr; }
@@ -56,278 +54,34 @@
       margin-bottom: 8px;
     }
     .dash-welcome-text h1 {
-      font-size: 22px; font-weight: 700;
-      color: var(--ds); margin-bottom: 3px;
-    }
-    .dash-welcome-text p { font-size: 13px; color: var(--dm); }
-    .dash-quick-insight {
-      margin: 0 0 12px 0;
-      font-size: 14px;
-      line-height: 1.5;
-      color: #334155;
-      font-weight: 500;
-      padding: 10px 14px;
-      background: #f8fafc;
-      border-radius: 10px;
-      border-left: 3px solid var(--dg);
-    }
-
-    .weather-card {
-      border-radius: var(--dradius);
-      box-shadow: var(--dshadow-lg);
-      background: linear-gradient(135deg, #2563eb 0%, #0ea5e9 45%, #16a34a 100%);
-      color: #fff;
-      padding: 22px 22px 20px;
-      position: relative;
-      overflow: hidden;
-      min-height: 168px;
-    }
-    .weather-card::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(circle at 100% 0%, rgba(255,255,255,.2) 0%, transparent 55%);
-      pointer-events: none;
-    }
-    .weather-card-inner { position: relative; z-index: 1; height: 100%; }
-    .weather-emoji {
-      position: absolute;
-      top: 14px;
-      right: 16px;
-      font-size: 52px;
-      line-height: 1;
-      opacity: 0.92;
-      filter: drop-shadow(0 2px 8px rgba(0,0,0,.12));
-    }
-    .weather-temp {
-      font-size: 46px;
-      font-weight: 800;
-      line-height: 1;
-      letter-spacing: -1px;
-      text-shadow: 0 2px 12px rgba(0,0,0,.15);
-    }
-    .weather-condition {
-      font-size: 16px;
-      font-weight: 600;
-      margin-top: 8px;
-      opacity: 0.96;
-    }
-    .weather-location {
-      font-size: 13px;
-      margin-top: 14px;
-      opacity: 0.9;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .weather-humidity {
-      font-size: 12px;
-      margin-top: 10px;
-      opacity: 0.85;
-    }
-    .weather-card.weather-card--error {
-      background: linear-gradient(135deg, #64748b 0%, #475569 100%);
-    }
-    .weather-card.weather-card--error .weather-temp { font-size: 28px; }
-
-    /* ── Quick access module cards ── */
-    .quick-access-section { margin: 24px 0 8px; }
-    .quick-access-heading {
-      font-size: 14px; font-weight: 700; color: var(--ds);
-      margin-bottom: 14px;
-      display: flex; align-items: center; gap: 8px;
-    }
-    .quick-access-heading i { color: var(--dg); }
-    .quick-access-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: 14px;
-    }
-    .qa-access-card {
-      display: block;
-      text-decoration: none;
-      color: inherit;
-      background: var(--dcard);
-      border: 1px solid var(--dborder);
-      border-radius: var(--dradius);
-      padding: 18px 16px;
-      box-shadow: var(--dshadow);
-      transition: box-shadow var(--dtrans), transform var(--dtrans), border-color var(--dtrans);
-    }
-    .qa-access-card:hover {
-      box-shadow: var(--dshadow-lg);
-      transform: translateY(-3px);
-      border-color: var(--dg-bd);
-    }
-    .qa-access-icon {
-      width: 46px; height: 46px; border-radius: 12px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 20px;
-      background: var(--dg-lt);
-      color: var(--dg);
-    }
-    .qa-access-title {
-      font-size: 15px; font-weight: 700;
+      font-size: clamp(1.2rem, 2.5vw, 1.55rem);
+      font-weight: 700;
       color: var(--ds);
-      margin-top: 12px;
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
     }
-    .qa-access-desc {
-      font-size: 12px;
+    .dash-welcome-text p.dash-subtitle {
+      font-size: 14px;
       color: var(--dm);
-      margin-top: 6px;
-      line-height: 1.45;
+      line-height: 1.5;
+      max-width: 36rem;
     }
 
     .dash-date {
       font-size: 13px; color: var(--dm);
-      background: var(--dcard);
-      border: 1px solid var(--dborder);
-      border-radius: 10px;
-      padding: 8px 14px;
-      display: flex; align-items: center; gap: 6px;
-    }
-
-    .dash-summary-inline {
-      display: flex; flex-wrap: wrap; gap: 10px 22px;
-      align-items: center; margin-bottom: 18px;
-      padding: 12px 18px;
-      background: var(--dcard);
-      border: 1px solid var(--dborder);
-      border-radius: var(--dradius);
-      box-shadow: var(--dshadow);
-      font-size: 13px; color: var(--ds);
-    }
-    .dash-summary-inline strong { color: var(--ds); font-weight: 700; }
-    .dash-summary-inline a {
-      color: var(--dg); font-weight: 600; text-decoration: none;
-    }
-    .dash-summary-inline a:hover { text-decoration: underline; }
-
-    .insight-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 14px;
-      margin-bottom: 18px;
-    }
-    @media (max-width: 700px) { .insight-grid { grid-template-columns: 1fr; } }
-
-    .insight-card .d-card-body { padding: 18px 20px; }
-    .insight-label {
-      font-size: 11px; font-weight: 600; text-transform: uppercase;
-      letter-spacing: .5px; color: var(--dm); margin-bottom: 8px;
-    }
-    .insight-value {
-      font-size: 22px; font-weight: 800; color: var(--ds);
-      line-height: 1.2;
-    }
-    .insight-hint {
-      font-size: 12px; color: var(--dm); margin-top: 10px;
-      line-height: 1.45;
-    }
-    .insight-value.health-ok { color: #166534; }
-    .insight-value.health-warn { color: #b91c1c; }
-    .insight-value.health-neu { color: var(--dm); }
-
-    .ai-insight-card {
-      margin-bottom: 18px;
-      max-width: 100%;
-    }
-    .ai-insight-body {
-      display: flex; gap: 14px; align-items: flex-start;
-      background: linear-gradient(135deg, #fffbeb 0%, #fff 100%);
-      border-left: 4px solid #ca8a04;
-    }
-    .ai-insight-body > i {
-      font-size: 20px; color: #ca8a04; margin-top: 2px; flex-shrink: 0;
-    }
-    .ai-insight-body p {
-      margin: 0; font-size: 14px; line-height: 1.55; color: #422006;
-      font-weight: 500;
-    }
-
-    .guidance-banner {
-      display: flex; align-items: center; gap: 10px;
-      background: var(--dg-lt); border: 1px solid var(--dg-bd);
-      border-radius: var(--dradius); padding: 12px 18px;
-      margin-bottom: 18px; font-size: 13.5px; color: var(--dg2);
-    }
-    .guidance-banner i { color: var(--dg); font-size: 16px; }
-    .journey-status {
-      display: grid; grid-template-columns: repeat(3, 1fr);
-      gap: 14px; margin-bottom: 22px;
-    }
-    @media (max-width: 680px) { .journey-status { grid-template-columns: 1fr; } }
-    .status-emoji { font-size: 22px; font-weight: 800; line-height: 1; }
-
-    .kpi-card {
-      background: var(--dcard);
-      border: 1px solid var(--dborder);
-      border-radius: var(--dradius);
-      padding: 18px 20px;
-      display: flex; align-items: center; gap: 14px;
-      box-shadow: var(--dshadow);
-      transition: box-shadow var(--dtrans), transform var(--dtrans);
-      position: relative; overflow: hidden;
-    }
-    .kpi-card::before {
-      content: '';
-      position: absolute; top: 0; left: 0; right: 0; height: 3px;
-      background: var(--kpi-color, var(--dg));
-      border-radius: 3px 3px 0 0;
-    }
-    .kpi-card.clickable { cursor: pointer; }
-    .kpi-card.clickable:hover { box-shadow: var(--dshadow-lg); transform: translateY(-2px); }
-
-    .kpi-icon {
-      width: 44px; height: 44px; border-radius: 12px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 18px; flex-shrink: 0;
-      background: var(--kpi-icon-bg, var(--dg-lt));
-      color: var(--kpi-color, var(--dg));
-    }
-    .kpi-body { flex: 1; min-width: 0; }
-    .kpi-label {
-      font-size: 11px; font-weight: 600; text-transform: uppercase;
-      letter-spacing: .5px; color: var(--dm); margin-bottom: 3px;
-    }
-    .kpi-value {
-      font-size: 20px; font-weight: 800; color: var(--ds);
-      line-height: 1; white-space: nowrap;
-      overflow: hidden; text-overflow: ellipsis;
-    }
-    .kpi-sub { font-size: 11px; color: var(--dm); margin-top: 3px; }
-    .kpi-badge {
-      font-size: 11px; font-weight: 700; padding: 2px 8px;
-      border-radius: 10px; white-space: nowrap;
-    }
-    .kpi-badge.up   { background: #dcfce7; color: #166534; }
-    .kpi-badge.down { background: #fee2e2; color: #991b1b; }
-    .kpi-badge.ok   { background: #dcfce7; color: #166534; }
-    .kpi-badge.warn { background: #fee2e2; color: #991b1b; }
-    .kpi-badge.neu  { background: #f1f5f9; color: var(--dm); }
-
-    /* ═══════════════════════════════════════════
-       Main 2-column grid
-    ═══════════════════════════════════════════ */
-    .dash-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 20px;
-      max-width: 100%;
-    }
-
-    /* ── Shared card base ── */
-    .d-card {
-      background: var(--dcard);
-      border: 1px solid var(--dborder);
-      border-radius: var(--dradius);
-      box-shadow: var(--dshadow);
-      overflow: hidden;
+      background: rgba(255, 255, 255, 0.82);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.45);
+      border-radius: 12px;
+      padding: 10px 16px;
+      display: flex; align-items: center; gap: 8px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
     }
     .d-card-header {
       display: flex; justify-content: space-between; align-items: center;
       padding: 16px 20px 14px;
-      border-bottom: 1px solid #f1f5f9;
+      border-bottom: 1px solid rgba(46, 125, 50, 0.08);
     }
     .d-card-title {
       font-size: 14px; font-weight: 700; color: var(--ds);
@@ -341,10 +95,27 @@
     .d-card-link:hover { text-decoration: underline; }
     .d-card-body { padding: 18px 20px; }
 
-    /* ═══════════════════════════════════════════
-       Right column
-    ═══════════════════════════════════════════ */
-    .right-col { display: flex; flex-direction: column; gap: 18px; }
+    .dash-stack { display: flex; flex-direction: column; gap: 22px; }
+
+    .dash-top-row.ks-animate-in { animation-delay: 0.04s; }
+    .dash-stack .d-card.ks-animate-in:nth-of-type(1) { animation-delay: 0.12s; }
+    .dash-stack .d-card.ks-animate-in:nth-of-type(2) { animation-delay: 0.2s; }
+
+    /* ── Scrollable notifications ── */
+    .notif-scroll {
+      max-height: 280px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      margin: 0 -4px;
+      padding: 0 4px 2px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--dg-bd) transparent;
+    }
+    .notif-scroll::-webkit-scrollbar { width: 6px; }
+    .notif-scroll::-webkit-scrollbar-thumb {
+      background: var(--dg-bd);
+      border-radius: 6px;
+    }
 
     /* ── Notification Preview ── */
     .notif-item {
@@ -353,12 +124,13 @@
     }
     .notif-item:last-child { border-bottom: none; }
     .notif-ico {
-      width: 34px; height: 34px; border-radius: 9px;
+      width: 40px; height: 40px; border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 13px; flex-shrink: 0;
+      font-size: 15px; flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
     }
-    .notif-ico.disease { background: #fee2e2; color: #b91c1c; }
-    .notif-ico.expert  { background: #dbeafe; color: #1e40af; }
+    .notif-ico.disease { background: linear-gradient(145deg, #fecaca, #fee2e2); color: #991b1b; }
+    .notif-ico.expert  { background: linear-gradient(145deg, #bfdbfe, #e0f2fe); color: #1d4ed8; }
     .notif-ico.info    { background: #f1f5f9; color: var(--dm); }
     .notif-body { flex: 1; min-width: 0; }
     .notif-msg  { font-size: 13px; color: var(--ds); font-weight: 500; line-height: 1.4; }
@@ -374,28 +146,44 @@
       font-size: 11px; font-weight: 700;
     }
 
-    /* ── Quick Actions (6-up, balanced 3×2) ── */
+    /* ── Quick Actions: 2×3 grid (presentation) ── */
     .qa-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
     }
-    @media (max-width: 520px) {
-      .qa-grid { grid-template-columns: repeat(2, 1fr); }
+    @media (max-width: 400px) {
+      .qa-grid { grid-template-columns: 1fr; }
     }
     .qa-btn {
       display: flex; flex-direction: column; align-items: center;
-      justify-content: center; gap: 7px; padding: 14px 6px;
-      border-radius: 12px; border: 1.5px solid var(--dborder);
-      background: #fafafa; cursor: pointer; text-decoration: none;
-      color: var(--ds); transition: background .15s, border-color .15s, transform .15s, box-shadow .15s;
+      justify-content: center; gap: 10px; padding: 22px 12px;
+      min-height: 112px;
+      text-align: center;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.45);
+      background: linear-gradient(160deg, rgba(255, 255, 255, 0.95) 0%, #e8f5e9 55%, rgba(255, 255, 255, 0.88) 100%);
+      box-shadow: 0 8px 24px rgba(46, 125, 50, 0.08);
+      cursor: pointer; text-decoration: none;
+      color: var(--ds);
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s ease, background 0.3s ease;
     }
     .qa-btn:hover {
-      background: var(--dg-lt); border-color: var(--dg-bd);
-      transform: translateY(-2px); box-shadow: 0 4px 12px rgba(22,163,74,.12);
+      background: linear-gradient(160deg, #f1f8f4 0%, #ffffff 100%);
+      border-color: var(--dg);
+      transform: scale(1.05);
+      box-shadow: 0 14px 32px rgba(46, 125, 50, 0.2);
     }
-    .qa-btn i  { font-size: 20px; color: var(--dg); }
-    .qa-btn span { font-size: 11.5px; font-weight: 600; text-align: center; line-height: 1.3; }
+    .qa-btn:active { transform: scale(1.02); }
+    .qa-btn i {
+      font-size: 22px;
+      color: var(--dg);
+      width: 48px; height: 48px;
+      border-radius: 14px;
+      background: var(--dg-lt);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .qa-btn span { font-size: 12px; font-weight: 600; text-align: center; line-height: 1.35; }
 
     /* ── Misc ── */
     .empty-hint {
@@ -407,6 +195,11 @@
 </head>
 
 <body>
+<div id="splash">
+  <img src="/frontend/assets/logo/logo-full-white.png" class="splash-logo" alt="KrishiSetu">
+  <h1>KrishiSetu</h1>
+  <p>Soil to Success 🌱</p>
+</div>
 <div class="app-container">
 
   <!-- ══════════════════════════════════════════
@@ -415,7 +208,7 @@
   <aside class="sidebar">
     <div class="sidebar-header">
       <a class="ks-brand" href="../home.html" title="KrishiSetu">
-        <img src="../images/krishisetu-logo.svg" alt="KrishiSetu" class="ks-brand-img" />
+        <img id="sidebarLogo" class="app-logo logo-sidebar" alt="KrishiSetu">
       </a>
     </div>
     <div class="sidebar-body">
@@ -461,6 +254,11 @@
           </button>
         </li>
         <li class="nav-item">
+          <button class="nav-link" data-page="weather">
+            <i class="fas fa-cloud-sun"></i><span class="nav-label">Weather</span>
+          </button>
+        </li>
+        <li class="nav-item">
           <button class="nav-link" data-page="ai-assistant">
             <i class="fas fa-robot"></i><span class="nav-label">AI Assistant</span>
           </button>
@@ -485,7 +283,12 @@
     <header class="topbar">
       <div class="topbar-left">
         <button class="hamburger"><i class="fas fa-bars"></i></button>
-        <div class="topbar-title">Dashboard</div>
+        <div class="topbar-title ks-topbar-brand">
+          <img id="navbarLogo" class="app-logo logo-navbar" alt="KrishiSetu">
+          <span class="logo-text">KrishiSetu</span>
+          <span class="ks-topbar-sep" aria-hidden="true">|</span>
+          <span class="ks-topbar-page">Dashboard</span>
+        </div>
       </div>
       <div class="topbar-right">
         <div class="notification-icon" title="Notifications">
@@ -496,24 +299,26 @@
     </header>
 
     <main class="content-area">
+      <div class="page-transition">
 
-      <div class="dash-top-row">
+      <div class="dash-top-row ks-animate-in">
         <div class="dash-welcome-stack">
           <div class="dash-welcome">
             <div class="dash-welcome-text">
-              <h1>Good <span id="greeting">morning</span>, <span id="userName">Farmer</span> 👋</h1>
-              <p>Here's your farm intelligence summary for today.</p>
+              <h1>Good <span id="greeting">morning</span>, <span id="userName">Farmer</span> 🌿</h1>
+              <p class="dash-subtitle">Here's your farm overview</p>
             </div>
             <div class="dash-date">
               <i class="fas fa-calendar-day" style="color:var(--dg);"></i>
               <span id="todayDate">—</span>
             </div>
           </div>
-          <p class="dash-quick-insight" id="quickInsightLine">Loading your quick insight…</p>
         </div>
         <div class="weather-card" id="weatherCard" aria-live="polite">
           <div class="weather-card-inner">
-            <div class="weather-emoji" aria-hidden="true"><i class="fas fa-cloud-sun" id="weatherIconFa"></i></div>
+            <div class="weather-emoji" aria-hidden="true">
+              <span class="weather-emoji-char" id="weatherEmojiChar">🌤️</span>
+            </div>
             <div class="weather-temp" id="weatherTemp">—</div>
             <div class="weather-condition" id="weatherCondition">Loading weather…</div>
             <div class="weather-location" id="weatherLocationRow">
@@ -525,120 +330,17 @@
         </div>
       </div>
 
-      <div class="guidance-banner" role="note">
-        <i class="fas fa-route"></i>
-        <span>Start by completing your profile and soil analysis</span>
-      </div>
-
-      <!-- ── Journey status ─────────────────────────────── -->
-      <div class="journey-status">
-        <div class="kpi-card" style="--kpi-color:#2e7d32; --kpi-icon-bg:#e8f5e9;">
-          <div class="kpi-icon"><i class="fas fa-user-check"></i></div>
-          <div class="kpi-body">
-            <div class="kpi-label">Profile completed</div>
-            <div class="kpi-value status-emoji" id="status-profile">—</div>
-            <div class="kpi-sub">mobile, location, crop &amp; land</div>
-          </div>
-        </div>
-        <div class="kpi-card" style="--kpi-color:#0d9488; --kpi-icon-bg:#ccfbf1;">
-          <div class="kpi-icon"><i class="fas fa-flask"></i></div>
-          <div class="kpi-body">
-            <div class="kpi-label">Soil data available</div>
-            <div class="kpi-value status-emoji" id="status-soil">—</div>
-            <div class="kpi-sub">NPK / report on file</div>
-          </div>
-        </div>
-        <div class="kpi-card" style="--kpi-color:#7c3aed; --kpi-icon-bg:#f5f3ff;">
-          <div class="kpi-icon"><i class="fas fa-leaf"></i></div>
-          <div class="kpi-body">
-            <div class="kpi-label">Recommendation ready</div>
-            <div class="kpi-value status-emoji" id="status-rec">—</div>
-            <div class="kpi-sub">from Crop Recommendation</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="dash-summary-inline" id="dashSummaryBar">
-        <span>Crop: <strong id="sum-crop">—</strong></span>
-        <span>Soil: <strong id="sum-soil">—</strong></span>
-        <span>Alerts: <a href="notifications.html" id="sum-notif">0 unread</a></span>
-      </div>
-
-      <div class="insight-grid">
-        <div class="d-card insight-card">
-          <div class="d-card-body">
-            <div class="insight-label"><i class="fas fa-indian-rupee-sign" style="color:#d97706;margin-right:6px;"></i>Expected profit</div>
-            <div class="insight-value" id="insight-profit">—</div>
-            <div class="insight-hint" id="insight-profit-hint">Uses yield, market price, and cost from your saved summaries.</div>
-          </div>
-        </div>
-        <div class="d-card insight-card">
-          <div class="d-card-body">
-            <div class="insight-label"><i class="fas fa-heart-pulse" style="color:#059669;margin-right:6px;"></i>Crop health status</div>
-            <div class="insight-value health-neu" id="insight-health">—</div>
-            <div class="insight-hint" id="insight-health-hint">Based on last disease and pest checks.</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="d-card ai-insight-card">
-        <div class="d-card-body ai-insight-body">
-          <i class="fas fa-lightbulb"></i>
-          <p id="aiInsightLine">Loading insight…</p>
-        </div>
-      </div>
-
-      <section class="quick-access-section" aria-label="Quick access">
-        <div class="quick-access-heading">
-          <i class="fas fa-compass"></i> Quick access
-        </div>
-        <div class="quick-access-grid">
-          <a href="crop.html" class="qa-access-card">
-            <div class="qa-access-icon"><i class="fas fa-leaf"></i></div>
-            <div class="qa-access-title">Crop recommendation</div>
-            <div class="qa-access-desc">Get crop ideas tailored to your soil and weather.</div>
-          </a>
-          <a href="fertilizer.html" class="qa-access-card">
-            <div class="qa-access-icon"><i class="fas fa-droplet"></i></div>
-            <div class="qa-access-title">Fertilizer</div>
-            <div class="qa-access-desc">Plan NPK doses using your soil test and crop.</div>
-          </a>
-          <a href="disease.html" class="qa-access-card">
-            <div class="qa-access-icon"><i class="fas fa-virus"></i></div>
-            <div class="qa-access-title">Disease detection</div>
-            <div class="qa-access-desc">Upload leaf images to spot common crop diseases.</div>
-          </a>
-          <a href="pest.html" class="qa-access-card">
-            <div class="qa-access-icon"><i class="fas fa-bug"></i></div>
-            <div class="qa-access-title">Pest detection</div>
-            <div class="qa-access-desc">Identify pests early from photos of affected plants.</div>
-          </a>
-          <a href="equipment.html" class="qa-access-card">
-            <div class="qa-access-icon"><i class="fas fa-tools"></i></div>
-            <div class="qa-access-title">Equipment</div>
-            <div class="qa-access-desc">Browse tools and machinery for your farm tasks.</div>
-          </a>
-          <a href="schemes.html" class="qa-access-card">
-            <div class="qa-access-icon"><i class="fas fa-file-contract"></i></div>
-            <div class="qa-access-title">Government schemes</div>
-            <div class="qa-access-desc">Explore subsidies and support programmes.</div>
-          </a>
-        </div>
-      </section>
-
-      <!-- ── Notifications preview + quick actions ─────────── -->
-      <div class="dash-grid">
-        <div class="right-col">
-
-          <div class="d-card">
-            <div class="d-card-header">
-              <div class="d-card-title">
-                <i class="fas fa-bell"></i> Notifications
-                <span id="notifBadge" style="display:none;" class="notif-unread-badge"></span>
-              </div>
-              <a href="notifications.html" class="d-card-link">View all →</a>
+      <div class="dash-stack">
+        <div class="d-card ks-animate-in">
+          <div class="d-card-header">
+            <div class="d-card-title">
+              <i class="fas fa-bell"></i> Notifications
+              <span id="notifBadge" style="display:none;" class="notif-unread-badge"></span>
             </div>
-            <div class="d-card-body" style="padding: 10px 20px 14px;">
+            <a href="notifications.html" class="d-card-link">View all →</a>
+          </div>
+          <div class="d-card-body" style="padding: 10px 20px 14px;">
+            <div class="notif-scroll">
               <div id="notifList">
                 <div class="empty-hint">
                   <i class="fas fa-bell-slash"></i>
@@ -647,46 +349,46 @@
               </div>
             </div>
           </div>
+        </div>
 
-          <div class="d-card">
-            <div class="d-card-header">
-              <div class="d-card-title">
-                <i class="fas fa-bolt"></i> Quick actions
-              </div>
-            </div>
-            <div class="d-card-body">
-              <div class="qa-grid">
-                <a href="crop.html" class="qa-btn">
-                  <i class="fas fa-leaf"></i>
-                  <span>Crop<br>recommendation</span>
-                </a>
-                <a href="fertilizer.html" class="qa-btn">
-                  <i class="fas fa-droplet"></i>
-                  <span>Fertilizer</span>
-                </a>
-                <a href="disease.html" class="qa-btn">
-                  <i class="fas fa-virus"></i>
-                  <span>Disease<br>detection</span>
-                </a>
-                <a href="pest.html" class="qa-btn">
-                  <i class="fas fa-bug"></i>
-                  <span>Pest<br>detection</span>
-                </a>
-                <a href="equipment.html" class="qa-btn">
-                  <i class="fas fa-tools"></i>
-                  <span>Equipment</span>
-                </a>
-                <a href="schemes.html" class="qa-btn">
-                  <i class="fas fa-file-contract"></i>
-                  <span>Government<br>schemes</span>
-                </a>
-              </div>
+        <div class="d-card ks-animate-in">
+          <div class="d-card-header">
+            <div class="d-card-title">
+              <i class="fas fa-bolt"></i> Quick actions
             </div>
           </div>
-
+          <div class="d-card-body">
+            <div class="qa-grid">
+              <a href="crop.html" class="qa-btn">
+                <i class="fas fa-leaf"></i>
+                <span>Crop<br>recommendation</span>
+              </a>
+              <a href="fertilizer.html" class="qa-btn">
+                <i class="fas fa-droplet"></i>
+                <span>Fertilizer</span>
+              </a>
+              <a href="disease.html" class="qa-btn">
+                <i class="fas fa-virus"></i>
+                <span>Disease<br>detection</span>
+              </a>
+              <a href="pest.html" class="qa-btn">
+                <i class="fas fa-bug"></i>
+                <span>Pest<br>detection</span>
+              </a>
+              <a href="equipment.html" class="qa-btn">
+                <i class="fas fa-tools"></i>
+                <span>Equipment</span>
+              </a>
+              <a href="schemes.html" class="qa-btn">
+                <i class="fas fa-file-contract"></i>
+                <span>Government<br>schemes</span>
+              </a>
+            </div>
+          </div>
         </div>
       </div>
 
+      </div>
     </main>
   </div>
 </div>
@@ -698,22 +400,11 @@
 
 const API = 'http://127.0.0.1:5000';
 
-const LS = {
-  CROP:    'ks_last_crop',
-  YIELD:   'ks_last_yield',
-  PRICE:   'ks_last_price',
-  COST:    'ks_last_cost',
-  DISEASE: 'ks_last_disease',
-  PEST:    'ks_last_pest',
-};
-
 function esc(s) {
   return String(s || '')
     .replace(/&/g,'&amp;').replace(/</g,'&lt;')
     .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
-function ls(k) { return localStorage.getItem(k) || ''; }
-
 function greeting() {
   const h = new Date().getHours();
   if (h < 12) return 'morning';
@@ -734,45 +425,6 @@ function initHeader() {
   document.getElementById('todayDate').textContent = todayStr();
 }
 
-function _healthyLabel(v) {
-  const s = String(v || '').trim().toLowerCase();
-  return !s || s === 'healthy' || s === 'none';
-}
-
-function formatINR(n) {
-  try {
-    return '₹' + Math.round(Number(n)).toLocaleString('en-IN');
-  } catch {
-    return '—';
-  }
-}
-
-function buildAiInsightLine(p, weather) {
-  const disease = ls(LS.DISEASE);
-  const pest    = ls(LS.PEST);
-  if (disease && !_healthyLabel(disease)) {
-    return 'Disease signs were last noted for your crop — review treatment options and re-scan leaves if symptoms persist.';
-  }
-  if (pest && !_healthyLabel(pest)) {
-    return 'Pest pressure was flagged earlier — monitor the field and consider timely control to limit yield loss.';
-  }
-  if (weather && typeof weather.rainfall === 'number' && weather.rainfall < 90) {
-    return 'Your yield may drop due to low rainfall — plan irrigation or water conservation for the next weeks.';
-  }
-  if (weather && typeof weather.temperature === 'number' && weather.temperature > 38) {
-    return 'High temperatures can stress the crop — prefer early irrigation and mulching where possible.';
-  }
-  if (weather && typeof weather.humidity === 'number' && weather.humidity < 42) {
-    return 'Low humidity increases evaporation — check soil moisture more often until conditions ease.';
-  }
-  const crop =
-    (p && p.success && String(p.crop_type || '').trim()) || ls(LS.CROP) || '';
-  if (crop) {
-    return 'Conditions look manageable — keep following soil and market updates for ' + crop + ' this season.';
-  }
-  return 'Complete your profile and soil analysis, then run crop recommendation for tailored guidance.';
-}
-
 async function fetchWeatherForInsight(location) {
   const loc = String(location || '').trim();
   if (!loc) return null;
@@ -789,15 +441,15 @@ async function fetchWeatherForInsight(location) {
   }
 }
 
-function pickWeatherIconClass(condition) {
+function pickWeatherEmoji(condition) {
   const c = String(condition || '').toLowerCase();
-  if (/rain|drizzle|shower|precip/.test(c)) return 'fas fa-cloud-rain';
-  if (/snow|hail/.test(c)) return 'fas fa-snowflake';
-  if (/thunder|storm|lightning/.test(c)) return 'fas fa-bolt';
-  if (/mist|fog|haze/.test(c)) return 'fas fa-smog';
-  if (/cloud/.test(c)) return 'fas fa-cloud';
-  if (/sun|clear|fair/.test(c)) return 'fas fa-sun';
-  return 'fas fa-cloud-sun';
+  if (/rain|drizzle|shower|precip/.test(c)) return '🌧️';
+  if (/snow|hail/.test(c)) return '❄️';
+  if (/thunder|storm|lightning/.test(c)) return '⛈️';
+  if (/mist|fog|haze/.test(c)) return '🌫️';
+  if (/cloud/.test(c)) return '☁️';
+  if (/sun|clear|fair/.test(c)) return '☀️';
+  return '🌤️';
 }
 
 /**
@@ -811,7 +463,7 @@ function updateWeatherWidget(weather, locationLabel, opts) {
   const condEl = document.getElementById('weatherCondition');
   const locText = document.getElementById('weatherLocationText');
   const humEl = document.getElementById('weatherHumidity');
-  const iconFa = document.getElementById('weatherIconFa');
+  const emojiEl = document.getElementById('weatherEmojiChar');
 
   const isError = !!(opts.error || opts.noLocation);
   card.classList.toggle('weather-card--error', isError);
@@ -821,7 +473,7 @@ function updateWeatherWidget(weather, locationLabel, opts) {
     condEl.textContent = 'Weather data unavailable';
     locText.textContent = 'Add location in My Profile';
     humEl.textContent = '';
-    iconFa.className = 'fas fa-map-location-dot';
+    if (emojiEl) emojiEl.textContent = '📍';
     return;
   }
   if (opts.error || !weather) {
@@ -829,7 +481,7 @@ function updateWeatherWidget(weather, locationLabel, opts) {
     condEl.textContent = 'Weather data unavailable';
     locText.textContent = locationLabel || '—';
     humEl.textContent = '';
-    iconFa.className = 'fas fa-cloud';
+    if (emojiEl) emojiEl.textContent = '☁️';
     return;
   }
 
@@ -845,136 +497,28 @@ function updateWeatherWidget(weather, locationLabel, opts) {
   } else {
     humEl.textContent = '';
   }
-  iconFa.className = pickWeatherIconClass(weather.condition);
+  if (emojiEl) emojiEl.textContent = pickWeatherEmoji(weather.condition);
 }
 
-// ── Journey status + summary bar + insight cards + AI line ─────────────────
-async function loadKPIs() {
+async function loadDashboardContext() {
   let p = null;
-  let notifCnt = null;
+  try {
+    const r = await fetch(`${API}/profile`, { credentials: 'include' });
+    if (r.ok) p = await r.json();
+  } catch {}
 
-  await Promise.all([
-    (async () => {
-      try {
-        const r = await fetch(`${API}/profile`, { credentials: 'include' });
-        if (r.ok) p = await r.json();
-      } catch {}
-    })(),
-    (async () => {
-      try {
-        const r = await fetch(`${API}/notifications/`, { credentials: 'include' });
-        if (r.ok) {
-          const d = await r.json();
-          notifCnt = d.unread_count || 0;
-        }
-      } catch {}
-    })(),
-  ]);
-
-  const mobileOk =
-    p && p.success && String(p.mobile || '').replace(/\D/g, '').length >= 10;
-  const locOk = p && p.success && String(p.location || '').trim().length > 0;
-  const cropFieldOk = p && p.success && String(p.crop_type || '').trim().length > 0;
-  const landOk =
-    p &&
-    p.success &&
-    p.land_size != null &&
-    String(p.land_size).trim() !== '' &&
-    !Number.isNaN(Number(p.land_size));
-  const profileComplete = !!(mobileOk && locOk && cropFieldOk && landOk);
-
-  const soilFromApi = p && p.success && p.has_soil_data;
-  const soilFromLs = !!localStorage.getItem('soilData');
-  const soilOk = soilFromApi || soilFromLs;
-
-  const recOk = !!localStorage.getItem('ks_last_crop');
-
-  document.getElementById('status-profile').textContent = profileComplete
-    ? '✔'
-    : '❌';
-  document.getElementById('status-soil').textContent = soilOk ? '✔' : '❌';
-  document.getElementById('status-rec').textContent = recOk ? '✔' : '❌';
-
-  const savedCrop = ls(LS.CROP);
-  const displayCrop =
-    p && p.success && String(p.crop_type || '').trim()
-      ? p.crop_type
-      : savedCrop || 'Not set';
-
-  document.getElementById('sum-crop').textContent = displayCrop;
-  document.getElementById('sum-soil').textContent = soilOk ? 'OK — on file' : 'Needs analysis';
-  const notifEl = document.getElementById('sum-notif');
-  if (notifCnt !== null) {
-    notifEl.textContent =
-      notifCnt === 0 ? 'None unread' : notifCnt + ' unread';
-    notifEl.style.color = notifCnt > 0 ? '#b91c1c' : '';
-  } else {
-    notifEl.textContent = '—';
-    notifEl.style.color = '';
+  if (p && p.success) {
+    const name =
+      String(p.username || '').trim() ||
+      localStorage.getItem('userName') ||
+      'Farmer';
+    document.getElementById('userName').textContent = name;
+    if (p.username) localStorage.setItem('userName', p.username);
   }
 
-  const yldRaw = ls(LS.YIELD);
-  const yldNum = yldRaw ? Number(yldRaw) : NaN;
-
-  const priceRaw = ls(LS.PRICE);
-  const costRaw  = ls(LS.COST);
-  const priceNum = priceRaw ? Number(priceRaw) : NaN;
-  const costNum  = costRaw ? Number(costRaw) : NaN;
-  const insightP = document.getElementById('insight-profit');
-  const insightPH = document.getElementById('insight-profit-hint');
-  if (yldRaw && !Number.isNaN(yldNum) && priceRaw && !Number.isNaN(priceNum)) {
-    const revenue = (yldNum / 100) * priceNum;
-    if (!Number.isNaN(costNum) && costNum >= 0) {
-      const profit = revenue - costNum;
-      insightP.textContent = formatINR(profit);
-      insightPH.textContent =
-        'Approx. revenue ' +
-        formatINR(revenue) +
-        ' minus saved cost. Refresh yield in Smart Assistant and price from Market.';
-    } else {
-      insightP.textContent = formatINR(revenue);
-      insightPH.textContent =
-        'Estimated revenue (₹/quintal × yield). Add cost in Smart Assistant context for net profit.';
-    }
-  } else {
-    insightP.textContent = '—';
-    insightPH.textContent =
-      'Use Smart Assistant for yield estimates and Market for price — values appear here when saved.';
-  }
-
-  const disease = ls(LS.DISEASE);
-  const pest    = ls(LS.PEST);
-  const hEl = document.getElementById('insight-health');
-  const hHint = document.getElementById('insight-health-hint');
-  hEl.classList.remove('health-ok', 'health-warn', 'health-neu');
-  if (!disease && !pest) {
-    hEl.textContent = 'Not scanned';
-    hEl.classList.add('health-neu');
-    hHint.textContent =
-      'Run disease and pest detection to track crop health here.';
-  } else if (_healthyLabel(disease) && _healthyLabel(pest)) {
-    hEl.textContent = 'Healthy';
-    hEl.classList.add('health-ok');
-    hHint.textContent = 'Last checks did not flag major disease or pest issues.';
-  } else {
-    const issues = [
-      !_healthyLabel(disease) && disease,
-      !_healthyLabel(pest) && pest,
-    ].filter(Boolean);
-    hEl.textContent = issues[0] || 'Needs attention';
-    hEl.classList.add('health-warn');
-    hHint.textContent =
-      issues.length > 1
-        ? 'Also watch: ' + issues.slice(1).join(', ') + '.'
-        : 'Follow up with treatment and re-check soon.';
-  }
-
-  const loc =
-    (p && p.success && String(p.location || '').trim()) || '';
+  const loc = (p && p.success && String(p.location || '').trim()) || '';
   let weather = null;
-  if (loc) {
-    weather = await fetchWeatherForInsight(loc);
-  }
+  if (loc) weather = await fetchWeatherForInsight(loc);
 
   if (!loc) {
     updateWeatherWidget(null, '', { noLocation: true });
@@ -983,11 +527,6 @@ async function loadKPIs() {
   } else {
     updateWeatherWidget(weather, loc, {});
   }
-
-  const insightText = buildAiInsightLine(p, weather);
-  var qEl = document.getElementById('quickInsightLine');
-  if (qEl) qEl.textContent = insightText;
-  document.getElementById('aiInsightLine').textContent = insightText;
 }
 
 // ── Notification preview ─────────────────────────────────────────────────────
@@ -1051,15 +590,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
   initHeader();
 
-  loadKPIs();
+  loadDashboardContext();
   loadNotifPreview();
 
   setInterval(() => {
-    loadKPIs();
+    loadDashboardContext();
     loadNotifPreview();
   }, 30000);
 });
 </script>
 <script src="../js/app.js"></script>
+<script>
+  window.addEventListener("load", () => {
+    try {
+      const shown = localStorage.getItem("ks_splash_shown") === "1";
+      const el = document.getElementById("splash");
+      if (!el) return;
+      if (shown) {
+        el.style.display = "none";
+        return;
+      }
+      localStorage.setItem("ks_splash_shown", "1");
+      setTimeout(() => {
+        el.style.display = "none";
+      }, 1200);
+    } catch {
+      const el = document.getElementById("splash");
+      if (el) setTimeout(() => (el.style.display = "none"), 1200);
+    }
+  });
+</script>
+
+<script src="../js/logo.js"></script>
+<script>initializeLogos();</script>
 </body>
 </html>

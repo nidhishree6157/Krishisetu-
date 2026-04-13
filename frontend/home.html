@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>KrishiSetu</title>
-<link rel="icon" href="images/krishisetu-mark.svg" type="image/svg+xml">
+<link rel="icon" href="assets/logo.svg" type="image/svg+xml">
 
 <!-- Fonts -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=JetBrains+Mono&display=swap" rel="stylesheet">
@@ -48,12 +48,27 @@ nav {
 .home-brand {
     display: flex;
     align-items: center;
+    gap: 10px;
     text-decoration: none;
+    padding: 4px 8px;
+    border-radius: 10px;
+    transition: background 0.2s ease;
+}
+.home-brand:hover {
+    background: rgba(46, 125, 50, 0.07);
 }
 .home-brand img {
-    height: 38px;
-    width: auto;
-    filter: drop-shadow(0 2px 8px rgba(46, 125, 50, 0.12));
+    filter: drop-shadow(0 3px 10px rgba(46, 125, 50, 0.2));
+    flex-shrink: 0;
+}
+.home-brand img:hover {
+    filter: drop-shadow(0 5px 14px rgba(46, 125, 50, 0.3));
+}
+.home-brand-name {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--accent-dark);
+    letter-spacing: 0.3px;
 }
 
 .toggle {
@@ -371,6 +386,11 @@ button {
     opacity: 0.6;
 }
 
+/* ── Circular Logo ── */
+.app-logo { width: 48px !important; height: 48px !important; object-fit: contain; flex-shrink: 0; transition: transform 0.3s ease, filter 0.3s ease; }
+.app-logo:hover { transform: scale(1.08); filter: drop-shadow(0 4px 10px rgba(0,0,0,0.2)); }
+.logo-navbar { width: 36px !important; height: 36px !important; } .logo-sidebar { width: 52px !important; height: 52px !important; }
+
 </style>
 </head>
 
@@ -381,7 +401,8 @@ button {
 <!-- NAV -->
 <nav>
     <a class="home-brand" href="home.html" title="KrishiSetu">
-      <img src="images/krishisetu-logo.svg" alt="KrishiSetu">
+      <img id="navbarLogo" class="app-logo logo-navbar" alt="KrishiSetu">
+      <span class="home-brand-name">KrishiSetu</span>
     </a>
     <div class="toggle" onclick="toggleMode()">🌙</div>
 </nav>
@@ -555,6 +576,7 @@ new Chart(ctx, {
     }
 });
 </script>
-
+<script src="js/logo.js"></script>
+<script>initializeLogos();</script>
 </body>
 </html>

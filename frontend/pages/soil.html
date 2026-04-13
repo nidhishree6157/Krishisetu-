@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -11,7 +11,10 @@
   <div class="app-container">
     <aside class="sidebar">
       <div class="sidebar-header">
-        <a class="ks-brand" href="../home.html" title="KrishiSetu"><img src="../images/krishisetu-logo.svg" alt="KrishiSetu" class="ks-brand-img" /></a>
+        <a class="ks-brand" href="../home.html" title="KrishiSetu">
+          <img id="sidebarLogo" class="app-logo logo-sidebar" alt="KrishiSetu">
+          <span class="logo-text">KrishiSetu</span>
+        </a>
       </div>
 
       <div class="sidebar-body">
@@ -53,6 +56,24 @@
             </button>
           </li>
           <li class="nav-item">
+            <button class="nav-link" data-page="equipment">
+              <i class="fas fa-tools"></i>
+              <span class="nav-label">Equipment</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="schemes">
+              <i class="fas fa-file-contract"></i>
+              <span class="nav-label">Government Schemes</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="weather">
+              <i class="fas fa-cloud-sun"></i>
+              <span class="nav-label">Weather</span>
+            </button>
+          </li>
+          <li class="nav-item">
             <button class="nav-link" data-page="ai-assistant">
               <i class="fas fa-robot"></i>
               <span class="nav-label">AI Assistant</span>
@@ -80,7 +101,12 @@
           <button class="hamburger">
             <i class="fas fa-bars"></i>
           </button>
-          <div class="topbar-title">Soil Analysis</div>
+          <div class="topbar-title ks-topbar-brand">
+            <img id="navbarLogo" class="app-logo logo-navbar" alt="KrishiSetu">
+            <span class="logo-text">KrishiSetu</span>
+            <span class="ks-topbar-sep" aria-hidden="true">|</span>
+            <span class="ks-topbar-page">Soil Analysis</span>
+          </div>
         </div>
         <div class="topbar-right">
           <div class="notification-icon">
@@ -94,6 +120,7 @@
       </header>
 
       <main class="content-area">
+        <div class="page-transition">
         <div class="card">
           <div class="card-title">
             <i class="fas fa-earth-americas"></i> Soil Health Card Analysis
@@ -165,11 +192,76 @@
         </div>
 
         <div id="resultContainer"></div>
+        </div>
       </main>
     </div>
   </div>
 
   <script>
+    var SOIL_LS_KEY = 'soilData';
+
+    function normalizeSoilForLS(raw) {
+      if (!raw || typeof raw !== 'object') return null;
+      var n = raw.nitrogen, p = raw.phosphorus, k = raw.potassium;
+      var phVal = raw.ph != null ? raw.ph : raw.pH;
+      var out = {
+        nitrogen: n != null && n !== '' ? Number(n) : null,
+        phosphorus: p != null && p !== '' ? Number(p) : null,
+        potassium: k != null && k !== '' ? Number(k) : null,
+        ph: phVal != null && phVal !== '' ? Number(phVal) : null
+      };
+      if ([out.nitrogen, out.phosphorus, out.potassium, out.ph].every(function (v) { return v == null || v !== v; }))
+        return null;
+      return out;
+    }
+
+    function persistSoilDataLS(n, p, k, ph) {
+      var pack = normalizeSoilForLS({ nitrogen: n, phosphorus: p, potassium: k, ph: ph });
+      if (pack) localStorage.setItem(SOIL_LS_KEY, JSON.stringify(pack));
+    }
+
+    function applySoilToForm(soil) {
+      if (!soil) return;
+      function set(id, val) {
+        var el = document.getElementById(id);
+        if (el && val != null && !isNaN(val)) el.value = val;
+      }
+      set('nitrogen', soil.nitrogen);
+      set('phosphorus', soil.phosphorus);
+      set('potassium', soil.potassium);
+      set('ph', soil.ph);
+    }
+
+    function showSoilFallbackMsg() {
+      var ac = document.getElementById('alertContainer');
+      if (!ac) return;
+      ac.innerHTML =
+        '<div class="alert alert-info" style="margin-top:12px">' +
+        '<span class="alert-icon">ℹ</span>Please upload soil report or enter data manually.' +
+        ' <a href="profile.html" style="font-weight:600;color:inherit;">Upload report</a>' +
+        '</div>';
+    }
+
+    function hydrateSoilFromLocalStorage() {
+      var ac = document.getElementById('alertContainer');
+      try {
+        var raw = localStorage.getItem(SOIL_LS_KEY);
+        if (!raw) {
+          showSoilFallbackMsg();
+          return;
+        }
+        var soil = normalizeSoilForLS(JSON.parse(raw));
+        if (!soil) {
+          showSoilFallbackMsg();
+          return;
+        }
+        applySoilToForm(soil);
+        if (ac) ac.innerHTML = '';
+      } catch (e) {
+        showSoilFallbackMsg();
+      }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       setActiveNav('soil');
       attachNavigation();
@@ -177,6 +269,7 @@
       attachLogout();
       app.attachNotification();
       app.attachProfileIcon();
+      hydrateSoilFromLocalStorage();
     });
 
     document.getElementById('soilForm').addEventListener('submit', async (e) => {
@@ -281,6 +374,7 @@
 
         resultContainer.innerHTML = resultHTML;
         app.showAlert(alertContainer, 'Soil analysis complete!', 'success');
+        persistSoilDataLS(formData.nitrogen, formData.phosphorus, formData.potassium, formData.ph);
       } catch (error) {
         resultContainer.innerHTML = '';
         app.showAlert(alertContainer, 'Failed to analyze soil', 'danger');
@@ -296,5 +390,8 @@
     }
   </script>
   <script src="../js/app.js"></script>
+
+<script src="../js/logo.js"></script>
+<script>initializeLogos();</script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -6,315 +6,726 @@
   <title>Weather - KrishiSetu</title>
   <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* ═══════════════════════════════════════════
+       Weather Page — Premium UI
+    ═══════════════════════════════════════════ */
+    .weather-wrap { max-width: 860px; padding-bottom: 48px; }
+
+    /* ── Search bar ── */
+    .w-search-bar {
+      display: flex; gap: 10px; margin-bottom: 24px; align-items: center;
+    }
+    .w-search-input {
+      flex: 1;
+      padding: 12px 18px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 12px;
+      font-size: 14px;
+      font-family: inherit;
+      background: #fff;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      color: #0f172a;
+    }
+    .w-search-input:focus {
+      border-color: #2e7d32;
+      box-shadow: 0 0 0 3px rgba(46,125,50,0.1);
+    }
+    .w-search-btn {
+      padding: 12px 22px;
+      background: #2e7d32;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex; align-items: center; gap: 8px;
+      transition: background 0.2s, transform 0.15s;
+      white-space: nowrap;
+    }
+    .w-search-btn:hover  { background: #1b5e20; transform: translateY(-1px); }
+    .w-search-btn:active { transform: translateY(0); }
+
+    /* ── Hero card ── */
+    .w-hero {
+      background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 55%, #388e3c 100%);
+      border-radius: 22px;
+      padding: 28px 32px 24px;
+      color: white;
+      margin-bottom: 16px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(27,94,32,0.28);
+    }
+    .w-hero::before {
+      content: '';
+      position: absolute; top: -60px; right: -40px;
+      width: 260px; height: 260px;
+      background: radial-gradient(circle, rgba(255,255,255,0.10) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    .w-hero-top {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      gap: 16px;
+    }
+    .w-hero-emoji {
+      font-size: 68px; line-height: 1; display: block; margin-bottom: 10px;
+      filter: drop-shadow(0 4px 12px rgba(0,0,0,0.18));
+    }
+    .w-hero-temp {
+      font-size: 58px; font-weight: 800; line-height: 1;
+      margin: 0 0 6px; letter-spacing: -2px;
+    }
+    .w-hero-condition {
+      font-size: 17px; opacity: 0.93; margin: 0 0 10px;
+      font-weight: 500; text-transform: capitalize;
+    }
+    .w-hero-loc {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 13px; opacity: 0.78;
+    }
+    .w-hero-meta { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+    .w-source-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: rgba(255,255,255,0.18);
+      border-radius: 20px;
+      padding: 5px 12px;
+      font-size: 11.5px;
+      backdrop-filter: blur(6px);
+      font-weight: 600;
+    }
+    .w-source-badge .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: #69f0ae;
+      box-shadow: 0 0 6px #69f0ae;
+      animation: pulse-dot 2s ease infinite;
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.3; }
+    }
+    .w-refresh-badge {
+      display: none;
+      align-items: center; gap: 5px;
+      background: rgba(255,255,255,0.14);
+      border-radius: 20px;
+      padding: 4px 10px;
+      font-size: 11px;
+    }
+    .w-spinner {
+      width: 10px; height: 10px;
+      border: 2px solid rgba(255,255,255,0.35);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .w-last-refreshed { font-size: 11px; opacity: 0.55; margin-top: 2px; }
+
+    /* ── Metrics row ── */
+    .w-metrics {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    @media (max-width: 720px) {
+      .w-metrics { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 480px) {
+      .w-metrics { grid-template-columns: repeat(2, 1fr); }
+    }
+    .w-metric {
+      background: #fff;
+      border: 1px solid #eef2ee;
+      border-radius: 14px;
+      padding: 14px 10px 12px;
+      text-align: center;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .w-metric:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(46,125,50,0.1);
+    }
+    .w-metric-icon { font-size: 22px; margin-bottom: 6px; display: block; }
+    .w-metric-label {
+      font-size: 10px; color: #64748b; margin-bottom: 5px;
+      font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px;
+    }
+    .w-metric-value { font-size: 16px; font-weight: 800; color: #0f172a; }
+
+    /* ── Section cards ── */
+    .w-section {
+      background: #fff;
+      border: 1px solid #eef2ee;
+      border-radius: 18px;
+      margin-bottom: 16px;
+      overflow: hidden;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+    }
+    .w-section-hd {
+      padding: 15px 20px 13px;
+      border-bottom: 1px solid #f4f7f4;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .w-section-title {
+      font-size: 13.5px; font-weight: 700; color: #0f172a;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .w-section-title i { color: #2e7d32; width: 16px; text-align: center; }
+
+    /* ── Hourly forecast ── */
+    .w-hourly-scroll {
+      display: flex;
+      overflow-x: auto;
+      gap: 8px;
+      padding: 16px 20px;
+      scrollbar-width: thin;
+      scrollbar-color: #d1fae5 transparent;
+    }
+    .w-hourly-scroll::-webkit-scrollbar { height: 4px; }
+    .w-hourly-scroll::-webkit-scrollbar-thumb { background: #d1fae5; border-radius: 2px; }
+    .w-hour-item {
+      flex-shrink: 0;
+      min-width: 62px;
+      text-align: center;
+      padding: 10px 8px;
+      border-radius: 14px;
+      background: #f8fafc;
+      border: 1.5px solid transparent;
+      transition: background 0.2s, border-color 0.2s;
+      cursor: default;
+    }
+    .w-hour-item:hover { background: #f0fdf4; border-color: #bbf7d0; }
+    .w-hour-item.w-hour-now {
+      background: #ecfdf5;
+      border-color: #86efac;
+      box-shadow: 0 2px 8px rgba(46,125,50,0.12);
+    }
+    .w-hour-time { font-size: 10.5px; color: #64748b; font-weight: 700; margin-bottom: 6px; }
+    .w-hour-item.w-hour-now .w-hour-time { color: #2e7d32; }
+    .w-hour-icon { font-size: 20px; display: block; margin-bottom: 5px; }
+    .w-hour-temp { font-size: 14px; font-weight: 700; color: #0f172a; }
+    .w-hour-rain { font-size: 10px; color: #3b82f6; margin-top: 4px; min-height: 14px; font-weight: 600; }
+
+    /* ── Daily forecast ── */
+    .w-daily-list { padding: 4px 0; }
+    .w-day-row {
+      display: grid;
+      grid-template-columns: 1fr 32px 1fr auto;
+      align-items: center;
+      gap: 12px;
+      padding: 13px 20px;
+      border-bottom: 1px solid #f8faf8;
+      transition: background 0.15s;
+    }
+    .w-day-row:last-child { border-bottom: none; }
+    .w-day-row:hover { background: #fafcfa; }
+    .w-day-row.w-today { background: #f0fdf4; }
+    .w-day-name { font-size: 13.5px; font-weight: 600; color: #0f172a; }
+    .w-day-row.w-today .w-day-name { color: #2e7d32; font-weight: 800; }
+    .w-day-icon { font-size: 20px; text-align: center; }
+    .w-day-rain { font-size: 11.5px; color: #3b82f6; font-weight: 600; }
+    .w-day-temps { text-align: right; display: flex; gap: 8px; align-items: center; justify-content: flex-end; }
+    .w-day-max { font-size: 14px; font-weight: 700; color: #0f172a; }
+    .w-day-min { font-size: 13px; color: #94a3b8; font-weight: 500; }
+
+    /* ── Farm advisory ── */
+    .w-advisory-list { padding: 4px 0; }
+    .w-advisory-item {
+      display: flex; align-items: flex-start; gap: 14px;
+      padding: 14px 20px;
+      border-bottom: 1px solid #f8faf8;
+      transition: background 0.15s;
+    }
+    .w-advisory-item:last-child { border-bottom: none; }
+    .w-advisory-item:hover { background: #fafcfa; }
+    .w-advisory-icon { font-size: 24px; flex-shrink: 0; margin-top: 1px; }
+    .w-advisory-title { font-size: 13.5px; font-weight: 700; color: #0f172a; margin-bottom: 4px; }
+    .w-advisory-text  { font-size: 12.5px; color: #64748b; line-height: 1.55; }
+
+    /* ── Empty / error state ── */
+    .w-empty {
+      text-align: center; padding: 64px 20px; color: #94a3b8;
+    }
+    .w-empty i { font-size: 44px; display: block; margin-bottom: 14px; opacity: 0.35; }
+    .w-empty p { font-size: 14.5px; font-weight: 500; margin: 0; }
+    .w-empty small { font-size: 12.5px; opacity: 0.7; margin-top: 6px; display: block; }
+
+    /* ── Responsive ── */
+    @media (max-width: 600px) {
+      .w-hero { padding: 20px; }
+      .w-hero-temp  { font-size: 44px; }
+      .w-hero-emoji { font-size: 52px; }
+      .w-day-row { grid-template-columns: 1fr 28px 0.8fr auto; gap: 8px; padding: 11px 14px; }
+      .w-search-bar { flex-direction: column; }
+      .w-search-btn { width: 100%; justify-content: center; }
+    }
+  </style>
 </head>
 <body>
   <div class="app-container">
+
+    <!-- ════════════════════════════
+         SIDEBAR
+    ════════════════════════════════ -->
     <aside class="sidebar">
       <div class="sidebar-header">
-        <a class="ks-brand" href="../home.html" title="KrishiSetu"><img src="../images/krishisetu-logo.svg" alt="KrishiSetu" class="ks-brand-img" /></a>
+        <a class="ks-brand" href="../home.html" title="KrishiSetu">
+          <img id="sidebarLogo" class="app-logo logo-sidebar" alt="KrishiSetu">
+          <span class="logo-text">KrishiSetu</span>
+        </a>
       </div>
 
       <div class="sidebar-body">
         <ul class="nav-menu">
-          <li class="nav-item">
-            <button class="nav-link" data-page="dashboard">
-              <i class="fas fa-home"></i>
-              <span class="nav-label">Dashboard</span>
-            </button>
-          </li>
-          <li class="nav-item">
-            <button class="nav-link" data-page="profile">
-              <i class="fas fa-user"></i>
-              <span class="nav-label">My Profile</span>
-            </button>
-          </li>
-          <li class="nav-item">
-            <button class="nav-link" data-page="soil">
-              <i class="fas fa-earth-americas"></i>
-              <span class="nav-label">Soil Analysis</span>
-            </button>
-          </li>
-          <li class="nav-item">
-            <button class="nav-link" data-page="crop">
-              <i class="fas fa-leaf"></i>
-              <span class="nav-label">Crop Recommendation</span>
-            </button>
-          </li>
-          <li class="nav-item">
-            <button class="nav-link" data-page="fertilizer">
-              <i class="fas fa-droplet"></i>
-              <span class="nav-label">Fertilizer</span>
-            </button>
-          </li>
-          <li class="nav-item">
-            <button class="nav-link" data-page="market">
-              <i class="fas fa-chart-line"></i>
-              <span class="nav-label">Market</span>
-            </button>
-          </li>
-          <li class="nav-item">
-            <button class="nav-link" data-page="ai-assistant">
-              <i class="fas fa-robot"></i>
-              <span class="nav-label">AI Assistant</span>
-            </button>
-          </li>
-          <li class="nav-item">
-            <button class="nav-link" data-page="expert-queries">
-              <i class="fas fa-comments"></i>
-              <span class="nav-label">Expert Queries</span>
-            </button>
-          </li>
+          <li class="nav-item"><button class="nav-link" data-page="dashboard"><i class="fas fa-home"></i><span class="nav-label">Dashboard</span></button></li>
+          <li class="nav-item"><button class="nav-link" data-page="profile"><i class="fas fa-user"></i><span class="nav-label">My Profile</span></button></li>
+          <li class="nav-item"><button class="nav-link" data-page="soil"><i class="fas fa-earth-americas"></i><span class="nav-label">Soil Analysis</span></button></li>
+          <li class="nav-item"><button class="nav-link" data-page="crop"><i class="fas fa-leaf"></i><span class="nav-label">Crop Recommendation</span></button></li>
+          <li class="nav-item"><button class="nav-link" data-page="fertilizer"><i class="fas fa-droplet"></i><span class="nav-label">Fertilizer</span></button></li>
+          <li class="nav-item"><button class="nav-link" data-page="market"><i class="fas fa-chart-line"></i><span class="nav-label">Market</span></button></li>
+          <li class="nav-item"><button class="nav-link" data-page="equipment"><i class="fas fa-tools"></i><span class="nav-label">Equipment</span></button></li>
+          <li class="nav-item"><button class="nav-link" data-page="schemes"><i class="fas fa-file-contract"></i><span class="nav-label">Government Schemes</span></button></li>
+          <li class="nav-item"><button class="nav-link active" data-page="weather"><i class="fas fa-cloud-sun"></i><span class="nav-label">Weather</span></button></li>
+          <li class="nav-item"><button class="nav-link" data-page="ai-assistant"><i class="fas fa-robot"></i><span class="nav-label">AI Assistant</span></button></li>
+          <li class="nav-item"><button class="nav-link" data-page="expert-queries"><i class="fas fa-comments"></i><span class="nav-label">Expert Queries</span></button></li>
         </ul>
       </div>
 
       <div class="sidebar-footer">
-        <button class="logout-btn">
-          <i class="fas fa-sign-out-alt"></i> Logout
-        </button>
+        <button class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
       </div>
     </aside>
 
+    <!-- ════════════════════════════
+         MAIN WRAPPER
+    ════════════════════════════════ -->
     <div class="main-wrapper">
       <header class="topbar">
         <div class="topbar-left">
-          <button class="hamburger">
-            <i class="fas fa-bars"></i>
-          </button>
-          <div class="topbar-title">Weather Forecast</div>
+          <button class="hamburger"><i class="fas fa-bars"></i></button>
+          <div class="topbar-title ks-topbar-brand">
+            <img id="navbarLogo" class="app-logo logo-navbar" alt="KrishiSetu">
+            <span class="logo-text">KrishiSetu</span>
+            <span class="ks-topbar-sep" aria-hidden="true">|</span>
+            <span class="ks-topbar-page">Weather Forecast</span>
+          </div>
         </div>
         <div class="topbar-right">
-          <div class="notification-icon">
+          <div class="notification-icon" title="Notifications">
             <i class="fas fa-bell"></i>
-            <div class="notification-badge">3</div>
           </div>
-          <div class="profile-icon">
-            <i class="fas fa-user-circle"></i>
-          </div>
+          <div class="profile-icon"><i class="fas fa-user-circle"></i></div>
         </div>
       </header>
 
       <main class="content-area">
-        <div class="card" style="margin-bottom: 30px;">
-          <div class="card-title">
-            <i class="fas fa-cloud"></i> Weather & Climate Data
-          </div>
-          <p style="color: var(--text-light); margin-bottom: 25px;">Get 7-day forecast and climate alerts for your region</p>
+        <div class="page-transition weather-wrap">
 
-          <form id="weatherForm">
-            <div class="grid grid-2">
-              <div class="form-group">
-                <label class="form-label" for="location">Location</label>
-                <input type="text" id="location" name="location" class="form-input" placeholder="District, State" required>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label" for="crop">Crop Type</label>
-                <select id="crop" name="crop" class="form-select" required>
-                  <option value="">Select Crop</option>
-                  <option value="wheat">Wheat</option>
-                  <option value="rice">Rice</option>
-                  <option value="corn">Corn</option>
-                  <option value="sugarcane">Sugarcane</option>
-                  <option value="cotton">Cotton</option>
-                </select>
-              </div>
-            </div>
-
-            <button type="submit" class="btn btn-primary">
-              <i class="fas fa-search"></i> Get Forecast
+          <!-- Search bar -->
+          <form id="wSearchForm" class="w-search-bar">
+            <input id="wLocationInput" class="w-search-input"
+                   type="text" placeholder="Enter city, district or state…"
+                   autocomplete="off" spellcheck="false">
+            <button type="submit" class="w-search-btn">
+              <i class="fas fa-search"></i> Search
             </button>
           </form>
-        </div>
 
-        <div id="resultContainer" class="grid grid-2" style="gap: 25px; margin-bottom: 30px;">
-          <div class="card">
-            <div class="card-title">
-              <i class="fas fa-cloud-sun"></i> Current Weather
-            </div>
-            <div class="dashboard-grid" style="gap: 15px;">
-              <div class="stat-card" style="margin: 0;">
-                <div class="stat-label">Temperature</div>
-                <div class="stat-value">28°C</div>
-              </div>
-              <div class="stat-card" style="margin: 0;">
-                <div class="stat-label">Humidity</div>
-                <div class="stat-value">65%</div>
-              </div>
-              <div class="stat-card" style="margin: 0;">
-                <div class="stat-label">Wind Speed</div>
-                <div class="stat-value">12 km/h</div>
-              </div>
-              <div class="stat-card" style="margin: 0;">
-                <div class="stat-label">Rainfall</div>
-                <div class="stat-value">0 mm</div>
-              </div>
+          <!-- ── Empty state (shown before first load) ── -->
+          <div id="wEmpty" class="w-section">
+            <div class="w-empty">
+              <i class="fas fa-cloud-sun"></i>
+              <p>Enter a location to see the forecast</p>
+              <small>Your profile location is loaded automatically if set</small>
             </div>
           </div>
 
-          <div class="card">
-            <div class="card-title">
-              <i class="fas fa-triangle-exclamation"></i> Alerts
-            </div>
-            <div id="alertsList" style="color: var(--text-light); padding: 20px; text-align: center;">
-              No active weather alerts
-            </div>
-          </div>
-        </div>
+          <!-- ── Weather display (hidden until data arrives) ── -->
+          <div id="wDisplay" style="display:none;">
 
-        <div class="card">
-          <div class="card-title">
-            <i class="fas fa-calendar"></i> 7-Day Forecast
-          </div>
-          <div id="forecastContainer" class="grid grid-4" style="gap: 20px;">
-            <div style="grid-column: 1/-1; padding: 30px; text-align: center; color: var(--text-light);">
-              <i class="fas fa-calendar-alt"></i> Select location to view forecast
+            <!-- Hero card -->
+            <div class="w-hero">
+              <div class="w-hero-top">
+                <div class="w-hero-left">
+                  <span id="wEmoji" class="w-hero-emoji">🌡️</span>
+                  <div id="wTemp" class="w-hero-temp">--°C</div>
+                  <div id="wCondition" class="w-hero-condition">--</div>
+                  <div class="w-hero-loc">
+                    <i class="fas fa-location-dot"></i>
+                    <span id="wLocation">--</span>
+                  </div>
+                </div>
+                <div class="w-hero-meta">
+                  <div class="w-source-badge">
+                    <span class="dot"></span>
+                    <span id="wSource">Live</span>
+                  </div>
+                  <div id="wRefreshBadge" class="w-refresh-badge">
+                    <div class="w-spinner"></div>
+                    <span>Refreshing…</span>
+                  </div>
+                  <div id="wLastRefreshed" class="w-last-refreshed"></div>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
 
-        <div class="card" style="margin-top: 30px;">
-          <div class="card-title">
-            <i class="fas fa-lightbulb"></i> Farm Advisory
-          </div>
-          <div id="advisoryContainer">
-            <div class="result-item">
-              <div class="result-label">Irrigation Advisory</div>
-              <div style="color: var(--text-dark); margin-top: 8px;">Based on current humidity and rainfall forecast, irrigation is recommended every 2-3 days.</div>
+            <!-- Metrics row -->
+            <div class="w-metrics">
+              <div class="w-metric">
+                <span class="w-metric-icon">💧</span>
+                <div class="w-metric-label">Humidity</div>
+                <div class="w-metric-value" id="wHumidity">--</div>
+              </div>
+              <div class="w-metric">
+                <span class="w-metric-icon">💨</span>
+                <div class="w-metric-label">Wind</div>
+                <div class="w-metric-value" id="wWind">--</div>
+              </div>
+              <div class="w-metric">
+                <span class="w-metric-icon">🌡️</span>
+                <div class="w-metric-label">Pressure</div>
+                <div class="w-metric-value" id="wPressure">--</div>
+              </div>
+              <div class="w-metric">
+                <span class="w-metric-icon">☀️</span>
+                <div class="w-metric-label">UV Index</div>
+                <div class="w-metric-value" id="wUV">--</div>
+              </div>
+              <div class="w-metric">
+                <span class="w-metric-icon">🌧️</span>
+                <div class="w-metric-label">Rainfall</div>
+                <div class="w-metric-value" id="wRainfall">--</div>
+              </div>
             </div>
-            <div class="result-item">
-              <div class="result-label">Best Time for Operations</div>
-              <div style="color: var(--text-dark); margin-top: 8px;">Next 3 days are optimal for pesticide spraying and fertilizer application.</div>
+
+            <!-- 24-hour forecast -->
+            <div class="w-section">
+              <div class="w-section-hd">
+                <div class="w-section-title">
+                  <i class="fas fa-clock"></i> 24-Hour Forecast
+                </div>
+              </div>
+              <div class="w-hourly-scroll" id="wHourly"></div>
             </div>
-          </div>
+
+            <!-- 7-day forecast -->
+            <div class="w-section">
+              <div class="w-section-hd">
+                <div class="w-section-title">
+                  <i class="fas fa-calendar-week"></i> 7-Day Forecast
+                </div>
+              </div>
+              <div class="w-daily-list" id="wDaily"></div>
+            </div>
+
+            <!-- Farm advisory -->
+            <div class="w-section">
+              <div class="w-section-hd">
+                <div class="w-section-title">
+                  <i class="fas fa-seedling"></i> Farm Advisory
+                </div>
+              </div>
+              <div class="w-advisory-list" id="wAdvisory"></div>
+            </div>
+
+          </div><!-- /wDisplay -->
+
         </div>
       </main>
     </div>
   </div>
 
+  <!-- ═══════════════════════════════════════════
+       WEATHER JAVASCRIPT
+  ═══════════════════════════════════════════════ -->
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
+    const _API = 'http://127.0.0.1:5000';
+    let weatherData    = null;   // last successful response
+    let currentLocation = '';    // last searched location
+    let _refreshTimer  = null;
+
+    /* ── WMO code → emoji ─────────────────────────────────────── */
+    function wmoEmoji(code) {
+      code = parseInt(code, 10) || 0;
+      if (code === 0)         return '☀️';
+      if (code <= 2)          return '🌤️';
+      if (code === 3)         return '☁️';
+      if (code <= 48)         return '🌫️';
+      if (code <= 55)         return '🌦️';
+      if (code <= 67)         return '🌧️';
+      if (code <= 77)         return '❄️';
+      if (code <= 82)         return '🌨️';
+      return '⛈️';
+    }
+
+    /* ── Condition string → emoji (fallback for OWM responses) ── */
+    function condEmoji(cond) {
+      if (!cond) return '🌡️';
+      const c = cond.toLowerCase();
+      if (c.includes('clear') || c.includes('sunny'))       return '☀️';
+      if (c.includes('partly') || c.includes('mainly'))     return '🌤️';
+      if (c.includes('overcast') || c.includes('cloud'))    return '☁️';
+      if (c.includes('fog') || c.includes('mist') || c.includes('haze')) return '🌫️';
+      if (c.includes('drizzle'))                             return '🌦️';
+      if (c.includes('rain') || c.includes('shower'))       return '🌧️';
+      if (c.includes('snow'))                                return '❄️';
+      if (c.includes('thunder') || c.includes('storm'))     return '⛈️';
+      return '🌡️';
+    }
+
+    /* ── Format ISO time "HH:MM" → "2 PM" ────────────────────── */
+    function fmtHour(t) {
+      if (!t) return '';
+      const timePart = t.includes('T') ? t.split('T')[1] : t;
+      const h = parseInt(timePart.split(':')[0], 10);
+      const ap = h >= 12 ? 'PM' : 'AM';
+      return `${h % 12 || 12} ${ap}`;
+    }
+
+    /* ── Format date → readable day name ─────────────────────── */
+    function fmtDay(dateStr, idx) {
+      if (idx === 0) return 'Today';
+      if (idx === 1) return 'Tomorrow';
+      try {
+        const d = new Date(dateStr + 'T00:00:00');
+        return d.toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric' });
+      } catch { return dateStr; }
+    }
+
+    /* ── Fetch and update ─────────────────────────────────────── */
+    async function loadWeather(loc) {
+      if (!loc || !loc.trim()) return;
+      loc = loc.trim();
+      currentLocation = loc;
+
+      // Show spinner WITHOUT clearing existing data
+      const badge = document.getElementById('wRefreshBadge');
+      if (badge) badge.style.display = 'inline-flex';
+
+      try {
+        const res = await fetch(
+          `${_API}/weather?city=${encodeURIComponent(loc)}`,
+          { credentials: 'include' }
+        );
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = await res.json();
+
+        if (json.success) {
+          weatherData = json;
+          updateWeatherUI(json, loc);
+        } else {
+          if (!weatherData) showError('Weather data unavailable. Try a different location.');
+        }
+      } catch (err) {
+        console.error('[Weather] Fetch failed:', err);
+        // Keep existing data visible — only show error on first load
+        if (!weatherData) showError('Unable to reach weather service. Check your connection.');
+      } finally {
+        if (badge) badge.style.display = 'none';
+        const ts = document.getElementById('wLastRefreshed');
+        if (ts) ts.textContent = 'Updated ' +
+          new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+      }
+    }
+
+    /* ── Update ALL UI elements in-place (never clears display) ─ */
+    function updateWeatherUI(json, loc) {
+      const d = json.data || {};
+      const forecast  = json.forecast || {};
+      const hourly    = forecast.hourly || [];
+      const daily     = forecast.daily  || [];
+
+      // Reveal the display panel (idempotent)
+      document.getElementById('wDisplay').style.display = 'block';
+      document.getElementById('wEmpty').style.display   = 'none';
+
+      // Hero
+      const emoji = hourly.length ? wmoEmoji(d.weather_code || 0) : condEmoji(d.condition);
+      setText('wEmoji',     condEmoji(d.condition));
+      setText('wTemp',      d.temperature != null ? Math.round(d.temperature) + '°C' : '--°C');
+      setText('wCondition', d.condition  || '--');
+      setText('wLocation',  loc);
+      setText('wSource',    (d.source === 'open-meteo' ? '🛰 Open-Meteo' : d.source === 'owm' ? '🌐 Live' : '📊 Estimate'));
+
+      // Metrics — update individual values only
+      setText('wHumidity', d.humidity != null  ? d.humidity + '%'          : '--');
+      setText('wWind',     d.wind     != null  ? d.wind + ' km/h'          : '--');
+      setText('wPressure', d.pressure != null  ? Math.round(d.pressure) + ' hPa' : '--');
+      setText('wUV',       d.uv_index != null  ? uvLabel(d.uv_index)       : '--');
+      setText('wRainfall', d.rainfall != null  ? d.rainfall + ' mm/mo'     : '--');
+
+      // Sections
+      renderHourly(hourly);
+      renderDaily(daily);
+      renderAdvisory(d);
+    }
+
+    function setText(id, val) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = val;
+    }
+
+    function uvLabel(uv) {
+      uv = parseFloat(uv);
+      if (uv < 3)  return uv.toFixed(1) + ' (Low)';
+      if (uv < 6)  return uv.toFixed(1) + ' (Moderate)';
+      if (uv < 8)  return uv.toFixed(1) + ' (High)';
+      if (uv < 11) return uv.toFixed(1) + ' (V.High)';
+      return uv.toFixed(1) + ' (Extreme)';
+    }
+
+    /* ── Hourly render ────────────────────────────────────────── */
+    function renderHourly(hourly) {
+      const el = document.getElementById('wHourly');
+      if (!hourly.length) {
+        el.innerHTML = '<p style="padding:16px 20px;color:#94a3b8;font-size:13px;">Hourly data available after location search with Open-Meteo.</p>';
+        return;
+      }
+      el.innerHTML = hourly.slice(0, 24).map((h, i) => `
+        <div class="w-hour-item${i === 0 ? ' w-hour-now' : ''}">
+          <div class="w-hour-time">${i === 0 ? 'Now' : fmtHour(h.time)}</div>
+          <span class="w-hour-icon">${wmoEmoji(h.code)}</span>
+          <div class="w-hour-temp">${h.temp != null ? Math.round(h.temp) + '°' : '--'}</div>
+          <div class="w-hour-rain">${h.precip_prob > 0 ? '💧' + h.precip_prob + '%' : ''}</div>
+        </div>
+      `).join('');
+    }
+
+    /* ── Daily render ─────────────────────────────────────────── */
+    function renderDaily(daily) {
+      const el = document.getElementById('wDaily');
+      if (!daily.length) {
+        el.innerHTML = '<p style="padding:16px 20px;color:#94a3b8;font-size:13px;">7-day forecast available after location search.</p>';
+        return;
+      }
+      el.innerHTML = daily.map((d, i) => `
+        <div class="w-day-row${i === 0 ? ' w-today' : ''}">
+          <div class="w-day-name">${fmtDay(d.date, i)}</div>
+          <div class="w-day-icon">${wmoEmoji(d.code)}</div>
+          <div class="w-day-rain">${d.rain > 0 ? '💧 ' + d.rain + ' mm' : ''}</div>
+          <div class="w-day-temps">
+            <span class="w-day-max">${d.max != null ? Math.round(d.max) + '°' : '--'}</span>
+            <span class="w-day-min">${d.min != null ? Math.round(d.min) + '°' : '--'}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    /* ── Farm advisory ────────────────────────────────────────── */
+    function renderAdvisory(d) {
+      const el   = document.getElementById('wAdvisory');
+      const temp = parseFloat(d.temperature);
+      const hum  = parseFloat(d.humidity);
+      const rain = parseFloat(d.rainfall);
+      const wind = parseFloat(d.wind);
+      const uv   = parseFloat(d.uv_index);
+      const tips = [];
+
+      if (!isNaN(temp)) {
+        if (temp > 38)
+          tips.push({ icon: '🔥', title: 'Extreme Heat Alert', text: `Temperature is ${temp}°C — irrigate at dawn and dusk. Mulch soil to retain moisture. Avoid midday field operations.` });
+        else if (temp > 32)
+          tips.push({ icon: '🌡️', title: 'High Temperature Advisory', text: `At ${temp}°C, water requirements increase. Irrigate early morning or late evening to reduce evaporation loss.` });
+        else if (temp < 10)
+          tips.push({ icon: '🥶', title: 'Cold Weather Advisory', text: `Temperature of ${temp}°C may slow germination and growth. Consider frost protection for sensitive crops.` });
+        else
+          tips.push({ icon: '✅', title: 'Optimal Growing Conditions', text: `Temperature of ${temp}°C is ideal for most crops. Maintain regular irrigation and monitoring.` });
+      }
+
+      if (!isNaN(hum)) {
+        if (hum > 80)
+          tips.push({ icon: '⚠️', title: 'High Humidity — Fungal Risk', text: `Humidity at ${hum}%. Elevated risk of fungal diseases. Apply preventive fungicide and ensure good field ventilation.` });
+        else if (hum < 30)
+          tips.push({ icon: '💧', title: 'Low Humidity — Increase Irrigation', text: `Humidity is only ${hum}%. Increase irrigation frequency to prevent moisture stress and leaf curl.` });
+      }
+
+      if (!isNaN(rain) && rain > 50)
+        tips.push({ icon: '🌧️', title: 'Heavy Rainfall Advisory', text: `High rainfall (${rain} mm/month) expected. Delay pesticide and fertilizer application. Ensure field drainage channels are clear.` });
+
+      if (!isNaN(wind) && wind > 25)
+        tips.push({ icon: '💨', title: 'High Wind Warning', text: `Wind speed ${wind} km/h. Avoid spraying operations — drift risk is high. Support tall crops and check staking.` });
+
+      if (!isNaN(uv) && uv >= 6)
+        tips.push({ icon: '☀️', title: 'High UV — Worker Safety', text: `UV index ${uv.toFixed(1)} — ensure farm workers use sun protection and take breaks during peak hours (10am–3pm).` });
+
+      if (!tips.length)
+        tips.push({ icon: '🌱', title: 'Conditions Suitable', text: 'Weather conditions look favourable for routine farm operations today.' });
+
+      el.innerHTML = tips.map(t => `
+        <div class="w-advisory-item">
+          <span class="w-advisory-icon">${t.icon}</span>
+          <div>
+            <div class="w-advisory-title">${t.title}</div>
+            <div class="w-advisory-text">${t.text}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    /* ── Error state ──────────────────────────────────────────── */
+    function showError(msg) {
+      const el = document.getElementById('wEmpty');
+      el.innerHTML = `
+        <div class="w-empty">
+          <i class="fas fa-triangle-exclamation"></i>
+          <p>${msg}</p>
+          <small>Try searching again or check your connection</small>
+        </div>`;
+      el.style.display = 'block';
+      document.getElementById('wDisplay').style.display = 'none';
+    }
+
+    /* ── Startup ──────────────────────────────────────────────── */
+    document.getElementById('wSearchForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const loc = document.getElementById('wLocationInput').value.trim();
+      if (!loc) return;
+      localStorage.setItem('ks_weather_loc', loc);
+      await loadWeather(loc);
+    });
+
+    document.addEventListener('DOMContentLoaded', async () => {
       setActiveNav('weather');
       attachNavigation();
       attachHamburger();
       attachLogout();
       app.attachNotification();
       app.attachProfileIcon();
-    });
 
-    document.getElementById('weatherForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const location = document.getElementById('location').value;
-      const crop = document.getElementById('crop').value;
+      // 1. Try saved location from localStorage
+      let loc = localStorage.getItem('ks_weather_loc') || '';
 
-      const forecastContainer = document.getElementById('forecastContainer');
-      
-      try {
-        const response = await app.apiCall(`/weather?city=${location}`, 'GET');
-        
-        const weatherData = response?.data || response || {};
-        const temperature = weatherData?.temperature || 'N/A';
-        const humidity = weatherData?.humidity || 'N/A';
-        const condition = weatherData?.condition || 'No data';
-        
-        // Display current weather if forecast not available
-        if (response?.data && !response?.forecast) {
-          const currentWeatherHTML = `
-            <div class="card" style="margin: 0; padding: 20px;">
-              <div style="text-align: center;">
-                <div style="font-weight: 600; color: var(--text-dark); margin-bottom: 10px;">Current Weather in ${location}</div>
-                <div style="font-size: 48px; margin: 15px 0;">${temperature}°C</div>
-                <div style="font-size: 16px; color: var(--text-light); margin-bottom: 15px; text-transform: capitalize;">${condition}</div>
-                <div style="display: flex; justify-content: space-around; padding-top: 15px; border-top: 1px solid var(--border-light);">
-                  <div>
-                    <div style="font-size: 12px; color: var(--text-light);">Humidity</div>
-                    <div style="font-weight: 600;">${humidity}%</div>
-                  </div>
-                  <div>
-                    <div style="font-size: 12px; color: var(--text-light);">Temp</div>
-                    <div style="font-weight: 600;">${temperature}°C</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          `;
-          forecastContainer.innerHTML = currentWeatherHTML;
-          app.showAlert(forecastContainer, 'Current weather loaded!', 'success');
-          return;
-        }
-        
-        const forecast = response?.forecast || generateMockForecast();
-        
-        forecastContainer.innerHTML = forecast.map((day, idx) => `
-          <div class="card" style="margin: 0; padding: 20px;">
-            <div style="text-align: center;">
-              <div style="font-weight: 600; color: var(--text-dark); margin-bottom: 10px;">${getDayName(idx)}</div>
-              <div style="font-size: 32px; margin: 15px 0;">${day.icon}</div>
-              <div style="font-size: 14px; color: var(--text-light); margin-bottom: 15px;">${day.condition}</div>
-              <div style="display: flex; justify-content: space-between; padding-top: 15px; border-top: 1px solid var(--border-light);">
-                <div>
-                  <div style="font-size: 12px; color: var(--text-light);">High</div>
-                  <div style="font-weight: 600;">${day.high}°</div>
-                </div>
-                <div>
-                  <div style="font-size: 12px; color: var(--text-light);">Low</div>
-                  <div style="font-weight: 600;">${day.low}°</div>
-                </div>
-                <div>
-                  <div style="font-size: 12px; color: var(--text-light);">Rain</div>
-                  <div style="font-weight: 600;">${day.rain}%</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        `).join('');
-
-        app.showAlert(document.querySelector('.card'), 'Weather data loaded!', 'success');
-      } catch (error) {
-        const mockForecast = generateMockForecast();
-        forecastContainer.innerHTML = mockForecast.map((day, idx) => `
-          <div class="card" style="margin: 0; padding: 20px;">
-            <div style="text-align: center;">
-              <div style="font-weight: 600; color: var(--text-dark); margin-bottom: 10px;">${getDayName(idx)}</div>
-              <div style="font-size: 32px; margin: 15px 0;">${day.icon}</div>
-              <div style="font-size: 14px; color: var(--text-light); margin-bottom: 15px;">${day.condition}</div>
-              <div style="display: flex; justify-content: space-between; padding-top: 15px; border-top: 1px solid var(--border-light);">
-                <div>
-                  <div style="font-size: 12px; color: var(--text-light);">High</div>
-                  <div style="font-weight: 600;">${day.high}°</div>
-                </div>
-                <div>
-                  <div style="font-size: 12px; color: var(--text-light);">Low</div>
-                  <div style="font-weight: 600;">${day.low}°</div>
-                </div>
-                <div>
-                  <div style="font-size: 12px; color: var(--text-light);">Rain</div>
-                  <div style="font-weight: 600;">${day.rain}%</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        `).join('');
+      // 2. Try profile API for location
+      if (!loc) {
+        try {
+          const r = await fetch(`${_API}/profile`, { credentials: 'include' });
+          if (r.ok) {
+            const pd = await r.json();
+            loc = (pd.location || pd.data?.location || '').trim();
+            if (loc) localStorage.setItem('ks_weather_loc', loc);
+          }
+        } catch (_) {}
       }
+
+      if (loc) {
+        document.getElementById('wLocationInput').value = loc;
+        await loadWeather(loc);
+      }
+
+      // Auto-refresh every 5 minutes (never clears display)
+      _refreshTimer = setInterval(() => {
+        if (currentLocation) loadWeather(currentLocation);
+      }, 300_000);
     });
-
-    function generateMockForecast() {
-      const forecast = [
-        { condition: 'Sunny', high: 32, low: 20, rain: 0, icon: '☀️' },
-        { condition: 'Partly Cloudy', high: 30, low: 19, rain: 10, icon: '⛅' },
-        { condition: 'Rainy', high: 25, low: 18, rain: 70, icon: '🌧️' },
-        { condition: 'Cloudy', high: 28, low: 17, rain: 20, icon: '☁️' },
-        { condition: 'Sunny', high: 33, low: 21, rain: 5, icon: '☀️' },
-        { condition: 'Partly Cloudy', high: 31, low: 20, rain: 15, icon: '⛅' },
-        { condition: 'Sunny', high: 34, low: 22, rain: 0, icon: '☀️' }
-      ];
-      return forecast;
-    }
-
-    function getDayName(index) {
-      const days = ['Today', 'Tomorrow', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-      return days[index] || 'Day ' + (index + 1);
-    }
   </script>
+
   <script src="../js/app.js"></script>
+  <script src="../js/logo.js"></script>
+  <script>initializeLogos();</script>
 </body>
 </html>

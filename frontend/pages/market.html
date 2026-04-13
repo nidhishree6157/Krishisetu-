@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -101,7 +101,10 @@
   <div class="app-container">
     <aside class="sidebar">
       <div class="sidebar-header">
-        <a class="ks-brand" href="../home.html" title="KrishiSetu"><img src="../images/krishisetu-logo.svg" alt="KrishiSetu" class="ks-brand-img" /></a>
+        <a class="ks-brand" href="../home.html" title="KrishiSetu">
+          <img id="sidebarLogo" class="app-logo logo-sidebar" alt="KrishiSetu">
+          <span class="logo-text">KrishiSetu</span>
+        </a>
       </div>
       <div class="sidebar-body">
         <ul class="nav-menu">
@@ -111,6 +114,9 @@
           <li class="nav-item"><button class="nav-link" data-page="crop"><i class="fas fa-leaf"></i><span class="nav-label">Crop Recommendation</span></button></li>
           <li class="nav-item"><button class="nav-link" data-page="fertilizer"><i class="fas fa-droplet"></i><span class="nav-label">Fertilizer</span></button></li>
           <li class="nav-item"><button class="nav-link active" data-page="market"><i class="fas fa-chart-line"></i><span class="nav-label">Market</span></button></li>
+          <li class="nav-item"><button class="nav-link" data-page="equipment"><i class="fas fa-tools"></i><span class="nav-label">Equipment</span></button></li>
+          <li class="nav-item"><button class="nav-link" data-page="schemes"><i class="fas fa-file-contract"></i><span class="nav-label">Government Schemes</span></button></li>
+          <li class="nav-item"><button class="nav-link" data-page="weather"><i class="fas fa-cloud-sun"></i><span class="nav-label">Weather</span></button></li>
           <li class="nav-item"><button class="nav-link" data-page="ai-assistant"><i class="fas fa-robot"></i><span class="nav-label">AI Assistant</span></button></li>
           <li class="nav-item"><button class="nav-link" data-page="expert-queries"><i class="fas fa-comments"></i><span class="nav-label">Expert Queries</span></button></li>
         </ul>
@@ -124,7 +130,12 @@
       <header class="topbar">
         <div class="topbar-left">
           <button class="hamburger"><i class="fas fa-bars"></i></button>
-          <div class="topbar-title">Market Intelligence</div>
+          <div class="topbar-title ks-topbar-brand">
+            <img id="navbarLogo" class="app-logo logo-navbar" alt="KrishiSetu">
+            <span class="logo-text">KrishiSetu</span>
+            <span class="ks-topbar-sep" aria-hidden="true">|</span>
+            <span class="ks-topbar-page">Market Intelligence</span>
+          </div>
         </div>
         <div class="topbar-right">
           <div class="notification-icon">
@@ -136,6 +147,7 @@
       </header>
 
       <main class="content-area">
+        <div class="page-transition">
 
         <!-- ── Search form ──────────────────────────────────────────────── -->
         <div class="card">
@@ -240,6 +252,7 @@
           </div>
         </div>
 
+        </div>
       </main>
     </div>
   </div>
@@ -464,5 +477,8 @@
       });
     }
   </script>
+
+<script src="../js/logo.js"></script>
+<script>initializeLogos();</script>
 </body>
 </html>

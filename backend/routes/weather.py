@@ -28,12 +28,7 @@ _OWM_API_KEY = "b18e9705aaddf8a77f0f9d791e6cc0cb"
 _OWM_URL     = "https://api.openweathermap.org/data/2.5/weather"
 
 # ── Open-Meteo (completely free, no key needed) ───────────────────────────────
-_OPEN_METEO_URL = (
-    "https://api.open-meteo.com/v1/forecast"
-    "?latitude={lat}&longitude={lon}"
-    "&current=temperature_2m,relative_humidity_2m,precipitation,weather_code"
-    "&timezone=auto"
-)
+_OPEN_METEO_BASE = "https://api.open-meteo.com/v1/forecast"
 
 # WMO weather interpretation codes → human-readable condition string
 _WMO_CONDITIONS: dict[int, str] = {
@@ -70,24 +65,38 @@ def _season_rainfall_mm(month: int) -> float:
 # ─────────────────────────────────────────────────────────────────────────────
 def _fetch_open_meteo(lat: float, lon: float) -> dict:
     """
-    Fetch current weather from Open-Meteo using lat/lon.
+    Fetch current + hourly (24 h) + daily (7 day) weather from Open-Meteo.
 
     Returns a normalised dict with keys:
-      temperature, humidity, rainfall (hourly mm), condition, source
+      temperature, humidity, rainfall, condition, wind, pressure, uv_index,
+      source, hourly (list), daily (list)
 
     Returns an empty dict on any failure — caller falls back to OWM.
     """
     try:
-        url = _OPEN_METEO_URL.format(lat=lat, lon=lon)
-        resp = requests.get(url, timeout=10)
+        url = (
+            f"{_OPEN_METEO_BASE}"
+            f"?latitude={lat}&longitude={lon}"
+            f"&current=temperature_2m,relative_humidity_2m,precipitation,"
+            f"weather_code,wind_speed_10m,surface_pressure"
+            f"&hourly=temperature_2m,weather_code,precipitation_probability,uv_index"
+            f"&daily=weather_code,temperature_2m_max,temperature_2m_min,"
+            f"precipitation_sum,uv_index_max,wind_speed_10m_max"
+            f"&timezone=auto&forecast_days=7"
+        )
+        resp = requests.get(url, timeout=12)
         resp.raise_for_status()
         payload = resp.json()
 
+        # ── Current ──────────────────────────────────────────────────────────
         current = payload.get("current") or {}
-        temp    = current.get("temperature_2m")
-        hum     = current.get("relative_humidity_2m")
-        precip  = current.get("precipitation")        # mm in the last hour
-        code    = current.get("weather_code", 0)
+        temp     = current.get("temperature_2m")
+        hum      = current.get("relative_humidity_2m")
+        precip   = current.get("precipitation")
+        code     = current.get("weather_code", 0)
+        wind     = current.get("wind_speed_10m")
+        pressure = current.get("surface_pressure")
+        cur_time = current.get("time", "")
 
         if temp is None or hum is None:
             return {}
@@ -95,14 +104,70 @@ def _fetch_open_meteo(lat: float, lon: float) -> dict:
         condition = _WMO_CONDITIONS.get(int(code), f"Code {code}")
         print(
             f"[Weather/OpenMeteo] ({lat:.3f},{lon:.3f}) -> "
-            f"temp={temp}C hum={hum}% precip={precip}mm cond='{condition}'"
+            f"temp={temp}C hum={hum}% wind={wind}km/h cond='{condition}'"
         )
+
+        # ── Hourly (next 24 h starting from current observation) ─────────────
+        hourly_raw   = payload.get("hourly") or {}
+        h_times      = hourly_raw.get("time") or []
+        h_temps      = hourly_raw.get("temperature_2m") or []
+        h_codes      = hourly_raw.get("weather_code") or []
+        h_probs      = hourly_raw.get("precipitation_probability") or []
+        h_uvs        = hourly_raw.get("uv_index") or []
+
+        # Locate current hour in the hourly array
+        try:
+            cur_idx = h_times.index(cur_time)
+        except ValueError:
+            cur_idx = 0
+
+        # Current UV from hourly
+        current_uv = h_uvs[cur_idx] if cur_idx < len(h_uvs) else None
+
+        hourly_forecast = []
+        for i in range(cur_idx, min(cur_idx + 24, len(h_times))):
+            t = h_times[i]
+            time_label = t[11:16] if len(t) > 10 else t   # "HH:MM" from ISO
+            hourly_forecast.append({
+                "time":        time_label,
+                "temp":        round(float(h_temps[i]), 1) if i < len(h_temps) and h_temps[i] is not None else None,
+                "code":        int(h_codes[i]) if i < len(h_codes) and h_codes[i] is not None else 0,
+                "precip_prob": int(h_probs[i]) if i < len(h_probs) and h_probs[i] is not None else 0,
+            })
+
+        # ── Daily (7 days) ───────────────────────────────────────────────────
+        daily_raw  = payload.get("daily") or {}
+        d_dates    = daily_raw.get("time") or []
+        d_codes    = daily_raw.get("weather_code") or []
+        d_maxes    = daily_raw.get("temperature_2m_max") or []
+        d_mines    = daily_raw.get("temperature_2m_min") or []
+        d_rains    = daily_raw.get("precipitation_sum") or []
+        d_uvs      = daily_raw.get("uv_index_max") or []
+        d_winds    = daily_raw.get("wind_speed_10m_max") or []
+
+        daily_forecast = []
+        for i, date in enumerate(d_dates):
+            daily_forecast.append({
+                "date":     date,
+                "code":     int(d_codes[i]) if i < len(d_codes) and d_codes[i] is not None else 0,
+                "max":      round(float(d_maxes[i]), 1) if i < len(d_maxes) and d_maxes[i] is not None else None,
+                "min":      round(float(d_mines[i]), 1) if i < len(d_mines) and d_mines[i] is not None else None,
+                "rain":     round(float(d_rains[i]), 1) if i < len(d_rains) and d_rains[i] is not None else 0.0,
+                "uv_max":   round(float(d_uvs[i]), 1)  if i < len(d_uvs)   and d_uvs[i]   is not None else None,
+                "wind_max": round(float(d_winds[i]), 1) if i < len(d_winds) and d_winds[i] is not None else None,
+            })
+
         return {
             "temperature": float(temp),
             "humidity":    float(hum),
             "rainfall":    float(precip) if precip is not None else None,
             "condition":   condition,
+            "wind":        round(float(wind), 1) if wind is not None else None,
+            "pressure":    round(float(pressure), 1) if pressure is not None else None,
+            "uv_index":    round(float(current_uv), 1) if current_uv is not None else None,
             "source":      "open-meteo",
+            "hourly":      hourly_forecast,
+            "daily":       daily_forecast,
         }
     except Exception as exc:
         print(f"[Weather/OpenMeteo] Failed ({lat},{lon}): {exc}")
@@ -267,6 +332,19 @@ def get_weather():
         "humidity":    round(float(raw["humidity"]), 1),
         "rainfall":    monthly_rain,
         "condition":   raw.get("condition", "Unknown"),
+        "wind":        raw.get("wind"),
+        "pressure":    raw.get("pressure"),
+        "uv_index":    raw.get("uv_index"),
         "source":      raw.get("source", "default"),
     }
-    return jsonify({"success": True, "data": data}), 200
+
+    response_body: dict = {"success": True, "data": data}
+
+    # Include extended forecast when Open-Meteo data is available
+    if raw.get("hourly") or raw.get("daily"):
+        response_body["forecast"] = {
+            "hourly": raw.get("hourly", []),
+            "daily":  raw.get("daily",  []),
+        }
+
+    return jsonify(response_body), 200

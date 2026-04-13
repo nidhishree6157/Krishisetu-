@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -11,7 +11,10 @@
   <div class="app-container">
     <aside class="sidebar">
       <div class="sidebar-header">
-        <a class="ks-brand" href="../home.html" title="KrishiSetu"><img src="../images/krishisetu-logo.svg" alt="KrishiSetu" class="ks-brand-img" /></a>
+        <a class="ks-brand" href="../home.html" title="KrishiSetu">
+          <img id="sidebarLogo" class="app-logo logo-sidebar" alt="KrishiSetu">
+          <span class="logo-text">KrishiSetu</span>
+        </a>
       </div>
 
       <div class="sidebar-body">
@@ -53,6 +56,24 @@
             </button>
           </li>
           <li class="nav-item">
+            <button class="nav-link" data-page="equipment">
+              <i class="fas fa-tools"></i>
+              <span class="nav-label">Equipment</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="schemes">
+              <i class="fas fa-file-contract"></i>
+              <span class="nav-label">Government Schemes</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-page="weather">
+              <i class="fas fa-cloud-sun"></i>
+              <span class="nav-label">Weather</span>
+            </button>
+          </li>
+          <li class="nav-item">
             <button class="nav-link" data-page="ai-assistant">
               <i class="fas fa-robot"></i>
               <span class="nav-label">AI Assistant</span>
@@ -80,7 +101,12 @@
           <button class="hamburger">
             <i class="fas fa-bars"></i>
           </button>
-          <div class="topbar-title">Pest Detection</div>
+          <div class="topbar-title ks-topbar-brand">
+            <img id="navbarLogo" class="app-logo logo-navbar" alt="KrishiSetu">
+            <span class="logo-text">KrishiSetu</span>
+            <span class="ks-topbar-sep" aria-hidden="true">|</span>
+            <span class="ks-topbar-page">Pest Detection</span>
+          </div>
         </div>
         <div class="topbar-right">
           <div class="notification-icon">
@@ -94,6 +120,7 @@
       </header>
 
       <main class="content-area">
+        <div class="page-transition">
         <div class="card">
           <div class="card-title">
             <i class="fas fa-bug"></i> Pest Detection & Identification
@@ -201,6 +228,7 @@
         </div>
 
         <div id="pestImageResultContainer"></div>
+        </div>
       </main>
     </div>
   </div>
@@ -504,5 +532,8 @@
     });
   </script>
   <script src="../js/app.js"></script>
+
+<script src="../js/logo.js"></script>
+<script>initializeLogos();</script>
 </body>
 </html>

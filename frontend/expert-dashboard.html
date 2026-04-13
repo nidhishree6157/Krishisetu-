@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -65,14 +65,29 @@
     .header-logo {
       display: flex;
       align-items: center;
+      gap: 9px;
       text-decoration: none;
-      line-height: 0;
+      line-height: 1;
+      padding: 3px 7px;
+      border-radius: 8px;
+      transition: background 0.2s ease;
     }
+    .header-logo:hover { background: rgba(46,125,50,0.07); }
     .header-logo img {
-      height: 34px;
-      width: auto;
+      width: 32px;
+      height: 32px;
+      object-fit: contain;
       display: block;
-      filter: drop-shadow(0 1px 6px rgba(46, 125, 50, 0.12));
+      filter: drop-shadow(0 2px 8px rgba(46, 125, 50, 0.18));
+      transition: transform 0.3s ease;
+      flex-shrink: 0;
+    }
+    .header-logo img:hover { transform: scale(1.08); }
+    .header-logo-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1f4d2b;
+      letter-spacing: 0.3px;
     }
     .header-sep { width: 1px; height: 28px; background: var(--border); }
     .header-role {
@@ -508,6 +523,11 @@
       .stat-pill    { padding: 10px 14px; }
       .header-meta  { display: none; }
     }
+
+    /* ── Circular Logo ── */
+    .app-logo { width: 48px !important; height: 48px !important; object-fit: contain; flex-shrink: 0; transition: transform 0.3s ease, filter 0.3s ease; }
+    .app-logo:hover { transform: scale(1.08); filter: drop-shadow(0 4px 10px rgba(0,0,0,0.2)); }
+    .logo-navbar { width: 36px !important; height: 36px !important; } .logo-sidebar { width: 52px !important; height: 52px !important; }
   </style>
 </head>
 <body>
@@ -517,7 +537,8 @@
 ══════════════════════════════════════════════════════════════ -->
 <div class="header">
   <a class="header-logo" href="home.html" title="KrishiSetu">
-    <img src="images/krishisetu-logo.svg" alt="KrishiSetu" width="170" height="34" />
+    <img id="navbarLogo" class="app-logo logo-navbar" alt="KrishiSetu">
+    <span class="header-logo-name">KrishiSetu</span>
   </a>
   <div class="header-sep"></div>
   <div class="header-role"><i class="fas fa-user-shield" style="margin-right:4px;"></i>Expert Portal</div>
@@ -1026,5 +1047,7 @@ function showLoginError() {
 fetchQueries();
 _pollTimer = setInterval(fetchQueries, 10000);
 </script>
+<script src="js/logo.js"></script>
+<script>initializeLogos();</script>
 </body>
 </html>
