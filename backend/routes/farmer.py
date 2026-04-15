@@ -327,6 +327,23 @@ def upload_soil_report():
     except Exception as exc:
         return json_error(f"Could not save file: {exc}", 500)
 
+    # ── Validation: check the file is a real soil report ─────────────────
+    # validate_soil_report() is additive — it never touches extract_soil_data.
+    # If the required OCR/PDF libraries are absent it returns (True, "") so
+    # the feature degrades gracefully to demo values, just as before.
+    try:
+        from services.soil_parser import validate_soil_report
+        is_valid, validation_error = validate_soil_report(filepath)
+        if not is_valid:
+            try:
+                os.remove(filepath)      # discard invalid file
+            except Exception:
+                pass
+            return json_error(validation_error, 400)
+    except Exception as exc:
+        # Never let the validation step crash the whole upload.
+        print(f"[SoilParser] Validation skipped due to unexpected error: {exc}")
+
     # Extract soil values
     try:
         from services.soil_parser import extract_soil_data

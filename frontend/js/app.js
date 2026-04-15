@@ -367,7 +367,7 @@ class KrishiSetu {
     
     localStorage.clear();
     sessionStorage.clear();
-    window.location.href = 'login.html';
+    window.location.href = '../home.html';
   }
 
   showLoading(element) {

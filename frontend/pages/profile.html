@@ -452,11 +452,27 @@ document.getElementById("profileForm").addEventListener("submit", async function
   var nm   = document.getElementById("fileName");
   var btn  = document.getElementById("uploadBtn");
 
+  var ALLOWED_TYPES = ["application/pdf", "image/jpeg", "image/jpg", "image/png"];
+  var ALLOWED_EXTS  = [".pdf", ".jpg", ".jpeg", ".png"];
+
+  function isValidFileType(file) {
+    // Check MIME type first; fall back to extension for files where type is empty.
+    if (file.type && ALLOWED_TYPES.includes(file.type)) return true;
+    var ext = file.name.slice(file.name.lastIndexOf(".")).toLowerCase();
+    return ALLOWED_EXTS.includes(ext);
+  }
+
   function setFile(file) {
     if (!file) return;
+    if (!isValidFileType(file)) {
+      showAlert("uploadAlert", "Invalid file type. Please upload a PDF, JPG, or PNG soil report.", "danger");
+      inp.value = "";
+      return;
+    }
     nm.textContent = file.name;
     disp.style.display = "flex";
     btn.disabled = false;
+    document.getElementById("uploadAlert").innerHTML = "";   // clear stale errors
   }
   inp.addEventListener("change", function() { setFile(inp.files[0]); });
   zone.addEventListener("dragover", function(e) { e.preventDefault(); zone.classList.add("drag-over"); });
@@ -464,8 +480,13 @@ document.getElementById("profileForm").addEventListener("submit", async function
   zone.addEventListener("drop", function(e) {
     e.preventDefault(); zone.classList.remove("drag-over");
     if (e.dataTransfer && e.dataTransfer.files.length) {
+      var dropped = e.dataTransfer.files[0];
+      if (!isValidFileType(dropped)) {
+        showAlert("uploadAlert", "Invalid file type. Please drop a PDF, JPG, or PNG soil report.", "danger");
+        return;
+      }
       inp.files = e.dataTransfer.files;
-      setFile(e.dataTransfer.files[0]);
+      setFile(dropped);
     }
   });
 })();
@@ -473,37 +494,61 @@ document.getElementById("profileForm").addEventListener("submit", async function
 // ── upload & analyse ───────────────────────────────────────────────────────
 document.getElementById("uploadBtn").addEventListener("click", async function() {
   var file = document.getElementById("soilReportFile").files[0];
-  if (!file) { showAlert("uploadAlert", "Select a file first.", "danger"); return; }
-  if (file.size > 5 * 1024 * 1024) { showAlert("uploadAlert", "File must be under 5 MB.", "danger"); return; }
+  var alertArea = "uploadAlert";
 
+  // ── Client-side guards ────────────────────────────────────────────────
+  if (!file) {
+    showAlert(alertArea, "Please select a file before uploading.", "danger");
+    return;
+  }
+
+  if (!isValidFileType(file)) {
+    showAlert(alertArea, "Invalid file type. Please upload a PDF, JPG, or PNG soil report.", "danger");
+    return;
+  }
+
+  if (file.size > 5 * 1024 * 1024) {
+    showAlert(alertArea, "File size exceeds 5 MB. Please upload a smaller file.", "danger");
+    return;
+  }
+
+  // ── Send to backend ───────────────────────────────────────────────────
   setBtn("uploadBtn", true);
-  document.getElementById("uploadAlert").innerHTML = "";
+  document.getElementById(alertArea).innerHTML = "";
 
   var fd = new FormData();
   fd.append("soil_report", file);
 
   try {
-    var res = await fetch(API + "/farmer/upload-soil-report", {
+    var res  = await fetch(API + "/farmer/upload-soil-report", {
       method: "POST", credentials: "include", body: fd,
     });
     var json = await res.json();
+
     if (json.success && json.data && json.data.soil) {
+      // ── Success ──────────────────────────────────────────────────────
       showNPK(json.data.soil);
-      showAlert("uploadAlert", "Soil report analysed! Values saved to your profile.", "success");
-      var s = json.data.soil;
+      showAlert(alertArea, "✓ Soil report analysed! Values saved to your profile.", "success");
+
+      var s    = json.data.soil;
       var phVal = s.ph != null ? s.ph : s.pH;
       var pack = {
-        nitrogen: s.nitrogen != null && s.nitrogen !== "" ? Number(s.nitrogen) : null,
+        nitrogen:   s.nitrogen   != null && s.nitrogen   !== "" ? Number(s.nitrogen)   : null,
         phosphorus: s.phosphorus != null && s.phosphorus !== "" ? Number(s.phosphorus) : null,
-        potassium: s.potassium != null && s.potassium !== "" ? Number(s.potassium) : null,
-        ph: phVal != null && phVal !== "" ? Number(phVal) : null
+        potassium:  s.potassium  != null && s.potassium  !== "" ? Number(s.potassium)  : null,
+        ph:         phVal        != null && phVal        !== "" ? Number(phVal)         : null,
       };
       localStorage.setItem("soilData", JSON.stringify(pack));
+
     } else {
-      showAlert("uploadAlert", json.message || "Upload failed.", "danger");
+      // ── Backend returned an error (validation / server) ───────────────
+      // json.message comes from json_error(); json.error is the HTTP-level field.
+      var errMsg = json.message || json.error || "Upload failed. Please try again.";
+      showAlert(alertArea, errMsg, "danger");
     }
+
   } catch (err) {
-    showAlert("uploadAlert", "Server error during upload.", "danger");
+    showAlert(alertArea, "Could not reach the server. Please check your connection and try again.", "danger");
   } finally {
     setBtn("uploadBtn", false);
   }

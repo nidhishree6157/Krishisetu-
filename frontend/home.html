@@ -391,6 +391,185 @@ button {
 .app-logo:hover { transform: scale(1.08); filter: drop-shadow(0 4px 10px rgba(0,0,0,0.2)); }
 .logo-navbar { width: 36px !important; height: 36px !important; } .logo-sidebar { width: 52px !important; height: 52px !important; }
 
+/* ── How KrishiSetu Works ── */
+.how-it-works {
+    margin-top: 72px;
+    text-align: center;
+}
+
+.how-it-works > h2 {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: 0 0 10px;
+    color: var(--accent);
+}
+
+.how-subtitle {
+    margin: 0 0 36px;
+    font-size: 15.5px;
+    opacity: 0.65;
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.how-steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+    text-align: left;
+}
+
+.how-step {
+    background: var(--card);
+    border-radius: 18px;
+    padding: 26px 22px 22px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.07);
+    position: relative;
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.55s ease, transform 0.55s ease, box-shadow 0.3s ease;
+    border-top: 3px solid transparent;
+    background-clip: padding-box;
+}
+
+.how-step::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 18px;
+    border-top: 3px solid var(--accent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.how-step.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.how-step:nth-child(2) { transition-delay: 0.1s; }
+.how-step:nth-child(3) { transition-delay: 0.2s; }
+.how-step:nth-child(4) { transition-delay: 0.3s; }
+.how-step:nth-child(5) { transition-delay: 0.4s; }
+.how-step:nth-child(6) { transition-delay: 0.5s; }
+
+.how-step.visible:hover {
+    box-shadow: 0 14px 36px rgba(46, 125, 50, 0.14);
+    transform: translateY(-6px);
+}
+
+.how-step.visible:hover::before {
+    opacity: 1;
+}
+
+.how-step-icon {
+    width: 52px;
+    height: 52px;
+    margin-bottom: 16px;
+    background: var(--accent-soft);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent);
+    transition: transform 0.25s ease, background 0.25s ease;
+}
+
+.how-step.visible:hover .how-step-icon {
+    transform: scale(1.12);
+    background: #c8e6c9;
+}
+
+.how-step-icon svg {
+    width: 26px;
+    height: 26px;
+}
+
+.how-step-num {
+    position: absolute;
+    top: 14px;
+    right: 16px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent);
+    opacity: 0.35;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.5px;
+}
+
+.how-step h4 {
+    margin: 0 0 8px;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--text);
+}
+
+.how-step-content > p {
+    margin: 0 0 14px;
+    font-size: 13px;
+    opacity: 0.62;
+    line-height: 1.6;
+}
+
+.how-step ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.how-step ul li {
+    font-size: 12.5px;
+    color: var(--text);
+    opacity: 0.6;
+    margin-bottom: 6px;
+    padding-left: 18px;
+    position: relative;
+    line-height: 1.45;
+}
+
+.how-step ul li::before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+    font-weight: 700;
+    opacity: 1;
+    font-size: 11px;
+    top: 1px;
+}
+
+@media (max-width: 900px) {
+    .how-steps {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+}
+
+@media (max-width: 520px) {
+    .how-steps {
+        grid-template-columns: 1fr;
+    }
+    .how-step {
+        display: flex;
+        flex-direction: row;
+        align-items: flex-start;
+        gap: 16px;
+        padding: 18px 18px;
+    }
+    .how-step-icon {
+        margin-bottom: 0;
+        flex-shrink: 0;
+        border-radius: 12px;
+    }
+    .how-step-content {
+        flex: 1;
+        min-width: 0;
+    }
+}
+
 </style>
 </head>
 
@@ -468,6 +647,141 @@ button {
     </div>
 </div>
 
+<!-- HOW KRISHISETU WORKS -->
+<section class="how-it-works">
+    <h2>How KrishiSetu Works</h2>
+    <p class="how-subtitle">Simple steps to help every farmer — from soil to harvest</p>
+    <div class="how-steps">
+
+        <!-- 01 Soil Analysis -->
+        <div class="how-step">
+            <span class="how-step-num">01</span>
+            <div class="how-step-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/>
+                    <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>
+                </svg>
+            </div>
+            <div class="how-step-content">
+                <h4>Soil Analysis</h4>
+                <p>Upload your soil report to understand nutrients and overall soil health.</p>
+                <ul>
+                    <li>NPK nutrient breakdown</li>
+                    <li>pH &amp; moisture insight</li>
+                    <li>Instant actionable results</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 02 Crop Recommendation -->
+        <div class="how-step">
+            <span class="how-step-num">02</span>
+            <div class="how-step-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M7 20h10"/>
+                    <path d="M10 20c5.5-2.5.8-6.4 3-12"/>
+                    <path d="M9.5 9.4c1.1.8 1.8 2.2 2.3 3.7-2 .4-3.5.4-4.8-.3-1.2-.6-2.3-1.9-3-4.2 2.8-.5 4.4 0 5.5.8z"/>
+                    <path d="M14.1 6a7 7 0 0 1 5.8 2.9c-1 .1-2 .1-3-.4-1.7-.7-2.8-2.5-2.8-2.5z"/>
+                </svg>
+            </div>
+            <div class="how-step-content">
+                <h4>Crop Recommendation</h4>
+                <p>AI picks the best crop and fertilizer mix for your soil and season.</p>
+                <ul>
+                    <li>Season-aware suggestions</li>
+                    <li>Fertilizer dosage guide</li>
+                    <li>Yield prediction included</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 03 Disease Detection -->
+        <div class="how-step">
+            <span class="how-step-num">03</span>
+            <div class="how-step-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                    <path d="M12 9v4"/>
+                    <path d="M12 17h.01"/>
+                </svg>
+            </div>
+            <div class="how-step-content">
+                <h4>Disease Detection</h4>
+                <p>Snap a photo of your crop — AI identifies disease or pest in seconds.</p>
+                <ul>
+                    <li>Photo-based diagnosis</li>
+                    <li>Treatment suggestions</li>
+                    <li>Works offline on field</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 04 Weather Insights -->
+        <div class="how-step">
+            <span class="how-step-num">04</span>
+            <div class="how-step-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>
+                </svg>
+            </div>
+            <div class="how-step-content">
+                <h4>Weather Insights</h4>
+                <p>Get hyperlocal weather forecasts tailored to your farm location.</p>
+                <ul>
+                    <li>7-day forecast</li>
+                    <li>Rain &amp; drought alerts</li>
+                    <li>Best sowing window</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 05 Market Prices -->
+        <div class="how-step">
+            <span class="how-step-num">05</span>
+            <div class="how-step-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" x2="18" y1="20" y2="10"/>
+                    <line x1="12" x2="12" y1="20" y2="4"/>
+                    <line x1="6" x2="6" y1="20" y2="14"/>
+                    <line x1="2" x2="22" y1="20" y2="20"/>
+                </svg>
+            </div>
+            <div class="how-step-content">
+                <h4>Market Prices</h4>
+                <p>Live mandi rates so you always sell your crop at the right time.</p>
+                <ul>
+                    <li>Real-time mandi data</li>
+                    <li>Price trend charts</li>
+                    <li>Best market suggestions</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 06 Government Schemes -->
+        <div class="how-step">
+            <span class="how-step-num">06</span>
+            <div class="how-step-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14,2 14,8 20,8"/>
+                    <line x1="16" x2="8" y1="13" y2="13"/>
+                    <line x1="16" x2="8" y1="17" y2="17"/>
+                </svg>
+            </div>
+            <div class="how-step-content">
+                <h4>Government Schemes</h4>
+                <p>Discover subsidies and expert advice you qualify for — all in one place.</p>
+                <ul>
+                    <li>Personalised scheme matches</li>
+                    <li>Application guidance</li>
+                    <li>Expert chat support</li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+</section>
+
 <div class="stats">
     <div>N: <span id="n">0</span>%</div>
     <div>P: <span id="p">0</span>%</div>
@@ -477,15 +791,6 @@ button {
 <div class="chart-box">
     <h3>Yield Prediction</h3>
     <canvas id="chart"></canvas>
-</div>
-
-<div class="about">
-    <h2>How KrishiSetu Works</h2>
-    <p>
-    KrishiSetu analyzes soil data, predicts crops, recommends seeds,
-    and suggests fertilizers using AI and rule-based logic.
-    It also connects farmers with experts for real-time help.
-    </p>
 </div>
 
 <div class="dashboard-preview">
@@ -578,5 +883,21 @@ new Chart(ctx, {
 </script>
 <script src="js/logo.js"></script>
 <script>initializeLogos();</script>
+
+<script>
+(function () {
+    var steps = document.querySelectorAll('.how-step');
+    if (!steps.length) return;
+    var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.12 });
+    steps.forEach(function (step) { observer.observe(step); });
+})();
+</script>
 </body>
 </html>
