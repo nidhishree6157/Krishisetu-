@@ -19,7 +19,7 @@ Sync
 
 from __future__ import annotations
 
-from flask import Blueprint, request, session
+from flask import Blueprint, jsonify, request, session
 
 from db import DBConnectionError, get_db_connection
 from utils.helpers import json_error, json_ok, login_required, role_required
@@ -118,68 +118,66 @@ def _sync_to_farmers(conn, username: str,
 # ── POST /soil/data ───────────────────────────────────────────────────────────
 
 @soil_bp.post("/data")
-@farmer_required
 def upsert_soil_data():
-    """
-    Save soil values into soil_data (single source of truth) and sync
-    them to the farmers table.
+    data = request.get_json(silent=True) or {}
 
-    Accepted body keys:
-      nitrogen, phosphorus, potassium  — required
-      ph  OR  soil_ph                  — required (both accepted)
-      organic_carbon  OR  organic_matter — optional, defaults to 0
-      soil_type, location, ec          — accepted for forward-compat, not stored
-    """
-    payload  = request.get_json(silent=True) or {}
-    username = _get_username()
-    if not username:
-        return json_error("Authentication required", 401)
+    print("Incoming data:", data)
 
-    errors: list[str] = []
-
-    def _fv(key: str, *aliases: str, required: bool = True) -> float | None:
-        for k in (key, *aliases):
-            v = payload.get(k)
-            if v is not None:
-                try:
-                    return float(v)
-                except (TypeError, ValueError):
-                    errors.append(f"'{k}' must be numeric")
-                    return None
-        if required:
-            errors.append(f"'{key}' is required")
-        return None
-
-    nitrogen       = _fv("nitrogen")
-    phosphorus     = _fv("phosphorus")
-    potassium      = _fv("potassium")
-    ph             = _fv("ph", "soil_ph")
-    organic_carbon = _fv("organic_carbon", "organic_matter", required=False) or 0.0
-
-    if errors:
-        return json_error("Validation failed", 400, errors=errors)
+    nitrogen       = float(data.get("nitrogen", 0))
+    phosphorus     = float(data.get("phosphorus", 0))
+    potassium      = float(data.get("potassium", 0))
+    ph             = float(data.get("ph", 0))
+    organic_matter = float(data.get("organic_matter", 0))
+    ec             = float(data.get("electrical_conductivity") or data.get("ec") or 0)
+    location       = data.get("location", "")
+    soil_type      = data.get("soil_type", "")
+    email          = data.get("email")
 
     try:
-        conn      = get_db_connection()
-        farmer_id = _get_farmer_id_for_user(conn, username)
-        if farmer_id is None:
-            return json_error("Please create your farmer profile first", 400)
+        conn = get_db_connection()
 
-        _upsert_soil_data(conn, farmer_id,
-                          nitrogen, phosphorus, potassium, ph, organic_carbon)
-        _sync_to_farmers(conn, username, nitrogen, phosphorus, potassium, ph)
+        username = _get_username()
+
+        if not username:
+            if email:
+                with conn.cursor() as cur:
+                    cur.execute("SELECT username FROM users WHERE email=%s", (email,))
+                    row = cur.fetchone()
+                    if row:
+                        username = row["username"]
+
+        if not username:
+            return jsonify({"success": False, "message": "User not found"}), 404
+
+        with conn.cursor() as cursor:
+            cursor.execute(
+                """
+                UPDATE farmers SET
+                  nitrogen=%s,
+                  phosphorus=%s,
+                  potassium=%s,
+                  ph=%s,
+                  organic_matter=%s,
+                  electrical_conductivity=%s,
+                  location=%s,
+                  soil_type=%s
+                WHERE username=%s
+                """,
+                (
+                    nitrogen, phosphorus, potassium, ph,
+                    organic_matter, ec,
+                    location, soil_type,
+                    username,
+                ),
+            )
+
         conn.commit()
 
-    except DBConnectionError:
-        return json_error("DB connection failed", 500)
-    except Exception as exc:
-        print(f"[Soil] Upsert failed: {exc}")
-        return json_error("Database operation failed", 500)
+        return jsonify({"success": True, "message": "Soil data saved successfully"})
 
-    return json_ok("Soil data saved", 200, data={
-        "nitrogen": nitrogen, "phosphorus": phosphorus,
-        "potassium": potassium, "ph": ph, "organic_carbon": organic_carbon,
-    })
+    except Exception as e:
+        print("SOIL ERROR:", e)
+        return jsonify({"success": False, "message": str(e)}), 500
 
 
 # ── GET /soil/data ────────────────────────────────────────────────────────────

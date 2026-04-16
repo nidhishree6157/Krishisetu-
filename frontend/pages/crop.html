@@ -883,64 +883,73 @@
 
       if (!validateForm(e.target)) return;
 
+      const payload = {
+        nitrogen:    parseFloat(document.getElementById('nitrogen').value),
+        phosphorus:  parseFloat(document.getElementById('phosphorus').value),
+        potassium:   parseFloat(document.getElementById('potassium').value),
+        ph:          parseFloat(document.getElementById('ph').value),
+        temperature: parseFloat(document.getElementById('temperature').value),
+        humidity:    parseFloat(document.getElementById('humidity').value),
+        rainfall:    parseFloat(document.getElementById('rainfall').value),
+        location:    document.getElementById('location').value,
+      };
+
+      if (
+        isNaN(payload.nitrogen) ||
+        isNaN(payload.phosphorus) ||
+        isNaN(payload.potassium) ||
+        isNaN(payload.ph)
+      ) {
+        app.showAlert(alertContainer, 'Please fill soil values correctly', 'danger');
+        return;
+      }
+
       setButtonLoading(submitBtn, true);
       resetResult();
 
-      const fv = (id, def) => {
-        const v = parseFloat(document.getElementById(id)?.value);
-        return isNaN(v) ? def : v;
-      };
-
-      const payload = {
-        mode:        'new',
-        location:    document.getElementById('location').value.trim(),
-        nitrogen:    fv('nitrogen',    90),
-        phosphorus:  fv('phosphorus',  40),
-        potassium:   fv('potassium',   40),
-        ph:          fv('ph',         6.5),
-        temperature: fv('temperature', 25),
-        humidity:    fv('humidity',    60),
-        rainfall:    fv('rainfall',   100),
-      };
-
       try {
-        const response = await app.apiCall('/api/recommend', 'POST', payload);
-        console.log('Recommendation API response:', response);
+        const res = await fetch(API_BASE + '/api/crop-recommend', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+          credentials: 'include',
+        });
 
-        if (!response?.success) {
-          throw new Error(response?.message || 'Recommendation failed');
+        const data = await res.json();
+        console.log('Recommendation API response:', data);
+
+        if (data.success) {
+          renderResult(data);
+
+          try {
+            const pack = normalizeSoilForLS({
+              nitrogen:   payload.nitrogen,
+              phosphorus: payload.phosphorus,
+              potassium:  payload.potassium,
+              ph:         payload.ph,
+            });
+            if (pack) localStorage.setItem('soilData', JSON.stringify(pack));
+          } catch (_) {}
+
+          // Plain fallback display so #result (used by app.js displayRecommendation) also reflects data
+          const plainResult = document.getElementById('result');
+          if (plainResult) {
+            plainResult.innerHTML = `
+              <h3>Recommended Crop</h3>
+              <p>${esc(data.crop)}</p>
+              ${data.explanation ? `<h3>Why this crop?</h3><p>${esc(data.explanation)}</p>` : ''}
+              <h3>Best Seeds</h3>
+              <ul>${(data.seeds || []).map(s => `<li>${esc(typeof s === 'string' ? s : (s?.name || ''))}</li>`).join('')}</ul>
+            `;
+          }
+
+          app.showAlert(alertContainer, '✅ Recommendation ready — scroll down to view.', 'success');
+        } else {
+          app.showAlert(alertContainer, data.message || 'Failed to get recommendation', 'danger');
         }
-        const result = response;
 
-        if (!result.crop) throw new Error('No crop result from server');
-
-        renderResult(result);
-
-        try {
-          const pack = normalizeSoilForLS({
-            nitrogen: document.getElementById('nitrogen').value,
-            phosphorus: document.getElementById('phosphorus').value,
-            potassium: document.getElementById('potassium').value,
-            ph: document.getElementById('ph').value,
-          });
-          if (pack) localStorage.setItem('soilData', JSON.stringify(pack));
-        } catch (_) {}
-
-        // Plain fallback display so #result (used by app.js displayRecommendation) also reflects data
-        const plainResult = document.getElementById('result');
-        if (plainResult) {
-          plainResult.innerHTML = `
-            <h3>Recommended Crop</h3>
-            <p>${esc(result.crop)}</p>
-            ${result.explanation ? `<h3>Why this crop?</h3><p>${esc(result.explanation)}</p>` : ''}
-            <h3>Best Seeds</h3>
-            <ul>${(result.seeds || []).map(s => `<li>${esc(typeof s === 'string' ? s : (s?.name || ''))}</li>`).join('')}</ul>
-          `;
-        }
-
-        app.showAlert(alertContainer, '✅ Recommendation ready — scroll down to view.', 'success');
-
-      } catch (error) {
+      } catch (err) {
+        console.error(err);
         app.showAlert(alertContainer, 'Failed to get recommendation. Check your inputs and try again.', 'danger');
       } finally {
         setButtonLoading(submitBtn, false);

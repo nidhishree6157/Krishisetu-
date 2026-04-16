@@ -191,3 +191,77 @@ def recommend_route():
         )
 
     return jsonify(_build_response(result)), 200
+
+
+@recommendation_bp.post("/crop-recommend")
+def crop_recommend_route():
+    """POST /api/crop-recommend — crop + seed recommendation without requiring 'mode'."""
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        payload = {}
+
+    # Validate the four required soil fields up-front
+    soil_keys = ("nitrogen", "phosphorus", "potassium", "ph")
+    missing = [k for k in soil_keys if payload.get(k) is None]
+    if missing:
+        return (
+            jsonify(
+                {
+                    "success": False,
+                    "crop": "",
+                    "seeds": [],
+                    "message": f"Missing required fields: {', '.join(missing)}",
+                }
+            ),
+            400,
+        )
+
+    # Default mode so full_recommendation is satisfied
+    payload.setdefault("mode", "new")
+
+    # Optionally augment with stored farmer / soil data
+    try:
+        conn_ctx = get_db_connection()
+        _fid = resolve_farmer_id(conn_ctx)
+        _farmer = fetch_farmer_row(conn_ctx, _fid)
+        _soil = fetch_soil_row(conn_ctx, _fid)
+        merge_farmer_profile_into_payload(payload, _farmer)
+        merge_soil_into_payload(payload, _soil)
+    except DBConnectionError:
+        pass
+
+    data = {**payload, "user_id": 1}
+
+    try:
+        result = full_recommendation(data)
+    except (TypeError, ValueError) as e:
+        return (
+            jsonify(
+                {
+                    "success": False,
+                    "crop": "",
+                    "seeds": [],
+                    "message": "Invalid input",
+                    "detail": str(e),
+                }
+            ),
+            400,
+        )
+    except Exception as e:
+        return (
+            jsonify(
+                {
+                    "success": False,
+                    "crop": "",
+                    "seeds": [],
+                    "message": "Recommendation failed",
+                    "detail": str(e),
+                }
+            ),
+            500,
+        )
+
+    if not result.get("success"):
+        return jsonify(_build_response(result)), 400
+
+    return jsonify(_build_response(result)), 200

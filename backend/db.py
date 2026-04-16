@@ -182,6 +182,31 @@ def _bootstrap_schema(server_conn, db_name: str) -> None:
         except Exception:
             pass
 
+        # Best-effort: add soil-related columns to farmers so POST /soil/data can UPDATE them.
+        for col, ddl in (
+            ("nitrogen",               "ALTER TABLE farmers ADD COLUMN nitrogen DECIMAL(10,2) NULL DEFAULT 0"),
+            ("phosphorus",             "ALTER TABLE farmers ADD COLUMN phosphorus DECIMAL(10,2) NULL DEFAULT 0"),
+            ("potassium",              "ALTER TABLE farmers ADD COLUMN potassium DECIMAL(10,2) NULL DEFAULT 0"),
+            ("ph",                     "ALTER TABLE farmers ADD COLUMN ph DECIMAL(4,2) NULL DEFAULT 0"),
+            ("organic_matter",         "ALTER TABLE farmers ADD COLUMN organic_matter DECIMAL(10,2) NULL DEFAULT 0"),
+            ("electrical_conductivity","ALTER TABLE farmers ADD COLUMN electrical_conductivity DECIMAL(10,4) NULL DEFAULT 0"),
+            ("soil_type",              "ALTER TABLE farmers ADD COLUMN soil_type VARCHAR(100) NULL DEFAULT ''"),
+        ):
+            try:
+                cur.execute(
+                    """
+                    SELECT COUNT(*) AS cnt
+                    FROM information_schema.COLUMNS
+                    WHERE TABLE_SCHEMA=%s AND TABLE_NAME='farmers' AND COLUMN_NAME=%s
+                    """,
+                    (db_name, col),
+                )
+                r = cur.fetchone() or {}
+                if int(r.get("cnt") or 0) == 0:
+                    cur.execute(ddl)
+            except Exception:
+                pass
+
         # Module 2: one-to-one expert profile keyed by `users.username`.
         cur.execute(
             """
@@ -191,6 +216,7 @@ def _bootstrap_schema(server_conn, db_name: str) -> None:
               expertise_field VARCHAR(100) NOT NULL,
               experience_years INT NOT NULL,
               qualification TEXT NOT NULL,
+              qualification_file TEXT NULL,
               PRIMARY KEY (username),
               CONSTRAINT fk_experts_username
                 FOREIGN KEY (username) REFERENCES users(username)
@@ -385,11 +411,20 @@ def _bootstrap_schema(server_conn, db_name: str) -> None:
 def _new_connection() -> pymysql.connections.Connection:
     """
     Create a new live PyMySQL connection using app config.
+
+    Timeout parameters (all in seconds):
+      connect_timeout — how long to wait for the TCP handshake before giving
+                        up.  Without this, Windows uses the OS default (up to
+                        120 s), causing the login route to appear "stuck at
+                        Checking DB…" for minutes.
+      read_timeout    — max time to wait for MySQL to send data after a query.
+      write_timeout   — max time to wait for MySQL to accept a write.
     """
     if not current_app:
         raise DBConnectionError("No Flask app context available for DB connection")
 
     cfg = current_app.config
+    print(f"[DB] Connecting to MySQL at {cfg['MYSQL_HOST']}:{cfg['MYSQL_PORT']} ...")
     return pymysql.connect(
         host=cfg["MYSQL_HOST"],
         user=cfg["MYSQL_USER"],
@@ -399,6 +434,9 @@ def _new_connection() -> pymysql.connections.Connection:
         charset="utf8mb4",
         cursorclass=pymysql.cursors.DictCursor,
         autocommit=True,
+        connect_timeout=5,   # fail fast if MySQL is unreachable
+        read_timeout=10,     # abort if a query result takes > 10 s
+        write_timeout=10,    # abort if a write takes > 10 s
     )
 
 
@@ -410,38 +448,46 @@ def get_db_connection() -> pymysql.connections.Connection:
     """
     global _CACHED_CONN
 
+    print("[DB] get_db_connection() called")
     with _POOL_LOCK:
-        # Reuse cached connection if still open.
+        # ── Reuse cached connection if still alive ───────────────────────────
         if _CACHED_CONN is not None:
             try:
-                # If socket closed or connection broken, PyMySQL may throw on ping.
                 if not getattr(_CACHED_CONN, "open", True):
                     raise DBConnectionError("Cached connection is closed")
+                # ping() respects the read/write_timeout set on the socket, so
+                # it cannot hang indefinitely even on a stale half-open socket.
                 _CACHED_CONN.ping(reconnect=True)
+                print("[DB] Reusing cached connection")
                 return _CACHED_CONN
-            except Exception:
+            except Exception as ping_err:
+                print(f"[DB] Cached connection stale ({ping_err}), reconnecting …")
                 try:
                     _CACHED_CONN.close()
                 except Exception:
                     pass
                 _CACHED_CONN = None
 
-        # Create a new connection with retry; if DB doesn't exist, bootstrap schema then retry.
+        # ── Establish a new connection (up to 3 attempts) ────────────────────
         last_err: Exception | None = None
         conn: pymysql.connections.Connection | None = None
         for attempt in range(1, 4):
+            print(f"[DB] Connection attempt {attempt}/3 …")
             try:
                 conn = _new_connection()
+                print("[DB] Connected to MySQL ✓")
                 break
             except pymysql.MySQLError as e:
                 last_err = e
+                print(f"[DB] MySQL error on attempt {attempt}: {e}")
                 code = None
                 try:
                     code = getattr(e, "args", [None])[0]
                 except Exception:
                     code = None
 
-                if code == 1049:  # Unknown database
+                if code == 1049:  # Unknown database — bootstrap schema first
+                    print(f"[DB] Database not found (1049). Bootstrapping schema …")
                     try:
                         cfg = current_app.config
                         server_conn = pymysql.connect(
@@ -452,9 +498,11 @@ def get_db_connection() -> pymysql.connections.Connection:
                             charset="utf8mb4",
                             cursorclass=pymysql.cursors.DictCursor,
                             autocommit=True,
+                            connect_timeout=5,
                         )
                         try:
                             _bootstrap_schema(server_conn, cfg["MYSQL_DB"])
+                            print("[DB] Schema bootstrapped ✓")
                         finally:
                             try:
                                 server_conn.close()
@@ -465,6 +513,7 @@ def get_db_connection() -> pymysql.connections.Connection:
                 time.sleep(0.25 * attempt)
             except Exception as e:
                 last_err = e
+                print(f"[DB] Unexpected error on attempt {attempt}: {e}")
                 time.sleep(0.25 * attempt)
 
         if conn is None:
@@ -473,16 +522,19 @@ def get_db_connection() -> pymysql.connections.Connection:
                 f"user='{cfg.get('MYSQL_USER')}', host='{cfg.get('MYSQL_HOST')}', "
                 f"port='{cfg.get('MYSQL_PORT')}', db='{cfg.get('MYSQL_DB')}'"
             )
-            raise DBConnectionError(f"MySQL connection failed for {target}: {last_err}")
+            err_msg = f"MySQL connection failed for {target}: {last_err}"
+            print(f"[DB] ✗ {err_msg}")
+            raise DBConnectionError(err_msg)
 
-        # Ensure required tables exist (idempotent).
+        # ── Ensure tables exist (runs once per new connection) ───────────────
+        print("[DB] Running schema bootstrap …")
         try:
             cfg = current_app.config
             _bootstrap_schema(conn, cfg["MYSQL_DB"])
-        except Exception:
-            # If schema validation fails, still return the connection;
-            # route code will fail with clear SQL errors.
-            pass
+            print("[DB] Schema ready ✓")
+        except Exception as bs_err:
+            # Non-fatal: return the connection anyway; route code surfaces SQL errors.
+            print(f"[DB] Schema bootstrap warning: {bs_err}")
 
         _CACHED_CONN = conn
         return conn

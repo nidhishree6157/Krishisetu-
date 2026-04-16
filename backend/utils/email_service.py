@@ -41,7 +41,9 @@ def send_otp_email(to_email: str, otp: str, expiry_minutes: int = 5) -> None:
         return
 
     from_addr    = os.environ.get("EMAIL_ADDRESS",  "").strip()
-    app_password = os.environ.get("EMAIL_PASSWORD", "").strip()
+    # Gmail App Passwords are sometimes displayed / copied with spaces
+    # ("abcd efgh ijkl mnop").  Remove them so SMTP auth always succeeds.
+    app_password = os.environ.get("EMAIL_PASSWORD", "").strip().replace(" ", "")
 
     if not from_addr or not app_password:
         raise RuntimeError(
@@ -88,9 +90,11 @@ def send_otp_email(to_email: str, otp: str, expiry_minutes: int = 5) -> None:
     msg.attach(MIMEText(text_body, "plain"))
     msg.attach(MIMEText(html_body, "html"))
 
-    print(f"[OTP] Connecting to {_SMTP_HOST}:{_SMTP_PORT} ...")
+    print(f"[OTP] Connecting to {_SMTP_HOST}:{_SMTP_PORT} (timeout=15s) ...")
     try:
-        with smtplib.SMTP(_SMTP_HOST, _SMTP_PORT) as server:
+        # timeout=15 prevents the request from hanging indefinitely when the
+        # SMTP handshake is slow — the login button would appear "stuck" otherwise.
+        with smtplib.SMTP(_SMTP_HOST, _SMTP_PORT, timeout=15) as server:
             server.ehlo()
             server.starttls()          # upgrade to TLS
             server.ehlo()

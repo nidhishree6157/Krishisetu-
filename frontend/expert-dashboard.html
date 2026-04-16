@@ -710,6 +710,7 @@ let _searchTerm   = '';
 let _selectedId   = null;   // currently open query_id
 let _prevData     = [];     // for new-query detection
 let _pollTimer    = null;
+let existingQueries = {};   // id → query object; surgical DOM-diff state for loadQueries()
 
 // ── Escape helper ──────────────────────────────────────────────────────────
 function esc(s) {
@@ -783,6 +784,9 @@ async function fetchQueries(manual = false) {
       return { ...q, _isNew: !prev };
     });
     _prevData = newData;
+
+    // Keep existingQueries in sync so loadQueries() polling only sees real diffs
+    newData.forEach(q => { existingQueries[q.query_id] = q; });
 
     _allQueries = decorated;
     updateStats();
@@ -881,6 +885,147 @@ function renderInbox() {
       </div>
     `;
   }).join('');
+}
+
+// ── Surgical add: new query row prepended to inbox ────────────────────────
+function addQueryToUI(query) {
+  const list = document.getElementById('inboxList');
+
+  // Clear the loading / empty placeholder on first real item
+  const emptyEl = list.querySelector('.inbox-empty');
+  if (emptyEl) emptyEl.remove();
+
+  const isPending = (query.status || '').toLowerCase() === 'pending';
+  const txt       = query.query_text || '';
+  const snippet   = txt.slice(0, 80) + (txt.length > 80 ? '…' : '');
+
+  const div = document.createElement('div');
+  div.className = 'query-row new-highlight';
+  div.id        = `qrow-${query.query_id}`;
+  div.onclick   = () => openQuery(query.query_id);
+  div.innerHTML = `
+    <div class="qr-top">
+      <span class="qr-id">#${query.query_id}</span>
+      <span class="qr-time">${esc(relTime(query.query_date))}</span>
+    </div>
+    <div class="qr-msg ${isPending ? 'unread' : ''}">${esc(snippet)}</div>
+    <div class="qr-footer">
+      <span class="status-badge ${isPending ? 'pending' : 'answered'}">
+        <i class="fas ${isPending ? 'fa-clock' : 'fa-check-circle'}"></i>
+        ${isPending ? 'Pending' : 'Answered'}
+      </span>
+      <span class="qr-farmer"><i class="fas fa-user" style="font-size:10px;"></i> Farmer #${esc(String(query.farmer_id || '?'))}</span>
+    </div>
+  `;
+  list.prepend(div);
+}
+
+// ── Surgical update: touch only status / text in an existing row ──────────
+function updateQueryInUI(query) {
+  const row = document.getElementById(`qrow-${query.query_id}`);
+  if (!row) return;
+
+  const isPending = (query.status || '').toLowerCase() === 'pending';
+
+  // Status badge — DO NOT touch textarea value
+  const badge = row.querySelector('.status-badge');
+  if (badge) {
+    badge.className = `status-badge ${isPending ? 'pending' : 'answered'}`;
+    badge.innerHTML = `<i class="fas ${isPending ? 'fa-clock' : 'fa-check-circle'}"></i> ${isPending ? 'Pending' : 'Answered'}`;
+  }
+
+  // Snippet text + unread weight
+  const msgEl = row.querySelector('.qr-msg');
+  if (msgEl) {
+    const txt     = query.query_text || '';
+    const snippet = txt.slice(0, 80) + (txt.length > 80 ? '…' : '');
+    msgEl.textContent = snippet;
+    msgEl.className   = `qr-msg${isPending ? ' unread' : ''}`;
+  }
+
+  // Relative time
+  const timeEl = row.querySelector('.qr-time');
+  if (timeEl) timeEl.textContent = relTime(query.query_date);
+}
+
+// ── Safe detail-panel refresh (preserves reply textarea content) ──────────
+function _refreshDetailSafe(q) {
+  const isPending = (q.status || '').toLowerCase() === 'pending';
+
+  const statusEl = document.getElementById('dhStatus');
+  if (statusEl) {
+    statusEl.className = `status-badge ${isPending ? 'pending' : 'answered'}`;
+    statusEl.innerHTML = isPending
+      ? '<i class="fas fa-clock"></i> Pending'
+      : '<i class="fas fa-check-circle"></i> Answered';
+  }
+
+  const respMeta = document.getElementById('dhRespMeta');
+  if (respMeta) {
+    if (q.response_date) {
+      respMeta.style.display = 'flex';
+      document.getElementById('dhRespDate').textContent = 'Replied ' + relTime(q.response_date);
+    } else {
+      respMeta.style.display = 'none';
+    }
+  }
+
+  const prevEl   = document.getElementById('prevResponse');
+  const prevText = document.getElementById('dbPrevResp');
+  if (prevEl && prevText) {
+    if (q.expert_response) {
+      prevEl.style.display = '';
+      prevText.textContent = q.expert_response;
+    } else {
+      prevEl.style.display = 'none';
+    }
+  }
+}
+
+// ── Poll-safe loadQueries: surgical DOM diff, no container.innerHTML = "" ─
+async function loadQueries() {
+  try {
+    const res = await fetch(`${API}/api/expert/queries`, { credentials: 'include' });
+    if (res.status === 401) { showLoginError(); return; }
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || 'API error');
+
+    const queries = data.data || [];
+
+    queries.forEach(query => {
+      const id = query.query_id;
+
+      // CASE 1: NEW QUERY — add a row, prepend to cache
+      if (!existingQueries[id]) {
+        addQueryToUI(query);
+        _allQueries.unshift({ ...query, _isNew: true });
+      }
+      // CASE 2: UPDATED QUERY — patch only changed fields in the row
+      else if (JSON.stringify(existingQueries[id]) !== JSON.stringify(query)) {
+        updateQueryInUI(query);
+        const idx = _allQueries.findIndex(q => q.query_id == id);
+        if (idx >= 0) _allQueries[idx] = { ...query, _isNew: false };
+      }
+
+      // Always persist the latest snapshot
+      existingQueries[id] = query;
+    });
+
+    updateStats();
+
+    const lu = document.getElementById('lastUpdated');
+    if (lu) lu.textContent = 'Updated ' + new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+
+    // If the open query changed, refresh detail panel WITHOUT resetting the textarea
+    if (_selectedId !== null) {
+      const updated = _allQueries.find(q => q.query_id == _selectedId);
+      if (updated) _refreshDetailSafe(updated);
+    }
+
+  } catch (err) {
+    console.error('[ExpertDash] Polling error:', err);
+  }
 }
 
 // ── Open query detail ──────────────────────────────────────────────────────
@@ -1044,8 +1189,8 @@ function showLoginError() {
 }
 
 // ── Init ───────────────────────────────────────────────────────────────────
-fetchQueries();
-_pollTimer = setInterval(fetchQueries, 10000);
+fetchQueries();                              // full initial render + syncs existingQueries
+_pollTimer = setInterval(loadQueries, 10000); // surgical diff on every subsequent poll
 </script>
 <script src="js/logo.js"></script>
 <script>initializeLogos();</script>

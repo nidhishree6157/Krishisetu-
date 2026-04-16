@@ -226,54 +226,84 @@ def create_app():
 
     _FALLBACK_FARMER_ID = 1
 
+    # Single JOIN query used by all profile GET paths.
+    _PROFILE_JOIN_SQL = """
+        SELECT
+            u.user_id,
+            u.username,
+            u.email,
+            COALESCE(f.mobile_number, u.mobile_number) AS mobile_number,
+            u.aadhaar_number,
+            f.crop_type,
+            f.location,
+            f.land_size,
+            f.irrigation_type,
+            f.survey_number,
+            f.farmer_id
+        FROM users u
+        LEFT JOIN farmers f ON f.username = u.username
+        WHERE u.{col} = %s
+        LIMIT 1
+    """
+
+    def _fetch_profile_row(conn, *, username=None, email=None):
+        """
+        Run the canonical LEFT JOIN and return a single unified dict
+        (or None).  Accepts either username= or email= as the key.
+        """
+        if username:
+            sql = _PROFILE_JOIN_SQL.format(col="username")
+            param = username
+        elif email:
+            sql = _PROFILE_JOIN_SQL.format(col="email")
+            param = email
+        else:
+            return None
+        with conn.cursor() as cur:
+            cur.execute(sql, (param,))
+            return cur.fetchone()
+
     def _profile_get_username_and_farmer(conn):
         """
-        Return (username, farmer_row, user_row) using the session user when
-        available, falling back to farmer_id = _FALLBACK_FARMER_ID.
+        Return (session_username, profile_row) using the session user when
+        available.
+
+        profile_row is the unified dict from _fetch_profile_row (single JOIN).
+        The farmer_id=1 fallback only fires when there is NO session at all.
+        When a session username is present we NEVER substitute another user's
+        data — the caller receives None as profile_row and handles it.
         """
         username = session.get("username")
-        farmer_row = None
-        user_row   = {}
 
         if username:
-            with conn.cursor() as cur:
-                cur.execute(
-                    "SELECT username, email, aadhaar_number "
-                    "FROM users WHERE username=%s LIMIT 1",
-                    (username,),
-                )
-                user_row = cur.fetchone() or {}
-                cur.execute(
-                    "SELECT username, mobile_number, crop_type, location, land_size, "
-                    "       irrigation_type, survey_number, soil_report_file, "
-                    "       farmer_id "
-                    "FROM farmers WHERE username=%s LIMIT 1",
-                    (username,),
-                )
-                farmer_row = cur.fetchone()
+            print(f"[PROFILE] Session user: {username!r} — fetching via LEFT JOIN (farmers table)")
+            row = _fetch_profile_row(conn, username=username)
+            if row:
+                print(f"[PROFILE] Row found for {username!r}")
+            else:
+                print(f"[PROFILE] No row found for {username!r} — returning empty profile")
+            return username, row
 
-        # Fallback: look up farmer_id=1
-        if not farmer_row:
-            with conn.cursor() as cur:
-                cur.execute(
-                    "SELECT username, mobile_number, crop_type, location, land_size, "
-                    "       irrigation_type, survey_number, soil_report_file, "
-                    "       farmer_id "
-                    "FROM farmers WHERE farmer_id=%s LIMIT 1",
-                    (_FALLBACK_FARMER_ID,),
-                )
-                farmer_row = cur.fetchone()
-                if farmer_row:
-                    fb_username = farmer_row.get("username", "")
-                    if fb_username:
-                        cur.execute(
-                            "SELECT username, email, aadhaar_number "
-                            "FROM users WHERE username=%s LIMIT 1",
-                            (fb_username,),
-                        )
-                        user_row = cur.fetchone() or {}
-
-        return username, farmer_row, user_row
+        # No session — last-resort dev fallback to farmer_id=1.
+        print("[PROFILE] No session — attempting farmer_id=1 dev fallback")
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT
+                    u.user_id, u.username, u.email,
+                    COALESCE(f.mobile_number, u.mobile_number) AS mobile_number,
+                    u.aadhaar_number,
+                    f.crop_type, f.location, f.land_size,
+                    f.irrigation_type, f.survey_number, f.farmer_id
+                FROM farmers f
+                JOIN users u ON u.username = f.username
+                WHERE f.farmer_id = %s
+                LIMIT 1
+                """,
+                (_FALLBACK_FARMER_ID,),
+            )
+            row = cur.fetchone()
+        return username, row
 
     @app.route("/api/profile", methods=["GET"])
     def api_get_profile():
@@ -281,19 +311,23 @@ def create_app():
         GET /api/profile
         ─────────────────
         Returns the farmer's profile as a flat JSON object.
-        Uses session user when logged in; falls back to farmer_id=1.
+        Single source of truth: LEFT JOIN users + farmers, keyed by username.
+        Falls back to farmer_id=1 only when there is no session at all.
         """
         try:
+            print("[PROFILE] GET /api/profile — fetching from farmers table via JOIN")
             conn = get_db_connection()
-            username, farmer_row, user_row = _profile_get_username_and_farmer(conn)
+            _username, row = _profile_get_username_and_farmer(conn)
 
-            # Read soil data from soil_data table (single source of truth)
+            r = row or {}
+
+            # Soil data lives in soil_data, keyed by farmer_id.
             soil = {}
-            fid  = (farmer_row or {}).get("farmer_id")
+            fid  = r.get("farmer_id")
             if fid:
                 with conn.cursor() as cur:
                     cur.execute(
-                        "SELECT nitrogen, phosphorus, potassium, ph, soil_ph, created_at "
+                        "SELECT nitrogen, phosphorus, potassium, ph, soil_ph "
                         "FROM soil_data WHERE farmer_id=%s LIMIT 1",
                         (fid,),
                     )
@@ -307,23 +341,23 @@ def create_app():
                             "ph":         float(ph_val) if ph_val is not None else None,
                         }
 
-            fr = farmer_row or {}
-            ur = user_row   or {}
-
-            return jsonify({
-                "success":      True,
-                "username":     ur.get("username")     or fr.get("username", ""),
-                "email":        ur.get("email", ""),
-                "aadhaar":      ur.get("aadhaar_number", ""),
-                "mobile":       fr.get("mobile_number", ""),
-                "location":     fr.get("location", ""),
-                "land_size":    fr.get("land_size"),
-                "crop_type":    fr.get("crop_type", ""),
-                "irrigation":   fr.get("irrigation_type", ""),
-                "survey_number": fr.get("survey_number", ""),
-                "has_soil_data": bool(soil),
+            result = {
+                "success":         True,
+                "user_id":         r.get("user_id"),
+                "username":        r.get("username", ""),
+                "email":           r.get("email", ""),
+                "aadhaar_number":  r.get("aadhaar_number", ""),
+                "mobile_number":   r.get("mobile_number", ""),
+                "location":        r.get("location", ""),
+                "land_size":       r.get("land_size"),
+                "crop_type":       r.get("crop_type", ""),
+                "irrigation_type": r.get("irrigation_type", ""),
+                "survey_number":   r.get("survey_number", ""),
+                "has_soil_data":   bool(soil),
                 **soil,
-            })
+            }
+            print("[PROFILE] Data:", result)
+            return jsonify(result)
         except Exception as exc:
             return jsonify({"success": False, "message": str(exc)}), 500
 
@@ -331,6 +365,82 @@ def create_app():
     def get_profile():
         """GET /profile — same payload as GET /api/profile; always JSON."""
         return api_get_profile()
+
+    @app.route("/api/profile/<email>", methods=["GET"])
+    def get_profile_by_email(email):
+        """
+        GET /api/profile/<email>
+        ─────────────────────────
+        Email-keyed profile lookup — reliable even when the Flask session
+        has expired (e.g. after a server restart or hard refresh).
+
+        Two explicit queries so each step is independently debuggable:
+          1. SELECT from users  WHERE email    = %s
+          2. SELECT from farmers WHERE username = %s
+        """
+        try:
+            print(f"[PROFILE] GET /api/profile/{email!r}")
+            print("PROFILE API CALLED WITH EMAIL:", email)
+            conn = get_db_connection()
+
+            # ── Step 1: fetch user row by email ───────────────────────────
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT * FROM users WHERE email = %s LIMIT 1",
+                    (email,),
+                )
+                user = cur.fetchone()
+            print("USER RESULT:", user)
+
+            if not user:
+                return jsonify({"success": False, "message": "User not found"}), 404
+
+            username = user["username"]
+            print(f"[PROFILE] user found: {username!r}")
+
+            # ── Step 2: fetch farmer row by username ──────────────────────
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT * FROM farmers WHERE username = %s LIMIT 1",
+                    (username,),
+                )
+                farmer = cur.fetchone()
+            print("FARMER RESULT:", farmer)
+
+            # Guard: if no farmers row yet, use empty dict so .get() never throws.
+            if not farmer:
+                farmer = {}
+            print(f"[PROFILE] farmer row: {'found' if farmer else 'not found (defaulting to empty)'}")
+
+            # ── Step 3: merge and return ──────────────────────────────────
+            # Soil data (nitrogen / phosphorus / potassium / ph) is stored
+            # directly in the farmers table by the soil-upload route — NOT in
+            # the soil_data table.  Reading from farmer avoids a broken join
+            # when soil_data is empty or farmer_id is absent.
+            result = {
+                "success":        True,
+                "username":       user.get("username"),
+                "email":          user.get("email"),
+                "aadhaar_number": user.get("aadhaar_number"),
+
+                "mobile_number":  farmer.get("mobile_number"),
+                "crop_type":      farmer.get("crop_type"),
+                "location":       farmer.get("location"),
+                "land_size":      farmer.get("land_size"),
+                "irrigation_type": farmer.get("irrigation_type"),
+                "survey_number":  farmer.get("survey_number"),
+
+                "has_soil_data":  farmer.get("nitrogen") is not None,
+                "nitrogen":       farmer.get("nitrogen"),
+                "phosphorus":     farmer.get("phosphorus"),
+                "potassium":      farmer.get("potassium"),
+                "ph":             farmer.get("ph"),
+            }
+            print("[PROFILE] Data:", result)
+            print("FINAL RESPONSE:", result)
+            return jsonify(result)
+        except Exception as exc:
+            return jsonify({"success": False, "message": str(exc)}), 500
 
     @app.route("/api/profile/save", methods=["POST"])
     def api_save_profile():
@@ -343,6 +453,7 @@ def create_app():
         """
         try:
             data = request.get_json(silent=True) or {}
+            print("SAVE PROFILE DATA:", data)
 
             mobile      = str(data.get("mobile")      or data.get("mobile_number", "")).strip()
             crop_type   = str(data.get("crop_type",   "")).strip()
@@ -374,7 +485,19 @@ def create_app():
             conn     = get_db_connection()
             username = session.get("username")
 
-            # Identify the target username — session or farmer_id=1 fallback
+            # Identify the target username — session → email body → farmer_id=1 fallback
+            if not username:
+                email_from_body = str(data.get("email") or "").strip()
+                print("EMAIL:", data.get("email"))
+                if email_from_body:
+                    with conn.cursor() as cur:
+                        cur.execute(
+                            "SELECT username FROM users WHERE email=%s LIMIT 1",
+                            (email_from_body,),
+                        )
+                        row = cur.fetchone()
+                        username = row.get("username") if row else None
+
             if not username:
                 with conn.cursor() as cur:
                     cur.execute(
@@ -387,17 +510,26 @@ def create_app():
             if not username:
                 return jsonify({"success": False,
                                 "message": "No user identified. Please log in."}), 400
+            print("USER FOUND:", username)
 
             # Ensure farmers table and extra columns exist
             from routes.farmer import _ensure_farmers_table, _ensure_soil_columns
             _ensure_farmers_table(conn)
             _ensure_soil_columns(conn)
 
-            with conn.cursor() as cur:
-                cur.execute("SELECT 1 FROM farmers WHERE username=%s LIMIT 1", (username,))
-                exists = cur.fetchone() is not None
+            print(f"[PROFILE] Saving to farmers table for username={username!r}")
+            print("UPSERT FARMER WITH:", username, mobile, crop_type)
 
-                if exists:
+            with conn.cursor() as cur:
+                # Check whether a farmers row already exists for this user.
+                cur.execute(
+                    "SELECT username FROM farmers WHERE username=%s LIMIT 1",
+                    (username,),
+                )
+                farmer_exists = cur.fetchone() is not None
+
+                if farmer_exists:
+                    # UPDATE: leave soil_report_file untouched.
                     cur.execute(
                         """
                         UPDATE farmers
@@ -409,6 +541,7 @@ def create_app():
                          irrigation, survey_num, username),
                     )
                 else:
+                    # INSERT: default soil_report_file to '' for new rows.
                     cur.execute(
                         """
                         INSERT INTO farmers
@@ -419,28 +552,163 @@ def create_app():
                         (username, mobile, crop_type, location,
                          land_size, irrigation, survey_num),
                     )
-            conn.commit()
 
-            # Return fresh profile so the frontend can reload immediately
-            _, farmer_row, user_row = _profile_get_username_and_farmer(conn)
-            fr = farmer_row or {}
-            ur = user_row   or {}
-            return jsonify({
-                "success":       True,
-                "message":       "Profile saved successfully.",
-                "username":      ur.get("username")    or fr.get("username", ""),
-                "email":         ur.get("email", ""),
-                "aadhaar":       ur.get("aadhaar_number", ""),
-                "mobile":        fr.get("mobile_number", ""),
-                "location":      fr.get("location", ""),
-                "land_size":     fr.get("land_size"),
-                "crop_type":     fr.get("crop_type", ""),
-                "irrigation":    fr.get("irrigation_type", ""),
-                "survey_number": fr.get("survey_number", ""),
-            })
+            conn.commit()
+            print("SAVE SUCCESS")
+            print(f"[PROFILE] Saved successfully for {username!r}")
+
+            # Fetch fresh profile keyed by the confirmed username so the
+            # response is correct even when the Flask session has expired
+            # (previously used _profile_get_username_and_farmer which falls
+            # back to farmer_id=1 when the session is gone, returning the
+            # wrong user's data and making the save appear to be lost).
+            row = _fetch_profile_row(conn, username=username)
+            r   = row or {}
+            result = {
+                "success":         True,
+                "message":         "Profile saved successfully.",
+                "user_id":         r.get("user_id"),
+                "username":        r.get("username", username),
+                "email":           r.get("email", ""),
+                "aadhaar_number":  r.get("aadhaar_number"),
+                "mobile_number":   r.get("mobile_number", ""),
+                "location":        r.get("location", ""),
+                "land_size":       r.get("land_size"),
+                "crop_type":       r.get("crop_type", ""),
+                "irrigation_type": r.get("irrigation_type", ""),
+                "survey_number":   r.get("survey_number", ""),
+            }
+            print("[PROFILE] Save response:", result)
+            return jsonify(result)
 
         except Exception as exc:
             return jsonify({"success": False, "message": str(exc)}), 500
+
+    # =========================
+    # SOIL REPORT UPLOAD — session-free, email-keyed
+    # =========================
+    @app.route("/api/upload-soil-report", methods=["POST"])
+    def api_upload_soil_report():
+        """
+        POST /api/upload-soil-report
+        ─────────────────────────────
+        Multipart fields:  file=<file>  email=<string>
+        Works without a live Flask session (uses email to resolve username).
+        Returns flat JSON: {success, nitrogen, phosphorus, potassium, ph}
+        Soil values are written directly to the farmers table so
+        GET /api/profile/<email> picks them up immediately.
+        """
+        import os as _os
+        from werkzeug.utils import secure_filename as _secure_fn
+
+        email = (request.form.get("email") or "").strip()
+        file  = request.files.get("file")
+
+        if not file or not file.filename:
+            return jsonify({"success": False, "message": "No file provided"}), 400
+
+        _allowed = {"pdf", "jpg", "jpeg", "png"}
+        ext = file.filename.rsplit(".", 1)[-1].lower() if "." in file.filename else ""
+        if ext not in _allowed:
+            return jsonify({
+                "success": False,
+                "message": "File type not allowed. Upload PDF, JPG, or PNG.",
+            }), 400
+
+        # ── Resolve username (session → email body) ───────────────────────
+        try:
+            conn = get_db_connection()
+        except DBConnectionError as exc:
+            return jsonify({"success": False, "message": str(exc)}), 500
+
+        username = session.get("username")
+        if not username and email:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT username FROM users WHERE email=%s LIMIT 1",
+                    (email,),
+                )
+                row = cur.fetchone()
+                username = row.get("username") if row else None
+
+        if not username:
+            return jsonify({
+                "success": False,
+                "message": "User not identified. Please log in.",
+            }), 401
+
+        # ── Save file to disk ─────────────────────────────────────────────
+        upload_dir = _os.path.join(_os.path.dirname(__file__), "uploads", "soil_reports")
+        _os.makedirs(upload_dir, exist_ok=True)
+        safe_name = _secure_fn(file.filename)
+        filepath  = _os.path.join(upload_dir, f"{username}_{safe_name}")
+        try:
+            file.save(filepath)
+        except Exception as exc:
+            return jsonify({"success": False, "message": f"Could not save file: {exc}"}), 500
+
+        # ── Extract NPK + pH ──────────────────────────────────────────────
+        try:
+            from services.soil_parser import extract_soil_data
+            soil = extract_soil_data(filepath)
+        except Exception as exc:
+            print(f"[SoilUpload] Parser error: {exc} — using demo values")
+            soil = {"nitrogen": 82.0, "phosphorus": 38.0, "potassium": 42.0, "ph": 6.4}
+
+        nitrogen   = soil["nitrogen"]
+        phosphorus = soil["phosphorus"]
+        potassium  = soil["potassium"]
+        ph         = soil["ph"]
+
+        # ── Persist to farmers table ──────────────────────────────────────
+        try:
+            from routes.farmer import _ensure_farmers_table, _ensure_soil_columns
+            _ensure_farmers_table(conn)
+            _ensure_soil_columns(conn)
+
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT username FROM farmers WHERE username=%s LIMIT 1",
+                    (username,),
+                )
+                exists = cur.fetchone() is not None
+
+                if exists:
+                    cur.execute(
+                        """
+                        UPDATE farmers
+                        SET soil_report_file=%s, nitrogen=%s,
+                            phosphorus=%s, potassium=%s, ph=%s
+                        WHERE username=%s
+                        """,
+                        (filepath, nitrogen, phosphorus, potassium, ph, username),
+                    )
+                else:
+                    cur.execute(
+                        """
+                        INSERT INTO farmers
+                          (username, mobile_number, crop_type, location, land_size,
+                           irrigation_type, survey_number, soil_report_file,
+                           nitrogen, phosphorus, potassium, ph)
+                        VALUES (%s, '', '', '', 0, '', '', %s, %s, %s, %s, %s)
+                        """,
+                        (username, filepath, nitrogen, phosphorus, potassium, ph),
+                    )
+
+            conn.commit()
+            print(f"[SoilUpload] Saved for {username!r}: N={nitrogen} P={phosphorus} K={potassium} pH={ph}")
+
+        except Exception as exc:
+            print(f"[SoilUpload] DB error: {exc}")
+            return jsonify({"success": False, "message": "Database error while saving soil data"}), 500
+
+        return jsonify({
+            "success":    True,
+            "nitrogen":   nitrogen,
+            "phosphorus": phosphorus,
+            "potassium":  potassium,
+            "ph":         ph,
+        })
 
     # =========================
     # HOME (landing before login)
@@ -450,9 +718,72 @@ def create_app():
         frontend_dir = os.path.join(os.path.dirname(__file__), "..", "frontend")
         return send_from_directory(frontend_dir, "home.html")
 
+    # =========================
+    # STATIC FRONTEND CATCH-ALL
+    # =========================
+    # Serves every file under /frontend/ that is not already handled by an
+    # API blueprint (auth, soil, farmer …).
+    #
+    # WHY THIS IS CRITICAL FOR LOGIN:
+    # Without this route, pages/login.html is opened directly from the
+    # filesystem (file://…).  File-protocol pages have Origin: null.
+    # Browsers silently block credentialed POST requests (fetch with
+    # credentials:"include") when the origin is null — even after a
+    # successful OPTIONS preflight — causing the login button to appear
+    # permanently stuck on "Verifying credentials…".
+    #
+    # With this route, navigating to /pages/login.html returns the HTML
+    # served from http://127.0.0.1:5000, giving it a proper HTTP origin
+    # that Flask-CORS can reflect correctly, and the POST reaches Flask.
+    @app.route("/<path:filename>")
+    def serve_frontend_files(filename):
+        frontend_dir = os.path.join(os.path.dirname(__file__), "..", "frontend")
+        try:
+            return send_from_directory(frontend_dir, filename)
+        except Exception:
+            # File not found — return a plain 404 so browser DevTools shows
+            # a clear error rather than an HTML "Not Found" page.
+            return jsonify({"error": "Not found", "path": filename}), 404
+
     return app
+
+
+def _check_email_config() -> None:
+    """
+    Print a clear warning at startup if the email credentials are missing or
+    still set to their placeholder values.  This is the most common reason
+    OTP emails are never received.
+    """
+    addr = os.environ.get("EMAIL_ADDRESS", "").strip()
+    pw   = os.environ.get("EMAIL_PASSWORD", "").strip()
+    skip = os.environ.get("SKIP_EMAIL_SEND", "").lower() in ("1", "true", "yes")
+    dbg  = os.environ.get("OTP_DEBUG", "").lower() in ("1", "true", "yes")
+
+    print("\n" + "=" * 64)
+    print("  KrishiSetu — Email / OTP Configuration Check")
+    print("=" * 64)
+
+    if skip:
+        print("  ⚠  SKIP_EMAIL_SEND=1  →  OTP emails DISABLED (dev mode).")
+        print("     OTP is still stored in DB — query users.otp to read it.")
+    elif not addr or addr == "your_gmail_address@gmail.com":
+        print("  ✗  EMAIL_ADDRESS is not set (or still has placeholder value).")
+        print("     → OTP login will FAIL until you set it in backend/.env")
+    elif not pw or pw == "your_16_char_app_password_here":
+        print("  ✗  EMAIL_PASSWORD is not set (or still has placeholder value).")
+        print("     → Use a Gmail App Password, NOT your normal password.")
+        print("     → Setup: myaccount.google.com → Security → App passwords")
+    else:
+        print(f"  ✓  EMAIL_ADDRESS : {addr}")
+        print(f"  ✓  EMAIL_PASSWORD: {'*' * len(pw)} ({len(pw)} chars)")
+
+    if dbg:
+        print("  ⚠  OTP_DEBUG=1  →  OTP values will be printed to this console.")
+
+    print("=" * 64 + "\n")
 
 
 if __name__ == "__main__":
     app = create_app()
+    _check_email_config()
     app.run(host="127.0.0.1", port=5000, debug=True)

@@ -106,7 +106,9 @@ def get_notifications():
     """
     username  = session.get("username", "")
     conn      = get_db_connection()
-    farmer_id = 1
+    # Resolve the real farmer_id from the session user; fall back to 1 only
+    # when there is no session (dev / unauthenticated preview).
+    farmer_id = _get_farmer_id(conn, username) if username else 1
     read_refs = _get_read_refs(conn, username)
 
     notifications: list[dict] = []

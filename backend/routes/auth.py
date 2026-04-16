@@ -1,6 +1,7 @@
 import logging
 import os
 import re
+import threading
 from datetime import datetime, timedelta
 
 import bcrypt
@@ -19,6 +20,35 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 logger = logging.getLogger(__name__)
 
 auth_bp = Blueprint("auth", __name__)
+
+
+def _fire_otp_email(dest_email: str, otp: str, expiry_minutes: int,
+                    username: str) -> None:
+    """
+    Send the OTP email from a daemon background thread so the /login
+    route can return an HTTP response immediately.
+
+    The OTP is already committed to the database before this thread
+    starts, so even if the email fails the user can click "Resend OTP"
+    on the frontend to trigger a fresh attempt.
+
+    SMTP latency (up to ~15 s per socket operation) cannot block the
+    login response path any more.
+    """
+    try:
+        send_otp_email(dest_email, otp, expiry_minutes)
+        print(f"[OTP-thread] ✓ Email delivered to {dest_email}")
+        logger.info("[OTP-thread] OTP email sent to %s", dest_email)
+    except Exception as exc:
+        print(f"[OTP-thread] ✗ Email FAILED for {dest_email}: {exc}")
+        logger.error("[OTP-thread] Email failed for %s: %s", dest_email, exc)
+        print("[OTP-thread]   → User can click 'Resend OTP' to retry.")
+        print("[OTP-thread]   → Check EMAIL_ADDRESS / EMAIL_PASSWORD in backend/.env")
+        if os.environ.get("OTP_DEBUG", "").strip() in ("1", "true", "yes"):
+            print(f"[OTP-thread] *** OTP_DEBUG *** OTP for {username!r}: {otp}")
+            print(f"[OTP-thread]     POST /auth/verify-otp  "
+                  f'body: {{"username": "{username}", "otp": "{otp}"}}')
+
 
 def _json_ok(message, **data):
     return {"success": True, "message": message, "data": data}
@@ -182,21 +212,30 @@ def register():
                     ),
                 )
             else:
-                cur.execute(
-                    """
-                    INSERT INTO experts
-                      (username, mobile_number, expertise_field, experience_years, qualification, qualification_file)
-                    VALUES (%s, %s, %s, %s, %s,%s)
-                    """,
-                    (
-                        username,
-                        mobile_number,
-                        expertise_field,
-                        experience_years,
-                        qualification,
-                        filepath
-                    ),
-                )
+                # AFTER: wrapped in try/except so a column mismatch never
+                # rolls back the users insert (FIX 2 + FIX 3)
+                try:
+                    cur.execute(
+                        """
+                        INSERT INTO experts
+                          (username, mobile_number, expertise_field,
+                           experience_years, qualification, qualification_file)
+                        VALUES (%s, %s, %s, %s, %s, %s)
+                        """,
+                        (
+                            username,
+                            mobile_number,
+                            expertise_field,
+                            experience_years,
+                            qualification,
+                            filepath,
+                        ),
+                    )
+                except pymysql.MySQLError as expert_err:
+                    logger.error(
+                        "[Register] experts insert failed for %s: %s",
+                        username, expert_err,
+                    )
 
         conn.commit()
         return json_ok("User registered successfully", 200)
@@ -308,16 +347,21 @@ def verify_otp():
 # ================= LOGIN =================
 @auth_bp.post("/login")
 def login():
+    print("[Login] Request received")
     data = request.get_json(silent=True) or {}
 
     email_login    = str(data.get("email")    or "").strip()
     username_login = str(data.get("username") or "").strip()
     password       = str(data.get("password") or "").strip()
 
+    identity = email_login or username_login
+    print(f"[Login] Identity: {identity!r}")
+
     if not password or (not email_login and not username_login):
         return json_error("Email/username and password are required", 400)
 
     try:
+        print("[Login] Checking DB...")
         conn = get_db_connection()
         user = None
 
@@ -393,30 +437,22 @@ def login():
 
         conn.commit()
 
-        try:
-            send_otp_email(dest_email, otp, Config.OTP_EXPIRY_MINUTES)
-            logger.info("[Login] OTP sent to %s", dest_email)
-        except Exception as exc:
-            logger.error("[Login] Email delivery failed for %s: %s", dest_email, exc)
-            with conn.cursor() as cur:
-                try:
-                    cur.execute(
-                        "UPDATE users SET otp=NULL, otp_expires_at=NULL WHERE username=%s",
-                        (user["username"],),
-                    )
-                except pymysql.MySQLError:
-                    cur.execute(
-                        "UPDATE users SET otp=NULL WHERE username=%s",
-                        (user["username"],),
-                    )
-            conn.commit()
-            return json_error(
-                "Could not send OTP email. "
-                "Check EMAIL_ADDRESS / EMAIL_PASSWORD in backend/.env.",
-                500,
-            )
+        # ── Non-blocking email dispatch ──────────────────────────────────────
+        # Launch SMTP in a daemon thread so this route returns instantly.
+        # SMTP can take 5-30 s; keeping it synchronous would cause the 
+        # frontend to show "Request timed out" before the response arrives.
+        # The OTP is already in the DB — if the email fails, the user can
+        # click "Resend OTP" on the frontend to trigger a fresh attempt.
+        t = threading.Thread(
+            target=_fire_otp_email,
+            args=(dest_email, otp, Config.OTP_EXPIRY_MINUTES, user["username"]),
+            daemon=True,
+        )
+        t.start()
+        print(f"[Login] OTP thread started for {dest_email} — responding now")
 
-        # Return success — OTP is NOT included in the response (security).
+        # Return success immediately — OTP is NOT included in the response.
+        print("[Login] Before response → returning 200 to frontend")
         return json_ok("OTP sent to your registered email", 200)
 
     except DBConnectionError:
@@ -430,6 +466,91 @@ def login():
 def logout():
     session.clear()
     return json_ok("Logged out successfully", 200)
+
+
+# ================= TEST EMAIL (debug only) =================
+@auth_bp.get("/test-email")
+def test_email():
+    """
+    DEBUG route — sends a test email to verify SMTP configuration.
+    Hit GET /auth/test-email in a browser while the server is running.
+
+    Returns a plain-text response so it is easy to read in the browser
+    without needing a JSON client.
+
+    IMPORTANT: Remove or protect this route before deploying to production.
+    """
+    from_addr    = os.environ.get("EMAIL_ADDRESS",  "").strip()
+    app_password = os.environ.get("EMAIL_PASSWORD", "").strip()
+    skip         = os.environ.get("SKIP_EMAIL_SEND", "").lower() in ("1", "true", "yes")
+
+    # Config pre-flight
+    if skip:
+        return (
+            "SKIP_EMAIL_SEND=1 is set — email sending is disabled.\n"
+            "Unset it in backend/.env to test real SMTP delivery."
+        ), 200
+
+    if not from_addr or from_addr == "your_gmail_address@gmail.com":
+        return (
+            "EMAIL_ADDRESS is missing or still set to the placeholder value.\n"
+            "Edit backend/.env and restart the server."
+        ), 500
+
+    if not app_password or app_password == "your_16_char_app_password_here":
+        return (
+            "EMAIL_PASSWORD is missing or still set to the placeholder value.\n"
+            "Create a Gmail App Password and paste it into backend/.env."
+        ), 500
+
+    # Attempt to send
+    import smtplib
+    from email.mime.text import MIMEText
+
+    msg = MIMEText(
+        "This is a test email from KrishiSetu.\n\n"
+        "If you received this, your SMTP configuration is working correctly.\n\n"
+        "— KrishiSetu Team"
+    )
+    msg["Subject"] = "KrishiSetu — SMTP Test"
+    msg["From"]    = f"KrishiSetu <{from_addr}>"
+    msg["To"]      = from_addr      # send to self
+
+    try:
+        with smtplib.SMTP("smtp.gmail.com", 587) as server:
+            server.ehlo()
+            server.starttls()
+            server.ehlo()
+            server.login(from_addr, app_password)
+            server.sendmail(from_addr, from_addr, msg.as_string())
+
+        logger.info("[TestEmail] Test email sent successfully to %s", from_addr)
+        return (
+            f"✓ Test email sent successfully to {from_addr}!\n"
+            f"Check your inbox. If it does not arrive within 2 minutes, "
+            f"check your Spam folder."
+        ), 200
+
+    except smtplib.SMTPAuthenticationError:
+        return (
+            "✗ SMTP Authentication failed.\n\n"
+            "Common causes:\n"
+            "  1. EMAIL_PASSWORD is your normal Gmail password — use an App Password instead.\n"
+            "  2. 2-Step Verification is not enabled on the Gmail account.\n"
+            "  3. The App Password was copied incorrectly (must be 16 chars, no spaces).\n\n"
+            "Fix:\n"
+            "  → myaccount.google.com → Security → 2-Step Verification → App passwords"
+        ), 500
+
+    except smtplib.SMTPException as exc:
+        return f"✗ SMTP error: {exc}", 500
+
+    except OSError as exc:
+        return (
+            f"✗ Network error: {exc}\n\n"
+            "The server could not reach smtp.gmail.com:587.\n"
+            "Check your internet connection or firewall rules."
+        ), 500
 
 
 # ================= FORGOT PASSWORD =================

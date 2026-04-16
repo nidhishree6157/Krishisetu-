@@ -81,6 +81,25 @@ def _ensure_experts_table(conn):
         except Exception:
             pass
 
+        # Ensure qualification_file column exists (added after initial schema).
+        try:
+            cur.execute(
+                """
+                SELECT COUNT(*) AS cnt
+                FROM information_schema.COLUMNS
+                WHERE TABLE_SCHEMA = DATABASE()
+                  AND TABLE_NAME = 'experts'
+                  AND COLUMN_NAME = 'qualification_file'
+                """
+            )
+            row = cur.fetchone() or {}
+            if int(row.get("cnt") or 0) == 0:
+                cur.execute(
+                    "ALTER TABLE experts ADD COLUMN qualification_file TEXT NULL"
+                )
+        except Exception:
+            pass
+
 
 def _get_username_or_fail():
     username = session.get("username")

@@ -33,7 +33,7 @@
     .section-label {
       font-size: 11px; font-weight: 700; letter-spacing: 1.2px;
       text-transform: uppercase; color: var(--primary-green);
-      margin-bottom: 16px; display: flex; align-items: center; gap-8px;
+      margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
     }
     .section-label i { margin-right: 6px; }
     .readonly-input {
@@ -351,14 +351,37 @@ function showNPK(soil) {
 // ── load profile on page open ──────────────────────────────────────────────
 async function loadProfile() {
   try {
-    console.log("Fetching profile...");
-    var res = await fetch("http://127.0.0.1:5000/profile", { credentials: "include" });
-    var p   = await res.json();
-    console.log(p);
+    var p = null;
+    var storedEmail = localStorage.getItem("user_email");
+    var storedUser  = localStorage.getItem("userName");
 
-    if (!p.success) {
-      console.warn("Profile load failed:", p.message);
-      var fallback = localStorage.getItem("userName") || "Farmer";
+    // Prefer the email-keyed endpoint when we have the email in localStorage.
+    // This is reliable even when the Flask session has expired.
+    if (storedEmail) {
+      try {
+        var r2 = await fetch(
+          "http://127.0.0.1:5000/api/profile/" + encodeURIComponent(storedEmail),
+          { credentials: "include" }
+        );
+        var d2 = await r2.json();
+        if (d2.success) p = d2;
+      } catch (_) { /* network error — fall through */ }
+    }
+
+    // Fall back to the session-based endpoint.
+    if (!p) {
+      var r1  = await fetch("http://127.0.0.1:5000/profile", { credentials: "include" });
+      var d1  = await r1.json();
+      // Only accept the session result when it belongs to the right user;
+      // the session endpoint silently falls back to farmer_id=1 when logged out.
+      if (d1.success && (!storedUser || d1.username === storedUser)) {
+        p = d1;
+      }
+    }
+
+    if (!p || !p.success) {
+      console.warn("Profile load failed");
+      var fallback = storedUser || "Farmer";
       document.getElementById("displayName").textContent = fallback;
       document.getElementById("avatarInitial").textContent = fallback.charAt(0).toUpperCase();
       return;
@@ -371,17 +394,17 @@ async function loadProfile() {
     document.getElementById("displayEmail").textContent  = p.email || "";
 
     // Read-only account fields
-    document.getElementById("username").value       = p.username      || "";
-    document.getElementById("email").value          = p.email         || "";
-    document.getElementById("aadhaar_number").value = p.aadhaar       || "";
+    document.getElementById("username").value       = p.username       || "";
+    document.getElementById("email").value          = p.email          || "";
+    document.getElementById("aadhaar_number").value = p.aadhaar_number || "";
 
     // Editable farm fields
-    document.getElementById("mobile").value          = p.mobile        || "";
-    document.getElementById("survey_number").value   = p.survey_number || "";
-    document.getElementById("cropType").value        = p.crop_type     || "";
-    document.getElementById("location").value        = p.location      || "";
+    document.getElementById("mobile").value          = p.mobile_number   || "";
+    document.getElementById("survey_number").value   = p.survey_number   || "";
+    document.getElementById("cropType").value        = p.crop_type       || "";
+    document.getElementById("location").value        = p.location        || "";
     document.getElementById("landSize").value        = p.land_size != null ? p.land_size : "";
-    document.getElementById("irrigation_type").value = p.irrigation    || "";
+    document.getElementById("irrigation_type").value = p.irrigation_type || "";
 
     // Soil data card
     if (p.has_soil_data) {
@@ -389,7 +412,8 @@ async function loadProfile() {
                 potassium: p.potassium, ph: p.ph });
     }
 
-    if (p.username) localStorage.setItem("userName", p.username);
+    if (p.username) localStorage.setItem("userName",   p.username);
+    if (p.email)    localStorage.setItem("user_email", p.email);
   } catch (e) {
     console.error("Profile load failed", e);
     var fallback = localStorage.getItem("userName") || "Farmer";
@@ -397,6 +421,23 @@ async function loadProfile() {
     document.getElementById("avatarInitial").textContent = fallback.charAt(0).toUpperCase();
   }
 }
+
+// ── soil report file wiring (outer scope so uploadBtn handler can reach them)
+const fileInput   = document.getElementById("soilReportFile");
+const uploadBtn   = document.getElementById("uploadBtn");
+const fileDisplay = document.getElementById("fileDisplay");
+const fileName    = document.getElementById("fileName");
+
+fileInput.addEventListener("change", function () {
+  if (fileInput.files.length > 0) {
+    uploadBtn.disabled = false;
+    fileDisplay.style.display = "flex";
+    fileName.textContent = fileInput.files[0].name;
+  } else {
+    uploadBtn.disabled = true;
+    fileDisplay.style.display = "none";
+  }
+});
 
 // ── save farm details ──────────────────────────────────────────────────────
 document.getElementById("profileForm").addEventListener("submit", async function(e) {
@@ -413,35 +454,40 @@ document.getElementById("profileForm").addEventListener("submit", async function
   }
 
   var payload = {
-    mobile:        mobile,
-    crop_type:     cropType,
-    location:      location,
-    land_size:     landSize,
-    irrigation:    document.getElementById("irrigation_type").value,
-    survey_number: document.getElementById("survey_number").value.trim(),
+    email:          localStorage.getItem("user_email") || "",
+    mobile_number:  mobile,
+    crop_type:      cropType,
+    location:       location,
+    land_size:      landSize,
+    irrigation_type: document.getElementById("irrigation_type").value,
+    survey_number:  document.getElementById("survey_number").value,
   };
 
   setBtn("saveProfileBtn", true);
+
   try {
-    var res  = await fetch(API + "/api/profile/save", {
-      method: "POST", credentials: "include",
+    const res = await fetch(API + "/api/profile/save", {
+      method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify(payload),
     });
-    var json = await res.json();
 
-    if (json.success) {
-      showAlert("profileAlert", "✓ Profile saved successfully!", "success");
-      // Reload profile so displayed data matches what was just saved
-      await loadProfile();
+    const data = await res.json();
+
+    if (data.success) {
+      showAlert("profileAlert", "Profile saved successfully", "success");
+      loadProfile();
     } else {
-      showAlert("profileAlert", json.message || "Save failed.", "danger");
+      showAlert("profileAlert", data.message || "Save failed", "danger");
     }
+
   } catch (err) {
-    showAlert("profileAlert", "Server error. Is the backend running?", "danger");
-  } finally {
-    setBtn("saveProfileBtn", false);
+    console.error(err);
+    showAlert("profileAlert", "Server error", "danger");
   }
+
+  setBtn("saveProfileBtn", false);
 });
 
 // ── file input handling ────────────────────────────────────────────────────
@@ -492,66 +538,57 @@ document.getElementById("profileForm").addEventListener("submit", async function
 })();
 
 // ── upload & analyse ───────────────────────────────────────────────────────
-document.getElementById("uploadBtn").addEventListener("click", async function() {
-  var file = document.getElementById("soilReportFile").files[0];
-  var alertArea = "uploadAlert";
-
-  // ── Client-side guards ────────────────────────────────────────────────
+uploadBtn.addEventListener("click", async function () {
+  const file = fileInput.files[0];
   if (!file) {
-    showAlert(alertArea, "Please select a file before uploading.", "danger");
+    showAlert("uploadAlert", "Please select a file", "danger");
     return;
   }
 
-  if (!isValidFileType(file)) {
-    showAlert(alertArea, "Invalid file type. Please upload a PDF, JPG, or PNG soil report.", "danger");
-    return;
-  }
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("email", localStorage.getItem("user_email"));
 
-  if (file.size > 5 * 1024 * 1024) {
-    showAlert(alertArea, "File size exceeds 5 MB. Please upload a smaller file.", "danger");
-    return;
-  }
-
-  // ── Send to backend ───────────────────────────────────────────────────
   setBtn("uploadBtn", true);
-  document.getElementById(alertArea).innerHTML = "";
-
-  var fd = new FormData();
-  fd.append("soil_report", file);
 
   try {
-    var res  = await fetch(API + "/farmer/upload-soil-report", {
-      method: "POST", credentials: "include", body: fd,
+    const res = await fetch(API + "/api/upload-soil-report", {
+      method: "POST",
+      body: formData,
+      credentials: "include",
     });
-    var json = await res.json();
 
-    if (json.success && json.data && json.data.soil) {
-      // ── Success ──────────────────────────────────────────────────────
-      showNPK(json.data.soil);
-      showAlert(alertArea, "✓ Soil report analysed! Values saved to your profile.", "success");
+    const data = await res.json();
 
-      var s    = json.data.soil;
-      var phVal = s.ph != null ? s.ph : s.pH;
-      var pack = {
-        nitrogen:   s.nitrogen   != null && s.nitrogen   !== "" ? Number(s.nitrogen)   : null,
-        phosphorus: s.phosphorus != null && s.phosphorus !== "" ? Number(s.phosphorus) : null,
-        potassium:  s.potassium  != null && s.potassium  !== "" ? Number(s.potassium)  : null,
-        ph:         phVal        != null && phVal        !== "" ? Number(phVal)         : null,
-      };
-      localStorage.setItem("soilData", JSON.stringify(pack));
+    if (data.success) {
+      showAlert("uploadAlert", "Soil report processed successfully", "success");
 
+      showNPK({
+        nitrogen:   data.nitrogen,
+        phosphorus: data.phosphorus,
+        potassium:  data.potassium,
+        ph:         data.ph,
+      });
+
+      // Persist to localStorage so crop/fertilizer modules can read it
+      localStorage.setItem("soilData", JSON.stringify({
+        nitrogen:   data.nitrogen,
+        phosphorus: data.phosphorus,
+        potassium:  data.potassium,
+        ph:         data.ph,
+      }));
+
+      loadProfile();
     } else {
-      // ── Backend returned an error (validation / server) ───────────────
-      // json.message comes from json_error(); json.error is the HTTP-level field.
-      var errMsg = json.message || json.error || "Upload failed. Please try again.";
-      showAlert(alertArea, errMsg, "danger");
+      showAlert("uploadAlert", data.message || "Upload failed", "danger");
     }
 
   } catch (err) {
-    showAlert(alertArea, "Could not reach the server. Please check your connection and try again.", "danger");
-  } finally {
-    setBtn("uploadBtn", false);
+    console.error(err);
+    showAlert("uploadAlert", "Server error during upload", "danger");
   }
+
+  setBtn("uploadBtn", false);
 });
 
 // ── boot ──────────────────────────────────────────────────────────────────

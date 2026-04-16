@@ -403,6 +403,9 @@ body{
             <button type="submit" id="loginBtn" class="btn">
               <i class="fas fa-arrow-right"></i> Continue
             </button>
+            <!-- Status hint — shown while the server is verifying credentials / sending OTP -->
+            <p id="loginHint" style="text-align:center;font-size:13px;color:#64748b;
+                                     min-height:18px;margin-top:10px;"></p>
           </form>
           <div class="links">
             <a href="forgot-password.html">Forgot password?</a>
@@ -505,22 +508,73 @@ function startCountdown(){
   resendInterval=setInterval(function(){resendSeconds--;var t=document.getElementById("resendTimer");if(t)t.textContent=resendSeconds+"s";if(resendSeconds<=0){clearInterval(resendInterval);btn.disabled=false;btn.classList.add("ready");btn.textContent="Resend OTP";}},1000);
 }
 async function doLogin(e){
-  e.preventDefault();clearAlert("loginAlert");
-  var id=document.getElementById("username").value.trim(),pw=document.getElementById("password").value;
-  if(!id||!pw){showAlert("loginAlert","Please enter your username/email and password.","error");return;}
-  var btn=document.getElementById("loginBtn");setLoading(btn,true);
-  var body=id.includes("@")?{email:id,password:pw}:{username:id,password:pw};
+  e.preventDefault();
+  clearAlert("loginAlert");
+
+  var id = document.getElementById("username").value.trim();
+  var pw = document.getElementById("password").value;
+  if(!id || !pw){
+    showAlert("loginAlert","Please enter your username/email and password.","error");
+    return;
+  }
+
+  var btn  = document.getElementById("loginBtn");
+  var hint = document.getElementById("loginHint");
+  setLoading(btn, true);
+  if(hint) hint.textContent = "Verifying credentials…";
+
+  // Abort after 8 s — credential check + DB lookup should be near-instant.
+  // Email is now sent in a background thread so it cannot delay this response.
+  var controller = new AbortController();
+  var abortTimer = setTimeout(function(){ controller.abort(); }, 8000);
+
+  var body = id.includes("@") ? {email:id,password:pw} : {username:id,password:pw};
   try{
-    var res=await fetch("http://127.0.0.1:5000/auth/login",{method:"POST",headers:{"Content-Type":"application/json"},credentials:"include",body:JSON.stringify(body)});
-    var data=await res.json();
+    var res = await fetch("http://127.0.0.1:5000/auth/login",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      credentials:"include",
+      body:JSON.stringify(body),
+      signal:controller.signal
+    });
+    clearTimeout(abortTimer);
+
+    var data = await res.json();
+
     if(data.success){
-      pendingLoginId=id;
-      document.getElementById("otpDestEmail").textContent=id.includes("@")?id:"your registered email";
-      clearOtp();showStep("stepOtp");startCountdown();
-      setTimeout(function(){document.querySelector("#otpBoxes input").focus();},360);
-    }else{showAlert("loginAlert",data.message||"Invalid credentials.","error");}
-  }catch(err){showAlert("loginAlert","Cannot reach the server. Check your connection.","error");}
-  finally{setLoading(btn,false);}
+      if(hint) hint.textContent = "OTP sent! Check your email…";
+      pendingLoginId = id;
+      document.getElementById("otpDestEmail").textContent =
+        id.includes("@") ? id : "your registered email";
+      clearOtp();
+      showStep("stepOtp");
+      startCountdown();
+      setTimeout(function(){ document.querySelector("#otpBoxes input").focus(); }, 360);
+    } else {
+      if(hint) hint.textContent = "";
+      showAlert("loginAlert", data.message || "Invalid credentials.", "error");
+    }
+
+  } catch(err){
+    clearTimeout(abortTimer);
+    if(hint) hint.textContent = "";
+    if(err.name === "AbortError"){
+      showAlert("loginAlert",
+        "Request timed out — the server is taking too long. Please try again.",
+        "error");
+    } else {
+      showAlert("loginAlert",
+        "Cannot reach the server. Is the backend running?",
+        "error");
+    }
+  } finally{
+    setLoading(btn, false);
+    // Always clear the hint here.  On success the entire login step is
+    // already hidden by showStep("stepOtp") before finally runs, so
+    // clearing the text has no visible effect.  On error the hint must
+    // be cleared so it doesn't persist on screen.
+    if(hint) hint.textContent = "";
+  }
 }
 async function doVerify(){
   clearAlert("otpAlert");
@@ -532,7 +586,8 @@ async function doVerify(){
     var res=await fetch("http://127.0.0.1:5000/auth/verify-otp",{method:"POST",headers:{"Content-Type":"application/json"},credentials:"include",body:JSON.stringify(payload)});
     var data=await res.json();
     if(data.success&&data.data){
-      if(data.data.username)localStorage.setItem("userName",data.data.username);
+      if(data.data.username)localStorage.setItem("userName",   data.data.username);
+      if(data.data.email)   localStorage.setItem("user_email", data.data.email);
       showAlert("otpAlert","Verified! Redirecting…","success");
       setTimeout(function(){window.location.href=data.data.role==="Expert"?"../expert-dashboard.html":"dashboard.html";},700);
     }else{shakeOtp();showAlert("otpAlert",data.message||"Invalid or expired code.","error");}
